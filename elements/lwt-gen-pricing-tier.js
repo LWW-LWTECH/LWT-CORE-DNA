@@ -97,6 +97,17 @@
         CSS
       );
       this._root.querySelector('.badge').textContent = this._strAttr('badge', 'Recommended');
+
+      // Features render inside a <ul>; anything slotted there that isn't an
+      // <li> is given role="listitem" so the list is announced correctly.
+      var featureSlot = this._root.querySelector('slot[name="features"]');
+      var syncItems = function () {
+        featureSlot.assignedElements().forEach(function (el) {
+          if (el.tagName !== 'LI' && !el.hasAttribute('role')) el.setAttribute('role', 'listitem');
+        });
+      };
+      featureSlot.addEventListener('slotchange', syncItems);
+      syncItems();
     }
   }
 

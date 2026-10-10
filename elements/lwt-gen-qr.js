@@ -405,7 +405,7 @@
 
   class LWTQr extends window.LWT.Element {
     static get observedAttributes() {
-      return ['src', 'size', 'level', 'background-color', 'color', 'corner-color', 'radius', 'margin'];
+      return ['src', 'size', 'level', 'background-color', 'color', 'corner-color', 'radius', 'margin', 'label', 'aria-label'];
     }
 
     render() {
@@ -448,8 +448,10 @@
         }
       }
 
+      // Name: the developer's label if given, else what the code encodes.
+      var name = this._hostLabel() || this._strAttr('label', '') || ('QR code for: ' + src);
       var svg = '<svg viewBox="0 0 ' + n + ' ' + n + '" width="' + size + '" height="' + size + '"' +
-        ' role="img" aria-label="QR code for: ' + escapeXml(src) + '">' + rects + '</svg>';
+        ' role="img" aria-label="' + escapeXml(name) + '">' + rects + '</svg>';
 
       this._renderShadow(svg, CSS);
       this.emit('render', { version: result.version, size: result.size, level: result.level });

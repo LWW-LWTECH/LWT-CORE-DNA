@@ -137,10 +137,12 @@
         (hasChildren
           ? '<span class="toggle" part="toggle">' + CHEVRON_SVG + '</span>'
           : '<span class="toggle no-children" part="toggle"></span>') +
-        (checkable ? '<input type="checkbox" class="check" part="checkbox" tabindex="-1">' : '') +
+        // The treeitem itself carries aria-checked; the visual checkbox is
+        // hidden from assistive tech so it isn't announced twice.
+        (checkable ? '<input type="checkbox" class="check" part="checkbox" tabindex="-1" aria-hidden="true">' : '') +
         '<span class="label" part="label"><slot name="label">' + fallbackLabel + '</slot></span>' +
         '</div>' +
-        '<div class="children" part="children"><slot></slot></div>';
+        '<div class="children" part="children" role="group"><slot></slot></div>';
 
       this._renderShadow(html, CSS);
 
@@ -152,6 +154,15 @@
 
       this.setAttribute('role', 'treeitem');
       this.setAttribute('aria-level', String(this._depth()));
+      // Name = this item's own label only. Without this, a parent item's
+      // name would include the text of every nested child.
+      var self = this;
+      var labelSlot = this._root.querySelector('slot[name="label"]');
+      var syncName = function () {
+        self._ensureAttr('aria-label', self._a11yName([self.labelText], 'Tree item', 'Add a label attribute'));
+      };
+      labelSlot.addEventListener('slotchange', syncName);
+      if (this._strAttr('label', '') || this._hostLabel()) syncName(); else this._whenParsed(syncName);
       if (hasChildren) this.setAttribute('aria-expanded', this._expanded ? 'true' : 'false');
       else this.removeAttribute('aria-expanded');
 
@@ -171,9 +182,14 @@
       } else {
         this.removeAttribute('aria-checked');
       }
-      if (this._selected) this.setAttribute('aria-selected', 'true');
-      else this.setAttribute('aria-selected', 'false');
-      this.tabIndex = this._boolAttr('disabled') ? -1 : 0;
+      // Checkable trees use aria-checked; aria-selected is for select mode.
+      if (this._checkboxEl) this.removeAttribute('aria-selected');
+      else this.setAttribute('aria-selected', this._selected ? 'true' : 'false');
+      if (this._boolAttr('disabled')) this.setAttribute('aria-disabled', 'true');
+      else this.removeAttribute('aria-disabled');
+      // Inside a <lwtg-tree>, the tree runs a roving tabindex (one item in
+      // the Tab order at a time); standalone items stay focusable.
+      if (!this.hasAttribute('data-lwt-roving')) this.tabIndex = this._boolAttr('disabled') ? -1 : 0;
     }
 
     get isLeaf() {
@@ -213,7 +229,7 @@
       this._selected = !!value;
       if (this._selected) this.setAttribute('selected', '');
       else this.removeAttribute('selected');
-      this.setAttribute('aria-selected', this._selected ? 'true' : 'false');
+      if (!this._checkboxEl) this.setAttribute('aria-selected', this._selected ? 'true' : 'false');
     }
 
     expand() {

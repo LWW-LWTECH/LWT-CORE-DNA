@@ -103,11 +103,46 @@
 
       this._renderShadow(html, CSS);
       this._mediaEl = this._root.querySelector('.media');
+      this._applyA11y(type);
+    }
 
-      this.setAttribute('role', 'button');
-      this.tabIndex = 0;
-      if (label) this.setAttribute('aria-label', label);
-      else this.removeAttribute('aria-label');
+    // Accessible name: label, then alt, then a name derived from the file
+    // (e.g. "summer-sale.jpg" -> "Summer sale"), then a generic fallback.
+    _accessibleName(type) {
+      var src = this._strAttr('src', '');
+      var fromFile = '';
+      if (src && type !== 'youtube') {
+        var file = src.split(/[?#]/)[0].split('/').pop().replace(/\.[a-z0-9]+$/i, '');
+        fromFile = window.LWT.a11y.humanize(decodeURIComponent(file));
+      }
+      var fallback = type === 'youtube' ? 'Play video' : (fromFile || 'Image');
+      var name = this._a11yName([this._strAttr('label', ''), this._strAttr('alt', '')], fallback,
+        'Add a label or alt attribute');
+      return type === 'youtube' && !this._playing && name.indexOf('Play') !== 0 ? 'Play video: ' + name : name;
+    }
+
+    _applyA11y(type) {
+      var name = this._accessibleName(type);
+      var link = this._root.querySelector('a.media-link');
+
+      if (link) {
+        // A real link does the work: name it, and keep the host out of the
+        // tab order so there's no button-wrapping-a-link nesting.
+        link.setAttribute('aria-label', name);
+        var img = link.querySelector('img');
+        if (img) img.setAttribute('alt', '');
+        this._removeAutoAttr('role');
+        this._removeAutoAttr('aria-label');
+        if (this._autoTabIndex) { this.removeAttribute('tabindex'); this._autoTabIndex = false; }
+        return;
+      }
+
+      // Otherwise the host itself is the button; the media inside is
+      // presentational (its meaning is carried by the host's name).
+      this._ensureAttr('role', 'button');
+      this._ensureAttr('aria-label', name);
+      if (!this.hasAttribute('tabindex') || this._autoTabIndex) { this.tabIndex = 0; this._autoTabIndex = true; }
+      if (this._mediaEl) this._mediaEl.setAttribute('aria-hidden', 'true');
     }
 
     _resolveType() {
@@ -179,6 +214,8 @@
 
     _handleKeydown(event) {
       if (event.key !== 'Enter' && event.key !== ' ') return;
+      // When the tile is a link, the native <a> handles the keyboard.
+      if (this._root.querySelector('a.media-link')) return;
       event.preventDefault();
       this._handleActivate();
     }
@@ -197,10 +234,18 @@
           src: 'https://www.youtube.com/embed/' + id + '?autoplay=1',
           allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
           allowfullscreen: '',
-          frameborder: '0'
+          frameborder: '0',
+          title: this._a11yName([this._strAttr('label', ''), this._strAttr('alt', '')], 'YouTube video player', 'Add a label attribute')
         }
       });
       this._mediaEl.appendChild(iframe);
+      // The player is now the interactive thing: drop the host's button
+      // role so it doesn't wrap an iframe full of its own controls.
+      this._playing = true;
+      this._mediaEl.removeAttribute('aria-hidden');
+      this._removeAutoAttr('role');
+      this._removeAutoAttr('aria-label');
+      if (this._autoTabIndex) { this.removeAttribute('tabindex'); this._autoTabIndex = false; }
       self.emit('play', { videoId: id });
     }
   }

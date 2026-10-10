@@ -53,14 +53,18 @@
       var panelName = this._strAttr('panel', '');
       var disabled = this._boolAttr('disabled');
 
+      // id / aria-controls / roving tabindex are wired by <lwtg-tabs>
+      // (it knows the matching panel and gives both page-unique ids).
       this.setAttribute('role', 'tab');
-      if (panelName) {
-        this.id = 'lwt-tab-' + panelName;
-        this.setAttribute('aria-controls', 'lwt-tabpanel-' + panelName);
-      }
       this.setAttribute('aria-selected', this._boolAttr('active') ? 'true' : 'false');
       this.setAttribute('aria-disabled', disabled ? 'true' : 'false');
-      this.tabIndex = disabled ? -1 : 0;
+      if (disabled) this.tabIndex = -1;
+      else if (!this.hasAttribute('data-lwt-roving')) this.tabIndex = 0;
+      else this.tabIndex = this._boolAttr('active') ? 0 : -1;
+      this._whenParsed(function () {
+        if (this.textContent.trim() || this._hostLabel()) { this._removeAutoAttr('aria-label'); return; }
+        this._ensureAttr('aria-label', this._a11yName([window.LWT.a11y.humanize(panelName)], 'Tab', 'Add text content to the tab'));
+      });
     }
 
     get active() { return this._boolAttr('active'); }
@@ -82,18 +86,24 @@
       }
       var horizontal = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
       var vertical = event.key === 'ArrowUp' || event.key === 'ArrowDown';
-      if (!horizontal && !vertical) return;
+      var edge = event.key === 'Home' || event.key === 'End';
+      if (!horizontal && !vertical && !edge) return;
       if (!this.parentElement) return;
 
       var tabs = Array.prototype.filter.call(
-        this.parentElement.querySelectorAll('lwtg-tab'),
+        this.parentElement.querySelectorAll(':scope > lwtg-tab'),
         function (t) { return !t.hasAttribute('disabled'); }
       );
       var idx = tabs.indexOf(this);
       if (idx === -1) return;
-      var dir = (event.key === 'ArrowRight' || event.key === 'ArrowDown') ? 1 : -1;
       event.preventDefault();
-      var next = tabs[(idx + dir + tabs.length) % tabs.length];
+      var next;
+      if (event.key === 'Home') next = tabs[0];
+      else if (event.key === 'End') next = tabs[tabs.length - 1];
+      else {
+        var dir = (event.key === 'ArrowRight' || event.key === 'ArrowDown') ? 1 : -1;
+        next = tabs[(idx + dir + tabs.length) % tabs.length];
+      }
       if (next) {
         next.focus();
         next.click();

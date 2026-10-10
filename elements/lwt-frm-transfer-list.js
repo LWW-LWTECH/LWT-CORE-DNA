@@ -139,7 +139,7 @@
     '.helper.error { color: var(--lwt-transfer-error-color, var(--lwt-color-danger, #ef4444)); }';
 
   var TEMPLATE =
-    '<label class="group-label" part="label"><span class="label-text"></span><span class="required-mark" hidden>*</span></label>' +
+    '<div class="group-label" part="label"><span class="label-text"></span><span class="required-mark" hidden aria-hidden="true">*</span></div>' +
     '<div class="wrap" part="wrap">' +
     '  <div class="col" part="available-col">' +
     '    <span class="col-label" part="available-label"></span>' +
@@ -169,7 +169,7 @@
 
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'available-label', 'selected-label',
-              'sortable', 'size', 'name', 'required', 'disabled'];
+              'sortable', 'size', 'name', 'required', 'disabled', 'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -271,6 +271,14 @@
       this._upBtn = root.querySelector('.up-btn');
       this._downBtn = root.querySelector('.down-btn');
 
+      // ids so the selects can be labelled by "<label> <column>" and
+      // described by the helper text (all inside this shadow root).
+      var a11y = window.LWT.a11y;
+      this._labelText.id = a11y.uid('lwt-transfer-label');
+      this._availLabelEl.id = a11y.uid('lwt-transfer-avail');
+      this._selLabelEl.id = a11y.uid('lwt-transfer-sel');
+      this._helperEl.id = a11y.uid('lwt-transfer-helper');
+
       this._addBtn.addEventListener('click', this._onAddClick);
       this._removeBtn.addEventListener('click', this._onRemoveClick);
       this._upBtn.addEventListener('click', this._onUpClick);
@@ -296,8 +304,31 @@
       this._labelEl.style.display = label ? '' : 'none';
       this._requiredMark.hidden = !required;
 
-      this._availLabelEl.textContent = this._strAttr('available-label', 'Available');
-      this._selLabelEl.textContent = this._strAttr('selected-label', 'Selected');
+      var availName = this._strAttr('available-label', 'Available');
+      var selName = this._strAttr('selected-label', 'Selected');
+      this._availLabelEl.textContent = availName;
+      this._selLabelEl.textContent = selName;
+
+      // Group name for the whole control, then name each list as
+      // "<group> <column>" and say what each button does.
+      var groupName = this._a11yName([label, window.LWT.a11y.humanize(this._strAttr('name', ''))],
+        'Transfer list', 'Add a label attribute');
+      this._ensureAttr('role', 'group');
+      this._ensureAttr('aria-label', groupName);
+      this._availSelect.setAttribute('aria-label', groupName + ': ' + availName);
+      this._selSelect.setAttribute('aria-label', groupName + ': ' + selName);
+      this._addBtn.setAttribute('aria-label', 'Add chosen items to ' + selName);
+      this._removeBtn.setAttribute('aria-label', 'Remove chosen items from ' + selName);
+      this._upBtn.setAttribute('aria-label', 'Move chosen items up');
+      this._downBtn.setAttribute('aria-label', 'Move chosen items down');
+      if (helper || error) {
+        this._availSelect.setAttribute('aria-describedby', this._helperEl.id);
+        this._selSelect.setAttribute('aria-describedby', this._helperEl.id);
+      } else {
+        this._availSelect.removeAttribute('aria-describedby');
+        this._selSelect.removeAttribute('aria-describedby');
+      }
+      if (error) this._selSelect.setAttribute('aria-invalid', 'true'); else this._selSelect.removeAttribute('aria-invalid');
 
       this._availSelect.size = size;
       this._selSelect.size = size;
@@ -386,7 +417,14 @@
       this._renderLists();
       this._reportValue();
       this._reportValidity();
+      this._announceMove(vals.length, false);
       this.emit('change', { value: this._order.slice() });
+    }
+
+    _announceMove(count, added) {
+      var col = this._strAttr('selected-label', 'Selected');
+      window.LWT.a11y.announce(count + (count === 1 ? ' item ' : ' items ') + (added ? 'added to ' : 'removed from ') + col +
+        '. ' + this._order.length + ' in ' + col + '.');
     }
 
     _onUpClick() {
@@ -414,6 +452,7 @@
       this._renderLists();
       this._reportValue();
       this._reportValidity();
+      this._announceMove(1, false);
       this.emit('change', { value: this._order.slice() });
     }
 
@@ -437,6 +476,7 @@
       this._renderLists();
       this._reportValue();
       this._reportValidity();
+      this._announceMove(toAdd.length, true);
       this.emit('change', { value: this._order.slice() });
     }
 

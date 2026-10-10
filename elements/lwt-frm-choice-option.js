@@ -77,7 +77,7 @@
     '<polyline points="4 12 9 18 20 6"/></svg>';
 
   var CSS =
-    ':host { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font: inherit; font-size: 0.95rem;' +
+    ':host { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font: inherit; font-size: 0.95rem; min-height: 24px;' +
     '  color: var(--lwt-choices-color, var(--lwt-color-text, #1f2937)); user-select: none; outline: none; }' +
     ':host([hidden]) { display: none; }' +
     ':host([disabled]) { cursor: not-allowed; opacity: 0.55; }' +
@@ -155,6 +155,7 @@
       this.setAttribute('control-type', 'option');
       this.addEventListener('click', this._handleClick);
       this.addEventListener('keydown', this._handleKeydown);
+      this._whenParsed(this._syncName);
     }
 
     disconnectedCallback() {
@@ -187,8 +188,19 @@
 
       this.setAttribute('aria-checked', checked ? 'true' : 'false');
       this.setAttribute('aria-disabled', disabled ? 'true' : 'false');
-      this.tabIndex = disabled ? -1 : 0;
+      // In a radio group <lwtf-choices> runs a roving tabindex (only the
+      // checked radio is a Tab stop); otherwise every option is.
+      if (disabled) this.tabIndex = -1;
+      else if (!this.hasAttribute('data-lwt-roving')) this.tabIndex = 0;
       if (!this.hasAttribute('role')) this.setAttribute('role', role);
+    }
+
+    // Image tiles with no text still need a name: use the value (e.g.
+    // "facebook" -> "Facebook") and warn.
+    _syncName() {
+      if (this.textContent.trim() || this._hostLabel()) { this._removeAutoAttr('aria-label'); return; }
+      this._ensureAttr('aria-label', this._a11yName([window.LWT.a11y.humanize(this.value)], 'Option',
+        'Add text content to the option'));
     }
 
     _syncMedia() {
@@ -197,7 +209,8 @@
       var image = this._strAttr('image', '');
       if (image) {
         this._img.src = image;
-        this._img.alt = this.textContent.trim();
+        // Decorative: the option's own name (its text) already says it.
+        this._img.alt = '';
       } else {
         this._img.removeAttribute('src');
         this._img.alt = '';

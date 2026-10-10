@@ -21,14 +21,19 @@
     '.panel-inner ::slotted(*:first-child) { margin-top: 0; }' +
     '.panel-inner ::slotted(*:last-child) { margin-bottom: 0; }';
 
+  // The trigger sits inside a heading (WAI-ARIA accordion pattern) so
+  // screen-reader users can jump between sections by heading. Level comes
+  // from the host's heading-level attribute (default 3).
   var TEMPLATE =
+    '<div class="heading" role="heading" aria-level="3">' +
     '<button type="button" class="trigger" part="trigger" aria-expanded="false">' +
     '  <span class="label" part="label"><slot name="label"></slot></span>' +
     '  <span class="chevron" part="chevron">' +
     '    <svg viewBox="0 0 20 20"><path d="M5 7l5 5l5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>' +
     '  </span>' +
     '</button>' +
-    '<div class="panel" part="panel">' +
+    '</div>' +
+    '<div class="panel" part="panel" role="region">' +
     '  <div class="panel-inner"><slot name="body"></slot></div>' +
     '</div>';
 
@@ -67,9 +72,33 @@
       this._panel = root.querySelector('.panel');
 
       var panelId = 'lwt-accordion-panel-' + (++idCounter);
+      var triggerId = 'lwt-accordion-trigger-' + idCounter;
       this._panel.id = panelId;
+      this._trigger.id = triggerId;
       this._trigger.setAttribute('aria-controls', panelId);
+      this._panel.setAttribute('aria-labelledby', triggerId);
       this._trigger.disabled = this._boolAttr('disabled');
+
+      var level = parseInt(this._strAttr('heading-level', '3'), 10);
+      root.querySelector('.heading').setAttribute('aria-level', String(level >= 1 && level <= 6 ? level : 3));
+
+      // Accessible name: the slotted label text; if there isn't any, fall
+      // back to a generic name (and tell the developer).
+      var labelSlot = root.querySelector('slot[name="label"]');
+      var self = this;
+      var syncName = function () {
+        if (!labelSlot.isConnected) return; // superseded by a newer render
+        var text = labelSlot.assignedNodes({ flatten: true }).map(function (n) { return n.textContent; }).join('').trim();
+        var host = self._hostLabel();
+        if (host || !text) {
+          self._trigger.setAttribute('aria-label', self._a11yName([], 'Toggle section', 'Add an element with slot="label"'));
+        } else {
+          self._trigger.removeAttribute('aria-label');
+        }
+      };
+      labelSlot.addEventListener('slotchange', syncName);
+      // Light-DOM children may not be parsed yet; check again after.
+      this._whenParsed(syncName);
 
       this._trigger.addEventListener('click', this._handleTriggerClick);
       this._panel.addEventListener('transitionend', this._handleTransitionEnd);

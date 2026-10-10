@@ -87,9 +87,12 @@
     '  <span class="label-text" part="label-text"></span>' +
     '  <span class="required-mark" part="required">*</span>' +
     '</div>' +
-    '<div class="boxes" part="boxes"></div>' +
+    '<div class="boxes" part="boxes" role="group"></div>' +
+    // Off-screen helper that lets mobile OSes autofill an SMS code. Hidden
+    // from assistive tech AND out of the Tab order (aria-hidden content
+    // must never be focusable).
     '<input class="autofill-input" part="autofill-input" type="text" inputmode="numeric" ' +
-    '  autocomplete="one-time-code" aria-hidden="true">' +
+    '  autocomplete="one-time-code" aria-hidden="true" tabindex="-1">' +
     '<div class="below" part="below">' +
     '  <span class="helper" part="helper"></span>' +
     '</div>';
@@ -127,7 +130,7 @@
 
   class LWTOtp extends window.LWT.Element {
     static get observedAttributes() {
-      return ['label', 'helper', 'error', 'length', 'type', 'name', 'required', 'disabled', 'readonly', 'auto-focus'];
+      return ['label', 'helper', 'error', 'length', 'type', 'name', 'required', 'disabled', 'readonly', 'auto-focus', 'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -185,6 +188,8 @@
       this._autofillInput = root.querySelector('.autofill-input');
 
       this._id = 'lwt-otp-' + (++uid);
+      this._labelText.id = this._id + '-label';
+      this._helperEl.id = this._id + '-helper';
       this._autofillInput.addEventListener('input', this._onAutofillInput);
 
       this._rebuildBoxes();
@@ -269,10 +274,24 @@
       this._helperEl.classList.toggle('error', !!error);
       this.toggleAttribute('data-invalid', !!error);
 
+      // The boxes form one named group ("Verification code" if unlabelled),
+      // described by the helper/error text.
+      var hostLabel = this._hostLabel();
+      if (label && !hostLabel) {
+        this._boxesEl.setAttribute('aria-labelledby', this._labelText.id);
+        this._boxesEl.removeAttribute('aria-label');
+      } else {
+        this._boxesEl.removeAttribute('aria-labelledby');
+        this._boxesEl.setAttribute('aria-label', this._a11yName([], 'Verification code', 'Add a label attribute'));
+      }
+      if (error || helper) this._boxesEl.setAttribute('aria-describedby', this._helperEl.id);
+      else this._boxesEl.removeAttribute('aria-describedby');
+
       this._boxEls.forEach(function (box) {
         box.disabled = disabled;
         box.readOnly = readonly;
         box.tabIndex = disabled ? -1 : 0;
+        if (error) box.setAttribute('aria-invalid', 'true'); else box.removeAttribute('aria-invalid');
       });
       this._autofillInput.disabled = disabled;
       this._reportValidity();

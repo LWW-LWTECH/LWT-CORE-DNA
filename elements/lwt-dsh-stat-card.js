@@ -81,9 +81,11 @@
     '.value-row { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }' +
     '.value { font-size: 1.75rem; font-weight: 700; line-height: 1.1; color: var(--lwt-stat-value-color, var(--lwt-color-text-strong, #111827)); }' +
     '.delta { font-size: 0.85rem; font-weight: 600; }' +
-    '.delta-up { color: var(--lwt-sparkline-up-color, var(--lwt-color-success, #22c55e)); }' +
-    '.delta-down { color: var(--lwt-sparkline-down-color, var(--lwt-color-danger, #ef4444)); }' +
-    '.delta-neutral { color: var(--lwt-sparkline-flat-color, var(--lwt-color-text-subtle, #9ca3af)); }' +
+    // Text colors that pass 4.5:1 on white (the line colors are often
+    // lighter, which is fine for a graphic but not for small text).
+    '.delta-up { color: var(--lwt-stat-delta-up-color, #15803d); }' +
+    '.delta-down { color: var(--lwt-stat-delta-down-color, #b91c1c); }' +
+    '.delta-neutral { color: var(--lwt-sparkline-flat-color, var(--lwt-color-text-subtle, #6b7280)); }' +
     '.chart-slot { margin-top: 0.25rem; }' +
     '::slotted([slot="chart"]) { display: block; width: 100%; }';
 
@@ -93,8 +95,13 @@
     }
 
     render() {
-      this._renderShadow(TEMPLATE, CSS);
+      this._renderShadow(TEMPLATE, CSS + window.LWT.a11y.SR_ONLY_CSS);
       var root = this._root;
+      // Read the card as one named group ("Revenue, $48,200, up 12.4%").
+      this._ensureAttr('role', 'group');
+      this._ensureAttr('aria-label', this._a11yName([this._strAttr('label', '')], 'Statistic', 'Add a label attribute'));
+      var iconWrapEl = root.querySelector('.icon-slot');
+      if (iconWrapEl) iconWrapEl.setAttribute('aria-hidden', 'true');
 
       root.querySelector('.label').textContent = this._strAttr('label', '');
       root.querySelector('.value').textContent = this._strAttr('value', '');
@@ -108,7 +115,11 @@
       }
       var arrow = trend === 'up' ? '▲ ' : trend === 'down' ? '▼ ' : '';
       var deltaEl = root.querySelector('.delta');
-      deltaEl.textContent = delta ? arrow + delta : '';
+      // The arrow is decorative; say the direction in words instead.
+      var spoken = trend === 'up' ? 'Up ' : trend === 'down' ? 'Down ' : '';
+      deltaEl.innerHTML = delta
+        ? '<span aria-hidden="true">' + arrow + '</span><span class="lwt-sr-only">' + spoken + '</span>' + window.LWT.a11y.escape(delta)
+        : '';
       deltaEl.className = 'delta delta-' + trend;
       deltaEl.style.display = delta ? '' : 'none';
 

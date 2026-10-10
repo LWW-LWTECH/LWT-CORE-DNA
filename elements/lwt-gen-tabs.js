@@ -48,7 +48,7 @@
 
   class LWTTabs extends window.LWT.Element {
     static get observedAttributes() {
-      return ['position'];
+      return ['position', 'label', 'aria-label'];
     }
 
     constructor() {
@@ -105,21 +105,59 @@
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue) return;
       if (name === 'position') this._syncTabPositions();
+      this._syncTablist();
     }
 
     render() {
       this._renderShadow(TEMPLATE, CSS);
+      this._syncTablist();
+    }
+
+    // The tab bar is the role="tablist" (inside the shadow root): give it
+    // the container's label and the right orientation.
+    _syncTablist() {
+      var bar = this._root.querySelector('.tab-bar');
+      if (!bar) return;
+      var label = this._hostLabel() || this._strAttr('label', '');
+      if (label) bar.setAttribute('aria-label', label); else bar.removeAttribute('aria-label');
+      var position = this._strAttr('position', 'top');
+      bar.setAttribute('aria-orientation', (position === 'left' || position === 'right') ? 'vertical' : 'horizontal');
+    }
+
+    _ownTabs() { return Array.prototype.slice.call(this.querySelectorAll(':scope > lwtg-tab')); }
+    _ownPanels() { return Array.prototype.slice.call(this.querySelectorAll(':scope > lwtg-tab-panel')); }
+
+    // Wires each tab to its panel with page-unique ids (so two tab sets
+    // with the same panel names never collide), and keeps a roving
+    // tabindex: only the active tab is in the Tab order; arrow keys move
+    // between tabs (WAI-ARIA tabs pattern).
+    _syncA11y() {
+      var a11y = window.LWT.a11y;
+      var panels = this._ownPanels();
+      var active = this._activePanel;
+      this._ownTabs().forEach(function (tab) {
+        var name = tab.getAttribute('panel');
+        var panel = panels.filter(function (p) { return p.getAttribute('name') === name; })[0];
+        if (!tab.id) tab.id = a11y.uid('lwt-tab');
+        if (panel) {
+          if (!panel.id) panel.id = a11y.uid('lwt-tabpanel');
+          tab.setAttribute('aria-controls', panel.id);
+          panel.setAttribute('aria-labelledby', tab.id);
+        }
+        tab.setAttribute('data-lwt-roving', '');
+        tab.tabIndex = (name === active && !tab.hasAttribute('disabled')) ? 0 : -1;
+      });
     }
 
     _syncTabPositions() {
       var position = this._strAttr('position', 'top');
-      this.querySelectorAll('lwtg-tab').forEach(function (tab) {
+      this._ownTabs().forEach(function (tab) {
         tab.setAttribute('position', position);
       });
     }
 
     _firstTabPanel() {
-      var first = this.querySelector('lwtg-tab');
+      var first = this.querySelector(':scope > lwtg-tab:not([disabled])') || this.querySelector(':scope > lwtg-tab');
       return first ? first.getAttribute('panel') : null;
     }
 
@@ -140,12 +178,14 @@
       opts = opts || {};
       this._activePanel = panelName;
 
-      this.querySelectorAll('lwtg-tab').forEach(function (tab) {
+      // Direct children only, so a nested <lwtg-tabs> keeps its own state.
+      this._ownTabs().forEach(function (tab) {
         tab.active = tab.getAttribute('panel') === panelName;
       });
-      this.querySelectorAll('lwtg-tab-panel').forEach(function (panel) {
+      this._ownPanels().forEach(function (panel) {
         panel.hidden = panel.getAttribute('name') !== panelName;
       });
+      this._syncA11y();
 
       if (!opts.silent) this.emit('change', { panel: panelName });
     }
@@ -181,7 +221,7 @@
       if (panel) panel.remove();
 
       if (wasActive) {
-        var next = this.querySelector('lwtg-tab');
+        var next = this.querySelector(':scope > lwtg-tab');
         if (next) this.selectTab(next.getAttribute('panel'));
         else this._activePanel = null;
       }

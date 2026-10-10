@@ -52,7 +52,7 @@
 
   class LWTRive extends window.LWT.Element {
     static get observedAttributes() {
-      return ['src', 'state-machine', 'artboard', 'autoplay', 'fit', 'alignment', 'width', 'height'];
+      return ['src', 'state-machine', 'artboard', 'autoplay', 'fit', 'alignment', 'width', 'height', 'label', 'aria-label'];
     }
 
     constructor() {
@@ -80,6 +80,10 @@
     render() {
       this._renderShadow(TEMPLATE, CSS);
       this._canvas = this._root.querySelector('canvas');
+      // The canvas is an image to assistive tech; it needs a name.
+      this._canvas.setAttribute('role', 'img');
+      this._canvas.setAttribute('aria-label', this._a11yName([this._strAttr('label', ''), this._strAttr('alt', '')],
+        'Animation', 'Add a label attribute describing the animation'));
 
       var width = this._strAttr('width', '');
       var height = this._strAttr('height', '');
@@ -115,7 +119,9 @@
         var opts = {
           src: src,
           canvas: self._canvas,
-          autoplay: self._strAttr('autoplay', 'true') !== 'false',
+          // Respect the visitor's reduced-motion setting (WCAG 2.2.2 /
+          // 2.3.3): don't start animating on its own. .play() still works.
+          autoplay: self._strAttr('autoplay', 'true') !== 'false' && !window.LWT.a11y.reducedMotion(),
           onLoad: function () {
             if (token !== self._loadToken) return; // superseded before this fired
             var instance = self.rive;
@@ -138,9 +144,9 @@
           }
         };
 
-        var stateMachines = splitNames(self._strAttr('state-machine', ''));
-        if (stateMachines.length === 1) opts.stateMachines = stateMachines[0];
-        else if (stateMachines.length > 1) opts.stateMachines = stateMachines;
+        var stateMachine = splitNames(self._strAttr('state-machine', ''));
+        if (stateMachine.length === 1) opts.stateMachine = stateMachine[0];
+        else if (stateMachine.length > 1) opts.stateMachine = stateMachine;
 
         var artboard = self._strAttr('artboard', '');
         if (artboard) opts.artboard = artboard;

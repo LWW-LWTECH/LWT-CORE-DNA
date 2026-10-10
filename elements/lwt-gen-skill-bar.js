@@ -89,7 +89,18 @@
       this.setAttribute('aria-valuemin', '0');
       this.setAttribute('aria-valuemax', String(max));
       this.setAttribute('aria-valuetext', valueText);
-      if (fallbackLabel) this.setAttribute('aria-label', fallbackLabel);
+      // Name the progressbar from the label attribute (raw text, not the
+      // HTML-escaped copy used in the template), or the slotted label.
+      var rawLabel = this._strAttr('label', '');
+      var labelSlot = this._root.querySelector('slot[name="label"]');
+      var self = this;
+      var syncName = function () {
+        if (!labelSlot.isConnected) return; // superseded by a newer render
+        var slotted = labelSlot.assignedNodes({ flatten: true }).map(function (n) { return n.textContent; }).join('').trim();
+        self._ensureAttr('aria-label', self._a11yName([slotted, rawLabel], 'Skill level', 'Add a label attribute'));
+      };
+      labelSlot.addEventListener('slotchange', syncName);
+      if (rawLabel || this._hostLabel()) syncName(); else this._whenParsed(syncName);
     }
 
     get value() {

@@ -182,11 +182,11 @@
     '  </svg>' +
     '  <span class="trigger-text" part="trigger-text"></span>' +
     '</div>' +
-    '<div class="popup" part="popup">' +
+    '<div class="popup" part="popup" role="dialog">' +
     '  <div class="popup-inner">' +
     '    <div class="presets" part="presets"></div>' +
     '    <div class="calendars-pane" part="calendars-pane">' +
-    '      <div class="range-heading" part="heading"></div>' +
+    '      <div class="range-heading" part="heading" aria-live="polite"></div>' +
     '      <div class="cal-nav" part="cal-nav">' +
     '        <button type="button" class="nav prev" part="nav-prev" aria-label="Previous month">&#8249;</button>' +
     '        <button type="button" class="nav next" part="nav-next" aria-label="Next month">&#8250;</button>' +
@@ -224,7 +224,7 @@
     ':host([data-invalid]) .trigger-box { border-color: var(--lwt-daterange-error-color, var(--lwt-color-danger, #ef4444)); }' +
     '.cal-icon { flex-shrink: 0; color: var(--lwt-color-text-muted, #6b7280); }' +
     '.trigger-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }' +
-    '.trigger-text.placeholder { color: var(--lwt-color-text-subtle, #9ca3af); }' +
+    '.trigger-text.placeholder { color: var(--lwt-color-text-subtle, #6b7280); }' +
 
     '.popup { position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; display: none;' +
     '  background: var(--lwt-daterange-bg, var(--lwt-color-surface, #fff));' +
@@ -300,7 +300,7 @@
   class LWTDateRange extends window.LWT.Element {
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'placeholder', 'name', 'months', 'time',
-              'min', 'max', 'presets', 'no-presets', 'required', 'disabled', 'readonly'];
+              'min', 'max', 'presets', 'no-presets', 'required', 'disabled', 'readonly', 'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -405,6 +405,10 @@
       this._inlineApplyBtn = root.querySelector('.apply-row-inline .apply-btn');
 
       this._id = 'lwt-daterange-' + (++uid);
+      this._popup.id = this._id + '-popup';
+      this._helperEl.id = this._id + '-helper';
+      this._trigger.setAttribute('aria-controls', this._popup.id);
+      this._calRow.addEventListener('keydown', this._onCalendarKeydown.bind(this));
 
       this._trigger.addEventListener('click', this._onTriggerClick);
       this._trigger.addEventListener('keydown', this._onTriggerKeydown);
@@ -442,6 +446,11 @@
 
       this._trigger.tabIndex = disabled ? -1 : 0;
       this._trigger.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+      if (required) this._trigger.setAttribute('aria-required', 'true'); else this._trigger.removeAttribute('aria-required');
+      if (error) this._trigger.setAttribute('aria-invalid', 'true'); else this._trigger.removeAttribute('aria-invalid');
+      if (error || helper) this._trigger.setAttribute('aria-describedby', this._helperEl.id);
+      else this._trigger.removeAttribute('aria-describedby');
+      this._popup.setAttribute('aria-label', 'Choose ' + this._a11yName([label], 'Date range', 'Add a label attribute').toLowerCase());
       if (disabled || readonly) this._close();
 
       this._syncTrigger();
@@ -450,6 +459,7 @@
 
     _syncTrigger() {
       if (!this._triggerText) return;
+      this._syncTriggerName();
       if (this._start && this._end) {
         var text = formatDisplay(this._start) + ' - ' + formatDisplay(this._end);
         if (this._boolAttr('time')) {
@@ -461,6 +471,75 @@
         this._triggerText.textContent = this._strAttr('placeholder', 'Select date range');
         this._triggerText.classList.add('placeholder');
       }
+      this._syncTriggerName();
+    }
+
+    // The trigger is announced as "<label>, <current range>" (or
+    // "<label>, no dates selected") -- WCAG 4.1.2 name + value.
+    _syncTriggerName() {
+      var name = this._a11yName([this._strAttr('label', '')], 'Date range', 'Add a label attribute');
+      var value = this._start && this._end ? this._triggerText.textContent : 'no dates selected';
+      this._trigger.setAttribute('aria-label', name + ', ' + value);
+    }
+
+    // Spoken form of a date, e.g. "Friday, November 6, 2026".
+    _spokenDate(date) {
+      var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      return DAYS[date.getDay()] + ', ' + MONTH_LABELS[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
+    }
+
+    // ---- calendar keyboard navigation (roving tabindex) ----
+    // One day button is in the Tab order; arrows move by day/week,
+    // Home/End to week start/end, PageUp/PageDown by month.
+    _focusableDayFor(target) {
+      var cells = (this._dayCells || []).filter(function (c) { return !c.outside && !c.el.disabled; });
+      if (!cells.length) return null;
+      var exact = cells.filter(function (c) { return target && sameDay(c.date, target); })[0];
+      return exact || null;
+    }
+
+    _syncDayTabStops(preferred) {
+      if (!this._dayCells) return null;
+      var cells = this._dayCells.filter(function (c) { return !c.outside && !c.el.disabled; });
+      var today = stripTime(new Date());
+      var pick = (preferred && this._focusableDayFor(preferred)) ||
+        this._focusableDayFor(this._draftStart) || this._focusableDayFor(today) || cells[0] || null;
+      this._dayCells.forEach(function (c) { c.el.tabIndex = -1; });
+      if (pick) pick.el.tabIndex = 0;
+      return pick;
+    }
+
+    _onCalendarKeydown(e) {
+      var cell = (this._dayCells || []).filter(function (c) { return c.el === e.target; })[0];
+      if (!cell) return;
+      var date = cell.date, next = null;
+      switch (e.key) {
+        case 'ArrowLeft': next = addDays(date, -1); break;
+        case 'ArrowRight': next = addDays(date, 1); break;
+        case 'ArrowUp': next = addDays(date, -7); break;
+        case 'ArrowDown': next = addDays(date, 7); break;
+        case 'Home': next = addDays(date, -date.getDay()); break;
+        case 'End': next = addDays(date, 6 - date.getDay()); break;
+        case 'PageUp': next = makeDate(date.getFullYear(), date.getMonth() - 1, Math.min(date.getDate(), 28)); break;
+        case 'PageDown': next = makeDate(date.getFullYear(), date.getMonth() + 1, Math.min(date.getDate(), 28)); break;
+        default: return;
+      }
+      e.preventDefault();
+      var bounds = this._bounds();
+      next = clampDate(next, bounds.min, bounds.max);
+      if (!this._focusableDayFor(next)) {
+        // Off the visible months: page the view so `next` is shown.
+        this._viewYear = next.getFullYear();
+        this._viewMonth = next.getMonth();
+        if (isBefore(next, date)) {
+          var back = addMonths(this._viewYear, this._viewMonth, -(this._monthsCount() - 1));
+          this._viewYear = back.y; this._viewMonth = back.m;
+        }
+        this._clampView();
+        this._renderCalendars();
+      }
+      var target = this._syncDayTabStops(next);
+      if (target) target.el.focus();
     }
 
     // ---- presets ----
@@ -477,7 +556,7 @@
         var preset = PRESET_BY_KEY[key];
         var btn = self._genhtml({
           type: 'button',
-          attr: { type: 'button', class: 'preset-btn', part: 'preset', 'data-key': key },
+          attr: { type: 'button', class: 'preset-btn', part: 'preset', 'data-key': key, 'aria-pressed': 'false' },
           text: preset.label,
           events: { click: function () { self._onPresetClick(key); } }
         });
@@ -540,6 +619,7 @@
       var self = this;
       this._presetsEl.querySelectorAll('.preset-btn').forEach(function (btn) {
         btn.classList.toggle('active', btn.dataset.key === self._activePreset);
+        btn.setAttribute('aria-pressed', btn.dataset.key === self._activePreset ? 'true' : 'false');
       });
     }
 
@@ -584,21 +664,22 @@
       var heading = (this._draftStart ? formatDisplay(this._draftStart) : '—') + ' - ' +
         (this._draftEnd ? formatDisplay(this._draftEnd) : '—');
       this._headingEl.textContent = heading;
+      this._syncDayTabStops(this._lastFocusedDate);
     }
 
     _buildCalendar(y, m, bounds) {
       var self = this;
-      var cal = this._genhtml({ type: 'div', attr: { class: 'calendar', part: 'calendar' } });
+      var cal = this._genhtml({ type: 'div', attr: { class: 'calendar', part: 'calendar', role: 'group', 'aria-label': MONTH_LABELS[m] + ' ' + y } });
       var title = this._genhtml({
         type: 'span',
-        attr: { class: 'cal-title', part: 'cal-title' },
+        attr: { class: 'cal-title', part: 'cal-title', 'aria-hidden': 'true' },
         text: MONTH_LABELS[m].slice(0, 3) + ' \'' + String(y).slice(2)
       });
       cal.appendChild(title);
 
       var grid = this._genhtml({ type: 'div', attr: { class: 'cal-grid', part: 'cal-grid' } });
       WEEKDAY_LABELS.forEach(function (wd, idx) {
-        grid.appendChild(self._genhtml({ type: 'span', attr: { class: 'cal-weekday', part: 'weekday' }, text: wd, data: { idx: idx } }));
+        grid.appendChild(self._genhtml({ type: 'span', attr: { class: 'cal-weekday', part: 'weekday', 'aria-hidden': 'true' }, text: wd, data: { idx: idx } }));
       });
 
       var firstOfMonth = makeDate(y, m, 1);
@@ -655,11 +736,30 @@
         }
       });
       if (disabled) cell.disabled = true;
+      // Days from neighbouring months are visual filler: skip them for AT.
+      if (outside) { cell.setAttribute('aria-hidden', 'true'); cell.tabIndex = -1; }
+      this._labelDayCell(cell, date);
+      cell.addEventListener('focus', function () { self._lastFocusedDate = date; });
       this._dayCells.push({ el: cell, date: date, outside: outside });
       return cell;
     }
 
+    _labelDayCell(cell, date) {
+      var parts = [this._spokenDate(date)];
+      var isStart = this._draftStart && sameDay(date, this._draftStart);
+      var isEnd = this._draftEnd && sameDay(date, this._draftEnd);
+      if (isStart && isEnd) parts.push('range start and end');
+      else if (isStart) parts.push('range start');
+      else if (isEnd) parts.push('range end');
+      else if (this._draftStart && this._draftEnd && inRange(date, this._draftStart, this._draftEnd)) parts.push('in selected range');
+      cell.setAttribute('aria-label', parts.join(', '));
+      cell.setAttribute('aria-pressed', (isStart || isEnd) ? 'true' : 'false');
+    }
+
     _onDayClick(date) {
+      // Picking re-renders the grid; keep keyboard focus on the picked day.
+      var active = this._root.activeElement;
+      var hadFocus = !!(active && this._calRow.contains(active));
       if (!this._draftStart || (this._draftStart && this._draftEnd)) {
         this._draftStart = date;
         this._draftEnd = null;
@@ -674,7 +774,12 @@
       }
       this._activePreset = 'custom';
       this._highlightPreset();
+      this._lastFocusedDate = date;
       this._renderCalendars();
+      if (hadFocus) {
+        var cell = this._syncDayTabStops(date);
+        if (cell) cell.el.focus();
+      }
       this._emitDraftInput();
     }
 
@@ -756,6 +861,7 @@
       var endV = parseInt(this._timeEndInput.value, 10);
       if (v > endV) { v = endV; this._timeStartInput.value = String(v); }
       this._draftStartTime = minutesToLabel(v);
+      this._timeStartInput.setAttribute('aria-valuetext', this._draftStartTime);
       this._syncTimeRow();
       this._emitDraftInput();
     }
@@ -764,6 +870,7 @@
       var startV = parseInt(this._timeStartInput.value, 10);
       if (v < startV) { v = startV; this._timeEndInput.value = String(v); }
       this._draftEndTime = minutesToLabel(v);
+      this._timeEndInput.setAttribute('aria-valuetext', this._draftEndTime);
       this._syncTimeRow();
       this._emitDraftInput();
     }
@@ -782,6 +889,10 @@
       this._timeEndLabel.style.left = endPct + '%';
       this._timeStartLabel.textContent = this._draftStartTime;
       this._timeEndLabel.textContent = this._draftEndTime;
+      this._timeStartInput.setAttribute('aria-valuetext', this._draftStartTime);
+      this._timeEndInput.setAttribute('aria-valuetext', this._draftEndTime);
+      this._timeStartLabel.setAttribute('aria-hidden', 'true');
+      this._timeEndLabel.setAttribute('aria-hidden', 'true');
     }
 
     // ---- popup open/close ----
@@ -818,6 +929,10 @@
       this._renderCalendars();
       this._syncTimeRow();
       this.emit('open', {});
+      // Move focus into the dialog: the selected start day, else today,
+      // else the first available day.
+      var first = this._syncDayTabStops(this._draftStart);
+      if (first) first.el.focus();
     }
     close() { this._close(); }
     _close() {
@@ -826,6 +941,9 @@
       this._popup.classList.remove('open');
       this._trigger.classList.remove('open');
       this._trigger.setAttribute('aria-expanded', 'false');
+      // If focus was inside the popup, return it to the trigger.
+      var active = this._root.activeElement;
+      if (active && active !== this._trigger && this._popup.contains(active)) this._trigger.focus();
       this.emit('close', {});
     }
     toggle() { if (this._isOpen) this._close(); else this.open(); }

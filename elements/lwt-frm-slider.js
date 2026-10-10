@@ -145,7 +145,7 @@
     '.segments { position: absolute; top: 50%; left: -0.7rem; right: -0.7rem; height: 4px; transform: translateY(-50%); }' +
     '.segment { position: absolute; top: 0; height: 100%; background: var(--lwt-slider-segment-color, var(--lwt-color-primary, #2563eb)); }' +
     '.handles { position: absolute; inset: 0; }' +
-    '.handle { position: absolute; top: 50%; width: 1.3rem; height: 1.3rem; border-radius: 999px;' +
+    '.handle { position: absolute; top: 50%; width: 1.5rem; height: 1.5rem; border-radius: 999px;' +
     '  transform: translate(-50%, -50%); cursor: grab; touch-action: none;' +
     '  background: var(--lwt-slider-handle-bg, #fff);' +
     '  border: 2px solid var(--lwt-slider-handle-border, var(--lwt-color-primary, #2563eb));' +
@@ -176,7 +176,8 @@
   class LWTSlider extends window.LWT.Element {
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'min', 'max', 'step', 'name', 'required',
-              'disabled', 'readonly', 'ticks', 'tick-step', 'label-format', 'unit', 'tooltip'];
+              'disabled', 'readonly', 'ticks', 'tick-step', 'label-format', 'unit', 'tooltip',
+              'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -235,6 +236,7 @@
       this._helperEl = root.querySelector('.helper');
 
       this._id = 'lwt-slider-' + (++uid);
+      this._helperEl.id = this._id + '-helper';
       this._wrap.addEventListener('pointerdown', this._onTrackPointerDown);
 
       this._rebuild();
@@ -291,6 +293,7 @@
       this._buildSegments();
       this._buildTicks();
       this._syncPositions();
+      if (this._labelText) this._syncAttrs(); // new handles need their names/states again
     }
 
     _buildSegments() {
@@ -505,11 +508,21 @@
       this._helperEl.classList.toggle('error', !!error);
       this.toggleAttribute('data-invalid', !!error);
 
-      this._handleEls.forEach(function (h) {
+      // Each handle needs a name: the label, plus "minimum"/"maximum" for
+      // a two-handle range (or "value N of M" for more).
+      var base = this._a11yName([label, window.LWT.a11y.humanize(this._strAttr('name', ''))], 'Value', 'Add a label attribute');
+      var count = this._handleEls.length;
+      var helperId = (error || helper) ? this._helperEl.id : '';
+      this._handleEls.forEach(function (h, i) {
         h.tabIndex = disabled ? -1 : 0;
         h.setAttribute('aria-disabled', disabled ? 'true' : 'false');
-        h.setAttribute('aria-readonly', readonly ? 'true' : 'false');
+        if (readonly) h.setAttribute('aria-readonly', 'true'); else h.removeAttribute('aria-readonly');
+        var suffix = count === 1 ? '' : (count === 2 ? (i === 0 ? ' minimum' : ' maximum') : ' value ' + (i + 1) + ' of ' + count);
+        h.setAttribute('aria-label', base + suffix);
+        if (helperId) h.setAttribute('aria-describedby', helperId); else h.removeAttribute('aria-describedby');
+        if (error) h.setAttribute('aria-invalid', 'true'); else h.removeAttribute('aria-invalid');
       });
+      if (count > 1) { this._ensureAttr('role', 'group'); this._ensureAttr('aria-label', base); }
     }
 
     // ---- value ----

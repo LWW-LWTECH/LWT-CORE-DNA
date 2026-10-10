@@ -1,7 +1,7 @@
 /*!
  * LWT General Elements
  * Developer: Lee W Winter
- * Last Generated: 2026-10-10T12:01:50.478Z
+ * Last Generated: 2026-10-10T23:44:27.140Z
  * Requires lwt-core.js to be loaded first.
  */
 
@@ -29,14 +29,19 @@
     '.panel-inner ::slotted(*:first-child) { margin-top: 0; }' +
     '.panel-inner ::slotted(*:last-child) { margin-bottom: 0; }';
 
+  // The trigger sits inside a heading (WAI-ARIA accordion pattern) so
+  // screen-reader users can jump between sections by heading. Level comes
+  // from the host's heading-level attribute (default 3).
   var TEMPLATE =
+    '<div class="heading" role="heading" aria-level="3">' +
     '<button type="button" class="trigger" part="trigger" aria-expanded="false">' +
     '  <span class="label" part="label"><slot name="label"></slot></span>' +
     '  <span class="chevron" part="chevron">' +
     '    <svg viewBox="0 0 20 20"><path d="M5 7l5 5l5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>' +
     '  </span>' +
     '</button>' +
-    '<div class="panel" part="panel">' +
+    '</div>' +
+    '<div class="panel" part="panel" role="region">' +
     '  <div class="panel-inner"><slot name="body"></slot></div>' +
     '</div>';
 
@@ -75,9 +80,33 @@
       this._panel = root.querySelector('.panel');
 
       var panelId = 'lwt-accordion-panel-' + (++idCounter);
+      var triggerId = 'lwt-accordion-trigger-' + idCounter;
       this._panel.id = panelId;
+      this._trigger.id = triggerId;
       this._trigger.setAttribute('aria-controls', panelId);
+      this._panel.setAttribute('aria-labelledby', triggerId);
       this._trigger.disabled = this._boolAttr('disabled');
+
+      var level = parseInt(this._strAttr('heading-level', '3'), 10);
+      root.querySelector('.heading').setAttribute('aria-level', String(level >= 1 && level <= 6 ? level : 3));
+
+      // Accessible name: the slotted label text; if there isn't any, fall
+      // back to a generic name (and tell the developer).
+      var labelSlot = root.querySelector('slot[name="label"]');
+      var self = this;
+      var syncName = function () {
+        if (!labelSlot.isConnected) return; // superseded by a newer render
+        var text = labelSlot.assignedNodes({ flatten: true }).map(function (n) { return n.textContent; }).join('').trim();
+        var host = self._hostLabel();
+        if (host || !text) {
+          self._trigger.setAttribute('aria-label', self._a11yName([], 'Toggle section', 'Add an element with slot="label"'));
+        } else {
+          self._trigger.removeAttribute('aria-label');
+        }
+      };
+      labelSlot.addEventListener('slotchange', syncName);
+      // Light-DOM children may not be parsed yet; check again after.
+      this._whenParsed(syncName);
 
       this._trigger.addEventListener('click', this._handleTriggerClick);
       this._panel.addEventListener('transitionend', this._handleTransitionEnd);
@@ -224,12 +253,14 @@
     '.message { font-size: 0.88rem; color: var(--lwt-alert-text-color, var(--lwt-color-text, #374151)); }' +
     '::slotted(*:first-child) { margin-top: 0; }' +
     '::slotted(*:last-child) { margin-bottom: 0; }' +
-    '.close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; color: inherit; opacity: 0.6; padding: 0; }' +
+    '.close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; color: inherit; opacity: 0.6; padding: 0;' +
+    '  min-width: 24px; min-height: 24px; margin: -0.2rem -0.3rem -0.2rem 0; border-radius: 4px; }' +
+    '.close:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; opacity: 1; }' +
     '.close:hover { opacity: 1; }';
 
   var TEMPLATE =
     '<div class="alert" part="alert">' +
-    '  <div class="icon-wrap" part="icon"></div>' +
+    '  <div class="icon-wrap" part="icon" aria-hidden="true"></div>' +
     '  <div class="content">' +
     '    <div class="title" part="title"></div>' +
     '    <div class="message" part="message"><slot></slot></div>' +
@@ -262,6 +293,13 @@
       var closeBtn = root.querySelector('.close');
       var dismissible = this._boolAttr('dismissible');
       closeBtn.hidden = !dismissible;
+
+      // Errors and warnings interrupt (role="alert"); info and success are
+      // polite status messages (role="status") -- WCAG 4.1.3. A role the
+      // developer set themselves is left alone.
+      var urgent = variant === 'error' || variant === 'warning';
+      this._ensureAttr('role', urgent ? 'alert' : 'status');
+      closeBtn.setAttribute('aria-label', 'Dismiss ' + (title ? title : (ICONS[variant] ? variant : 'info') + ' message'));
       if (dismissible) closeBtn.addEventListener('click', this._handleClose);
     }
 
@@ -331,7 +369,12 @@
 
   class LWTButton extends window.LWT.Element {
     static get observedAttributes() {
-      return ['variant', 'disabled', 'label'];
+      return ['variant', 'disabled', 'label', 'aria-label', 'aria-labelledby', 'aria-pressed', 'aria-expanded', 'aria-haspopup', 'aria-current'];
+    }
+
+    // Clicking/focusing the host lands focus on the real <button> inside.
+    static get shadowOptions() {
+      return { delegatesFocus: true };
     }
 
     static get observedProps() {
@@ -377,12 +420,35 @@
       var disabled = this.disabled;
       var label = this.label;
 
+      var esc = window.LWT.a11y.escape;
       this._renderShadow(
-        '<button class="' + variant + '"' + (disabled ? ' disabled' : '') + ' part="button">' +
-        '<slot>' + label + '</slot>' +
+        '<button type="button" class="' + esc(variant) + '"' + (disabled ? ' disabled' : '') + ' part="button">' +
+        '<slot>' + esc(label) + '</slot>' +
         '</button>',
         CSS
       );
+
+      this._button = this._root.querySelector('button');
+      // State attributes set on the host are what developers naturally
+      // reach for; mirror them onto the real button so they're announced.
+      var self = this;
+      ['aria-pressed', 'aria-expanded', 'aria-haspopup', 'aria-current'].forEach(function (name) {
+        if (self.hasAttribute(name)) self._button.setAttribute(name, self.getAttribute(name));
+      });
+
+      var slot = this._root.querySelector('slot');
+      var syncName = function () {
+        // A later render() replaces the shadow contents; a check queued by an
+        // earlier render must not run against its now-detached slot.
+        if (!self._button || !slot.isConnected) return;
+        var text = slot.assignedNodes({ flatten: true }).map(function (n) { return n.textContent; }).join('').trim();
+        var host = self._hostLabel();
+        if (host) self._button.setAttribute('aria-label', host);
+        else if (text || label) self._button.removeAttribute('aria-label');
+        else self._button.setAttribute('aria-label', self._a11yName([], 'Button', 'Add text content or a label attribute'));
+      };
+      slot.addEventListener('slotchange', syncName);
+      this._whenParsed(syncName);
     }
   }
 
@@ -424,7 +490,7 @@
 
   class LWTCard extends window.LWT.Element {
     static get observedAttributes() {
-      return ['image', 'image-alt', 'label'];
+      return ['image', 'image-alt', 'label', 'heading-level'];
     }
 
     render() {
@@ -447,6 +513,33 @@
         '</div>';
 
       this._renderShadow(html, CSS);
+
+      // Image without image-alt: the card's own label already describes
+      // it, so treat it as decorative (alt="") rather than leave alt off.
+      if (hasImage && !this.hasAttribute('image-alt')) {
+        this._a11yWarn('image-alt', 'has an image but no image-alt, so it is marked decorative (alt=""). ' +
+          'Set image-alt if the image conveys information the label does not.');
+      }
+
+      // A label given as an attribute becomes a heading (level from
+      // heading-level, default 3) so cards show up in the page outline.
+      // Slotted label content is left alone -- use your own <h2>/<h3> there.
+      var labelEl = this._root.querySelector('.label');
+      var labelSlot = labelEl.querySelector('slot');
+      var level = parseInt(this._strAttr('heading-level', '3'), 10);
+      if (!(level >= 1 && level <= 6)) level = 3;
+      var syncHeading = function () {
+        var slotted = labelSlot.assignedNodes({ flatten: true }).length > 0;
+        if (!slotted && fallbackLabel) {
+          labelEl.setAttribute('role', 'heading');
+          labelEl.setAttribute('aria-level', String(level));
+        } else {
+          labelEl.removeAttribute('role');
+          labelEl.removeAttribute('aria-level');
+        }
+      };
+      labelSlot.addEventListener('slotchange', syncHeading);
+      syncHeading();
     }
   }
 
@@ -466,10 +559,14 @@
     '.track { display: flex; gap: var(--lwt-carousel-gap, 1rem); overflow-x: auto;' +
     '  scroll-snap-type: x mandatory; scroll-behavior: smooth; padding-bottom: 0.25rem; scrollbar-width: thin; }' +
     '::slotted(lwtg-card) { scroll-snap-align: start; flex: 0 0 auto; width: var(--lwt-carousel-card-width, 260px); }' +
-    '.dots { display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 0.9rem; }' +
-    '.dot { width: 8px; height: 8px; padding: 0; margin: 0; border: none; border-radius: 50%;' +
-    '  background: var(--lwt-carousel-dot-color, var(--lwt-color-border-strong, #d1d5db)); cursor: pointer; flex-shrink: 0; }' +
-    '.dot[aria-current="true"] { background: var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151)); }' +
+    '.dots { display: flex; justify-content: center; align-items: center; gap: 0.1rem; margin-top: 0.6rem; }' +
+    // Each dot is a 24x24 tap target (WCAG 2.5.8) drawing a small circle.
+    '.dot { width: 24px; height: 24px; padding: 0; margin: 0; border: none; border-radius: 50%; background: none;' +
+    '  display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }' +
+    '.dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%;' +
+    '  background: var(--lwt-carousel-dot-color, var(--lwt-color-border-strong, #9ca3af)); }' +
+    '.dot[aria-current="true"]::before { background: var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151)); }' +
+    ':host([dot-as-image]) .dot::before { content: none; }' +
     '.dot:focus-visible { outline: 2px solid var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151)); outline-offset: 2px; }' +
     ':host([dot-as-image]) .dot { width: var(--lwt-carousel-dot-size, 32px); height: var(--lwt-carousel-dot-size, 32px);' +
     '  border-radius: 6px; overflow: hidden; background: var(--lwt-carousel-dot-color, var(--lwt-color-border, #e5e7eb)); }' +
@@ -479,12 +576,12 @@
   var TEMPLATE =
     '<div class="wrap" part="wrap">' +
     '<div class="track" part="track" role="region" aria-roledescription="carousel" tabindex="0"><slot></slot></div>' +
-    '<div class="dots" part="dots"></div>' +
+    '<div class="dots" part="dots" role="group" aria-label="Choose slide"></div>' +
     '</div>';
 
   class LWTCarousel extends window.LWT.Element {
     static get observedAttributes() {
-      return ['dot-as-image', 'image-position'];
+      return ['dot-as-image', 'image-position', 'label', 'aria-label'];
     }
 
     constructor() {
@@ -533,12 +630,16 @@
       if (oldValue === newValue) return;
       if (name === 'dot-as-image') this._buildDots();
       else if (name === 'image-position') this._syncImagePosition();
+      else if ((name === 'label' || name === 'aria-label') && this._trackEl) {
+        this._trackEl.setAttribute('aria-label', this._a11yName([this._strAttr('label', '')], 'Carousel', 'Add a label attribute'));
+      }
     }
 
     render() {
       this._renderShadow(TEMPLATE, CSS);
       this._trackEl = this._root.querySelector('.track');
       this._dotsEl = this._root.querySelector('.dots');
+      this._trackEl.setAttribute('aria-label', this._a11yName([this._strAttr('label', '')], 'Carousel', 'Add a label attribute'));
     }
 
     get activeIndex() {
@@ -561,7 +662,20 @@
       var dotAsImage = this._boolAttr('dot-as-image');
       this._dotsEl.innerHTML = '';
 
-      this._cards().forEach(function (card, index) {
+      var cards = this._cards();
+      cards.forEach(function (card, index) {
+        // Announce each card as "slide N of M" unless the developer gave
+        // the card its own role/name.
+        if (!card.hasAttribute('role') || card.hasAttribute('data-lwt-slide')) {
+          card.setAttribute('role', 'group');
+          card.setAttribute('aria-roledescription', 'slide');
+          card.setAttribute('data-lwt-slide', '');
+          if (!card.hasAttribute('aria-label') || card.hasAttribute('data-lwt-slide-label')) {
+            var cardLabel = card.getAttribute('label');
+            card.setAttribute('aria-label', (index + 1) + ' of ' + cards.length + (cardLabel ? ': ' + cardLabel : ''));
+            card.setAttribute('data-lwt-slide-label', '');
+          }
+        }
         var dot = self._genhtml({
           type: 'button',
           attr: {
@@ -749,11 +863,46 @@
 
       this._renderShadow(html, CSS);
       this._mediaEl = this._root.querySelector('.media');
+      this._applyA11y(type);
+    }
 
-      this.setAttribute('role', 'button');
-      this.tabIndex = 0;
-      if (label) this.setAttribute('aria-label', label);
-      else this.removeAttribute('aria-label');
+    // Accessible name: label, then alt, then a name derived from the file
+    // (e.g. "summer-sale.jpg" -> "Summer sale"), then a generic fallback.
+    _accessibleName(type) {
+      var src = this._strAttr('src', '');
+      var fromFile = '';
+      if (src && type !== 'youtube') {
+        var file = src.split(/[?#]/)[0].split('/').pop().replace(/\.[a-z0-9]+$/i, '');
+        fromFile = window.LWT.a11y.humanize(decodeURIComponent(file));
+      }
+      var fallback = type === 'youtube' ? 'Play video' : (fromFile || 'Image');
+      var name = this._a11yName([this._strAttr('label', ''), this._strAttr('alt', '')], fallback,
+        'Add a label or alt attribute');
+      return type === 'youtube' && !this._playing && name.indexOf('Play') !== 0 ? 'Play video: ' + name : name;
+    }
+
+    _applyA11y(type) {
+      var name = this._accessibleName(type);
+      var link = this._root.querySelector('a.media-link');
+
+      if (link) {
+        // A real link does the work: name it, and keep the host out of the
+        // tab order so there's no button-wrapping-a-link nesting.
+        link.setAttribute('aria-label', name);
+        var img = link.querySelector('img');
+        if (img) img.setAttribute('alt', '');
+        this._removeAutoAttr('role');
+        this._removeAutoAttr('aria-label');
+        if (this._autoTabIndex) { this.removeAttribute('tabindex'); this._autoTabIndex = false; }
+        return;
+      }
+
+      // Otherwise the host itself is the button; the media inside is
+      // presentational (its meaning is carried by the host's name).
+      this._ensureAttr('role', 'button');
+      this._ensureAttr('aria-label', name);
+      if (!this.hasAttribute('tabindex') || this._autoTabIndex) { this.tabIndex = 0; this._autoTabIndex = true; }
+      if (this._mediaEl) this._mediaEl.setAttribute('aria-hidden', 'true');
     }
 
     _resolveType() {
@@ -825,6 +974,8 @@
 
     _handleKeydown(event) {
       if (event.key !== 'Enter' && event.key !== ' ') return;
+      // When the tile is a link, the native <a> handles the keyboard.
+      if (this._root.querySelector('a.media-link')) return;
       event.preventDefault();
       this._handleActivate();
     }
@@ -843,10 +994,18 @@
           src: 'https://www.youtube.com/embed/' + id + '?autoplay=1',
           allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
           allowfullscreen: '',
-          frameborder: '0'
+          frameborder: '0',
+          title: this._a11yName([this._strAttr('label', ''), this._strAttr('alt', '')], 'YouTube video player', 'Add a label attribute')
         }
       });
       this._mediaEl.appendChild(iframe);
+      // The player is now the interactive thing: drop the host's button
+      // role so it doesn't wrap an iframe full of its own controls.
+      this._playing = true;
+      this._mediaEl.removeAttribute('aria-hidden');
+      this._removeAutoAttr('role');
+      this._removeAutoAttr('aria-label');
+      if (this._autoTabIndex) { this.removeAttribute('tabindex'); this._autoTabIndex = false; }
       self.emit('play', { videoId: id });
     }
   }
@@ -937,6 +1096,10 @@
   let TEMPLATE = '';
 
   class LWTIcon extends window.LWT.Element {
+    static get observedAttributes() {
+      return ['icon', 'label', 'aria-label', 'width', 'height'];
+    }
+
     constructor() {
       super();
       this.iconhost = 'https://raw.githubusercontent.com/LWW-LWTECH/LWW-CORE-DNA/refs/heads/main/icons';
@@ -949,28 +1112,76 @@
     async render() {
       this._renderShadow(TEMPLATE, CSS);
 
-      this.icon = this._root.host.getAttribute('icon');
-      this.icon ? this.icon = this.icon.split('_') : '';
-      this.iconurl = '/' + this.icon.join('/') + '.svg';
-      this.width = this._root.host.getAttribute('width') || '24px'; 
-      this.height = this._root.host.getAttribute('height') || '24px'; 
-      this._root.innerHTML = await this.getIconSVG();
+      this.width = this._root.host.getAttribute('width') || '24px';
+      this.height = this._root.host.getAttribute('height') || '24px';
       this.style.display = 'inline-block';
       this.style.width = this.width;
       this.style.height = this.height;
-    }
 
-    async getIconSVG() {
-      let geticon = '';
-      geticon = this.iconurl ? await fetch(this.iconhost + this.iconurl).then(response => response.text()) : Promise.resolve('');
-      if(geticon=='404: Not Found'){
-        geticon = this.iconurl ? await fetch('/icons' + this.iconurl).then(response => response.text()) : Promise.resolve('');
-        return geticon;
-      }else{
-        return geticon;
+      // Accessibility: icons are decorative by default (hidden from screen
+      // readers) -- the text next to them carries the meaning. Give one a
+      // `label` (or aria-label) when the icon alone has to convey something.
+      var label = this._hostLabel() || this._strAttr('label', '');
+      if (label) {
+        this._ensureAttr('role', 'img');
+        this._ensureAttr('aria-label', label);
+        this._removeAutoAttr('aria-hidden');
+      } else {
+        this._removeAutoAttr('role');
+        this._removeAutoAttr('aria-label');
+        this._ensureAttr('aria-hidden', 'true');
+      }
+
+      var name = this._root.host.getAttribute('icon');
+      if (!name) {
+        this._a11yWarn('icon', 'has no icon attribute, so nothing is drawn.');
+        return;
+      }
+      this.icon = name.split('_');
+      this.iconurl = '/' + this.icon.join('/') + '.svg';
+
+      var token = (this._renderToken = (this._renderToken || 0) + 1);
+      var svg = await this.getIconSVG();
+      if (token !== this._renderToken) return; // a newer render superseded this one
+      this._root.innerHTML = '<style>' + CSS + '</style>' + svg;
+
+      // The inner SVG is never announced or focusable on its own.
+      var svgEl = this._root.querySelector('svg');
+      if (svgEl) {
+        svgEl.setAttribute('aria-hidden', 'true');
+        svgEl.setAttribute('focusable', 'false');
       }
     }
 
+    async getIconSVG() {
+      if (!this.iconurl) return '';
+      var remote = this.iconhost + this.iconurl;
+      var local = '/icons' + this.iconurl;
+      try {
+        var text = await fetchOnce(remote);
+        if (text && text.indexOf('<svg') !== -1) return text;
+      } catch (e) { /* offline or blocked -- fall back to the local copy */ }
+      try {
+        var localText = await fetchOnce(local);
+        return localText && localText.indexOf('<svg') !== -1 ? localText : '';
+      } catch (e) {
+        return '';
+      }
+    }
+
+  }
+
+  // One request per icon URL, shared by every <lwtg-icon> on the page.
+  var iconCache = {};
+  function fetchOnce(url) {
+    if (!iconCache[url]) {
+      iconCache[url] = fetch(url).then(function (response) {
+        if (!response.ok) return '';
+        return response.text();
+      });
+      iconCache[url].catch(function () { delete iconCache[url]; });
+    }
+    return iconCache[url];
   }
 
   window.LWT.define('lwtg-icon', LWTIcon);
@@ -1076,7 +1287,7 @@
 
   class LWTModal extends window.LWT.Element {
     static get observedAttributes() {
-      return ['label'];
+      return ['label', 'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -1103,7 +1314,7 @@
 
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue) return;
-      if (name === 'label' && this._dialog) {
+      if (this._dialog) {
         this._applyLabel();
       }
     }
@@ -1114,19 +1325,27 @@
       this._dialog.addEventListener('cancel', this._handleCancel);
       this._dialog.addEventListener('close', this._handleClose);
       this._dialog.addEventListener('click', this._handleBackdropClick);
-      this._applyLabel();
+      this._whenParsed(this._applyLabel);
     }
 
+    // A dialog must have a name (WCAG 4.1.2): label attribute, the host's
+    // aria-label/labelledby, or the first heading inside it.
     _applyLabel() {
-      var label = this._strAttr('label', '');
-      if (label) this._dialog.setAttribute('aria-label', label);
-      else this._dialog.removeAttribute('aria-label');
+      var heading = this.querySelector('h1, h2, h3, h4, h5, h6, [role="heading"]');
+      var name = this._a11yName([this._strAttr('label', ''), heading ? heading.textContent : ''],
+        'Dialog', 'Add a label attribute or a heading inside the modal');
+      this._dialog.setAttribute('aria-label', name);
     }
 
     // Public API -----------------------------------------------------
 
     show() {
       if (!this._dialog || this._dialog.open) return;
+      // Remember where focus was so it can go back there on close.
+      var active = document.activeElement;
+      while (active && active.shadowRoot && active.shadowRoot.activeElement) active = active.shadowRoot.activeElement;
+      this._returnFocus = active && active !== document.body ? active : null;
+      this._applyLabel(); // content may have changed since connect
       this._dialog.showModal();
       this.setAttribute('open', '');
       this.emit('open', {});
@@ -1168,10 +1387,14 @@
     }
 
     _handleBackdropClick(event) {
-      // The dialog element's own box is exactly its content; a click that
-      // lands on the dialog itself (not a descendant) means the backdrop
-      // was clicked.
+      // Only a click OUTSIDE the dialog's box is a backdrop click. (Clicks
+      // on the dialog's own padding also target the <dialog> element, so
+      // checking the target alone would close it by accident.)
       if (event.target !== this._dialog) return;
+      var rect = this._dialog.getBoundingClientRect();
+      var inside = event.clientX >= rect.left && event.clientX <= rect.right &&
+                   event.clientY >= rect.top && event.clientY <= rect.bottom;
+      if (inside || (event.clientX === 0 && event.clientY === 0 && event.detail === 0)) return;
       if (this._boolAttr('no-dismiss')) return;
       this.close('backdrop');
     }
@@ -1181,6 +1404,9 @@
       this.removeAttribute('open');
       var reason = this._closeReason || 'api';
       this._closeReason = null;
+      var target = this._returnFocus;
+      this._returnFocus = null;
+      if (target && target.isConnected && typeof target.focus === 'function') target.focus();
       this.emit('close', { reason: reason });
     }
   }
@@ -1270,6 +1496,7 @@
       this._handleTriggerClick = this._handleTriggerClick.bind(this);
       this._handleTriggerKeydown = this._handleTriggerKeydown.bind(this);
       this._handleChildOpen = this._handleChildOpen.bind(this);
+      this._syncName = this._syncName.bind(this);
     }
 
     connectedCallback() {
@@ -1304,6 +1531,24 @@
       this.addEventListener('mouseenter', this._onMouseEnter);
       this.addEventListener('mouseleave', this._onMouseLeave);
       this.addEventListener('lwt-navopen', this._handleChildOpen);
+
+      // Items live inside the menu's (or parent item's) list.
+      this._ensureAttr('role', 'listitem');
+      this._whenParsed(this._syncName);
+    }
+
+    // Name for the trigger: its slotted text, else label, else something
+    // derived from the link target, else a generic fallback.
+    _syncName() {
+      if (!this._triggerEl) return;
+      var slot = this._root.querySelector('.content slot');
+      var text = slot ? slot.assignedNodes({ flatten: true }).map(function (n) { return n.textContent; }).join('').trim() : '';
+      var host = this._hostLabel();
+      if (host) { this._triggerEl.setAttribute('aria-label', host); return; }
+      if (text || this._strAttr('label', '')) { this._triggerEl.removeAttribute('aria-label'); return; }
+      var href = this._strAttr('href', '');
+      var fromHref = href ? window.LWT.a11y.humanize(href.split(/[?#]/)[0].split('/').filter(Boolean).pop() || '') : '';
+      this._triggerEl.setAttribute('aria-label', this._a11yName([fromHref], 'Menu item', 'Add text content or a label attribute'));
     }
 
     disconnectedCallback() {
@@ -1366,6 +1611,16 @@
 
       this._triggerEl.addEventListener('click', this._handleTriggerClick);
       this._triggerEl.addEventListener('keydown', this._handleTriggerKeydown);
+
+      // The current page's link is announced as such.
+      if (this._boolAttr('active') && this._triggerEl.tagName === 'A') this._triggerEl.setAttribute('aria-current', 'page');
+      if (this._submenuEl) this._submenuEl.setAttribute('role', 'list');
+      var self = this;
+      var labelSlot = this._root.querySelector('.content slot');
+      if (labelSlot) labelSlot.addEventListener('slotchange', function () { self._syncName(); });
+      // Re-renders can happen mid-parse (the menu pushes mobile/orientation
+      // down before an item's text exists); only re-check once parsed.
+      if (this._initialized && document.readyState !== 'loading') this._syncName();
 
       this._applyOpenState();
     }
@@ -1602,7 +1857,7 @@
 
   class LWTNavMenu extends window.LWT.Element {
     static get observedAttributes() {
-      return ['orientation', 'breakpoint'];
+      return ['orientation', 'breakpoint', 'label', 'aria-label'];
     }
 
     constructor() {
@@ -1624,6 +1879,11 @@
       super.connectedCallback(); // builds shadow via render()
 
       if (!this.hasAttribute('role')) this.setAttribute('role', 'navigation');
+      // A page can have several navigation landmarks; each needs a name.
+      if (!this._devAttr('aria-label') && !this._devAttr('aria-labelledby')) {
+        this._setAutoAttr('aria-label', this._a11yName([this._strAttr('label', '')], 'Main',
+          'Add a label attribute (e.g. label="Main" or label="Footer")'));
+      }
 
       this.addEventListener('lwt-navopen', this._handleChildOpen);
       this.addEventListener('lwt-select', this._handleSelect);
@@ -1679,6 +1939,9 @@
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue) return;
       if (name === 'orientation') this._syncOrientation();
+      else if (name === 'label' && this._autoAttrs && !this._devAttr('aria-label')) {
+        this._setAutoAttr('aria-label', this._strAttr('label', '') || 'Main');
+      }
       else if (name === 'breakpoint' && this._initialized) {
         this._applyMobileState(this._measureWidth() < this._breakpointPx());
       }
@@ -1690,6 +1953,11 @@
       this._panelEl = this._root.querySelector('.panel');
       this._listEl = this._root.querySelector('.list');
       this._hamburgerBtn.addEventListener('click', this._handleHamburgerClick);
+      var panelId = window.LWT.a11y.uid('lwt-nav-panel');
+      this._panelEl.id = panelId;
+      this._hamburgerBtn.setAttribute('aria-controls', panelId);
+      // The <ul> holds slotted <lwtg-nav-item>s, which take role="listitem".
+      this._listEl.setAttribute('role', 'list');
       this._applyMobileOpenState();
     }
 
@@ -1940,6 +2208,17 @@
         CSS
       );
       this._root.querySelector('.badge').textContent = this._strAttr('badge', 'Recommended');
+
+      // Features render inside a <ul>; anything slotted there that isn't an
+      // <li> is given role="listitem" so the list is announced correctly.
+      var featureSlot = this._root.querySelector('slot[name="features"]');
+      var syncItems = function () {
+        featureSlot.assignedElements().forEach(function (el) {
+          if (el.tagName !== 'LI' && !el.hasAttribute('role')) el.setAttribute('role', 'listitem');
+        });
+      };
+      featureSlot.addEventListener('slotchange', syncItems);
+      syncItems();
     }
   }
 
@@ -2354,7 +2633,7 @@
 
   class LWTQr extends window.LWT.Element {
     static get observedAttributes() {
-      return ['src', 'size', 'level', 'background-color', 'color', 'corner-color', 'radius', 'margin'];
+      return ['src', 'size', 'level', 'background-color', 'color', 'corner-color', 'radius', 'margin', 'label', 'aria-label'];
     }
 
     render() {
@@ -2397,8 +2676,10 @@
         }
       }
 
+      // Name: the developer's label if given, else what the code encodes.
+      var name = this._hostLabel() || this._strAttr('label', '') || ('QR code for: ' + src);
       var svg = '<svg viewBox="0 0 ' + n + ' ' + n + '" width="' + size + '" height="' + size + '"' +
-        ' role="img" aria-label="QR code for: ' + escapeXml(src) + '">' + rects + '</svg>';
+        ' role="img" aria-label="' + escapeXml(name) + '">' + rects + '</svg>';
 
       this._renderShadow(svg, CSS);
       this.emit('render', { version: result.version, size: result.size, level: result.level });
@@ -2463,7 +2744,7 @@
 
   class LWTRive extends window.LWT.Element {
     static get observedAttributes() {
-      return ['src', 'state-machine', 'artboard', 'autoplay', 'fit', 'alignment', 'width', 'height'];
+      return ['src', 'state-machine', 'artboard', 'autoplay', 'fit', 'alignment', 'width', 'height', 'label', 'aria-label'];
     }
 
     constructor() {
@@ -2491,6 +2772,10 @@
     render() {
       this._renderShadow(TEMPLATE, CSS);
       this._canvas = this._root.querySelector('canvas');
+      // The canvas is an image to assistive tech; it needs a name.
+      this._canvas.setAttribute('role', 'img');
+      this._canvas.setAttribute('aria-label', this._a11yName([this._strAttr('label', ''), this._strAttr('alt', '')],
+        'Animation', 'Add a label attribute describing the animation'));
 
       var width = this._strAttr('width', '');
       var height = this._strAttr('height', '');
@@ -2526,7 +2811,9 @@
         var opts = {
           src: src,
           canvas: self._canvas,
-          autoplay: self._strAttr('autoplay', 'true') !== 'false',
+          // Respect the visitor's reduced-motion setting (WCAG 2.2.2 /
+          // 2.3.3): don't start animating on its own. .play() still works.
+          autoplay: self._strAttr('autoplay', 'true') !== 'false' && !window.LWT.a11y.reducedMotion(),
           onLoad: function () {
             if (token !== self._loadToken) return; // superseded before this fired
             var instance = self.rive;
@@ -2549,9 +2836,9 @@
           }
         };
 
-        var stateMachines = splitNames(self._strAttr('state-machine', ''));
-        if (stateMachines.length === 1) opts.stateMachines = stateMachines[0];
-        else if (stateMachines.length > 1) opts.stateMachines = stateMachines;
+        var stateMachine = splitNames(self._strAttr('state-machine', ''));
+        if (stateMachine.length === 1) opts.stateMachine = stateMachine[0];
+        else if (stateMachine.length > 1) opts.stateMachine = stateMachine;
 
         var artboard = self._strAttr('artboard', '');
         if (artboard) opts.artboard = artboard;
@@ -2694,7 +2981,18 @@
       this.setAttribute('aria-valuemin', '0');
       this.setAttribute('aria-valuemax', String(max));
       this.setAttribute('aria-valuetext', valueText);
-      if (fallbackLabel) this.setAttribute('aria-label', fallbackLabel);
+      // Name the progressbar from the label attribute (raw text, not the
+      // HTML-escaped copy used in the template), or the slotted label.
+      var rawLabel = this._strAttr('label', '');
+      var labelSlot = this._root.querySelector('slot[name="label"]');
+      var self = this;
+      var syncName = function () {
+        if (!labelSlot.isConnected) return; // superseded by a newer render
+        var slotted = labelSlot.assignedNodes({ flatten: true }).map(function (n) { return n.textContent; }).join('').trim();
+        self._ensureAttr('aria-label', self._a11yName([slotted, rawLabel], 'Skill level', 'Add a label attribute'));
+      };
+      labelSlot.addEventListener('slotchange', syncName);
+      if (rawLabel || this._hostLabel()) syncName(); else this._whenParsed(syncName);
     }
 
     get value() {
@@ -2763,13 +3061,9 @@
     render() {
       this._renderShadow('<slot></slot>', CSS);
 
-      var name = this._strAttr('name', '');
+      // id / aria-labelledby are wired by <lwtg-tabs> to the matching tab.
       this.setAttribute('role', 'tabpanel');
-      this.setAttribute('tabindex', '0');
-      if (name) {
-        this.id = 'lwt-tabpanel-' + name;
-        this.setAttribute('aria-labelledby', 'lwt-tab-' + name);
-      }
+      if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0');
     }
   }
 
@@ -2832,14 +3126,18 @@
       var panelName = this._strAttr('panel', '');
       var disabled = this._boolAttr('disabled');
 
+      // id / aria-controls / roving tabindex are wired by <lwtg-tabs>
+      // (it knows the matching panel and gives both page-unique ids).
       this.setAttribute('role', 'tab');
-      if (panelName) {
-        this.id = 'lwt-tab-' + panelName;
-        this.setAttribute('aria-controls', 'lwt-tabpanel-' + panelName);
-      }
       this.setAttribute('aria-selected', this._boolAttr('active') ? 'true' : 'false');
       this.setAttribute('aria-disabled', disabled ? 'true' : 'false');
-      this.tabIndex = disabled ? -1 : 0;
+      if (disabled) this.tabIndex = -1;
+      else if (!this.hasAttribute('data-lwt-roving')) this.tabIndex = 0;
+      else this.tabIndex = this._boolAttr('active') ? 0 : -1;
+      this._whenParsed(function () {
+        if (this.textContent.trim() || this._hostLabel()) { this._removeAutoAttr('aria-label'); return; }
+        this._ensureAttr('aria-label', this._a11yName([window.LWT.a11y.humanize(panelName)], 'Tab', 'Add text content to the tab'));
+      });
     }
 
     get active() { return this._boolAttr('active'); }
@@ -2861,18 +3159,24 @@
       }
       var horizontal = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
       var vertical = event.key === 'ArrowUp' || event.key === 'ArrowDown';
-      if (!horizontal && !vertical) return;
+      var edge = event.key === 'Home' || event.key === 'End';
+      if (!horizontal && !vertical && !edge) return;
       if (!this.parentElement) return;
 
       var tabs = Array.prototype.filter.call(
-        this.parentElement.querySelectorAll('lwtg-tab'),
+        this.parentElement.querySelectorAll(':scope > lwtg-tab'),
         function (t) { return !t.hasAttribute('disabled'); }
       );
       var idx = tabs.indexOf(this);
       if (idx === -1) return;
-      var dir = (event.key === 'ArrowRight' || event.key === 'ArrowDown') ? 1 : -1;
       event.preventDefault();
-      var next = tabs[(idx + dir + tabs.length) % tabs.length];
+      var next;
+      if (event.key === 'Home') next = tabs[0];
+      else if (event.key === 'End') next = tabs[tabs.length - 1];
+      else {
+        var dir = (event.key === 'ArrowRight' || event.key === 'ArrowDown') ? 1 : -1;
+        next = tabs[(idx + dir + tabs.length) % tabs.length];
+      }
       if (next) {
         next.focus();
         next.click();
@@ -2934,7 +3238,7 @@
 
   class LWTTabs extends window.LWT.Element {
     static get observedAttributes() {
-      return ['position'];
+      return ['position', 'label', 'aria-label'];
     }
 
     constructor() {
@@ -2991,21 +3295,59 @@
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue) return;
       if (name === 'position') this._syncTabPositions();
+      this._syncTablist();
     }
 
     render() {
       this._renderShadow(TEMPLATE, CSS);
+      this._syncTablist();
+    }
+
+    // The tab bar is the role="tablist" (inside the shadow root): give it
+    // the container's label and the right orientation.
+    _syncTablist() {
+      var bar = this._root.querySelector('.tab-bar');
+      if (!bar) return;
+      var label = this._hostLabel() || this._strAttr('label', '');
+      if (label) bar.setAttribute('aria-label', label); else bar.removeAttribute('aria-label');
+      var position = this._strAttr('position', 'top');
+      bar.setAttribute('aria-orientation', (position === 'left' || position === 'right') ? 'vertical' : 'horizontal');
+    }
+
+    _ownTabs() { return Array.prototype.slice.call(this.querySelectorAll(':scope > lwtg-tab')); }
+    _ownPanels() { return Array.prototype.slice.call(this.querySelectorAll(':scope > lwtg-tab-panel')); }
+
+    // Wires each tab to its panel with page-unique ids (so two tab sets
+    // with the same panel names never collide), and keeps a roving
+    // tabindex: only the active tab is in the Tab order; arrow keys move
+    // between tabs (WAI-ARIA tabs pattern).
+    _syncA11y() {
+      var a11y = window.LWT.a11y;
+      var panels = this._ownPanels();
+      var active = this._activePanel;
+      this._ownTabs().forEach(function (tab) {
+        var name = tab.getAttribute('panel');
+        var panel = panels.filter(function (p) { return p.getAttribute('name') === name; })[0];
+        if (!tab.id) tab.id = a11y.uid('lwt-tab');
+        if (panel) {
+          if (!panel.id) panel.id = a11y.uid('lwt-tabpanel');
+          tab.setAttribute('aria-controls', panel.id);
+          panel.setAttribute('aria-labelledby', tab.id);
+        }
+        tab.setAttribute('data-lwt-roving', '');
+        tab.tabIndex = (name === active && !tab.hasAttribute('disabled')) ? 0 : -1;
+      });
     }
 
     _syncTabPositions() {
       var position = this._strAttr('position', 'top');
-      this.querySelectorAll('lwtg-tab').forEach(function (tab) {
+      this._ownTabs().forEach(function (tab) {
         tab.setAttribute('position', position);
       });
     }
 
     _firstTabPanel() {
-      var first = this.querySelector('lwtg-tab');
+      var first = this.querySelector(':scope > lwtg-tab:not([disabled])') || this.querySelector(':scope > lwtg-tab');
       return first ? first.getAttribute('panel') : null;
     }
 
@@ -3026,12 +3368,14 @@
       opts = opts || {};
       this._activePanel = panelName;
 
-      this.querySelectorAll('lwtg-tab').forEach(function (tab) {
+      // Direct children only, so a nested <lwtg-tabs> keeps its own state.
+      this._ownTabs().forEach(function (tab) {
         tab.active = tab.getAttribute('panel') === panelName;
       });
-      this.querySelectorAll('lwtg-tab-panel').forEach(function (panel) {
+      this._ownPanels().forEach(function (panel) {
         panel.hidden = panel.getAttribute('name') !== panelName;
       });
+      this._syncA11y();
 
       if (!opts.silent) this.emit('change', { panel: panelName });
     }
@@ -3067,7 +3411,7 @@
       if (panel) panel.remove();
 
       if (wasActive) {
-        var next = this.querySelector('lwtg-tab');
+        var next = this.querySelector(':scope > lwtg-tab');
         if (next) this.selectTab(next.getAttribute('panel'));
         else this._activePanel = null;
       }
@@ -3114,7 +3458,9 @@
     '.toast-content { flex: 1; min-width: 0; }' +
     '.toast-title { font-weight: 700; font-size: 0.9rem; color: var(--lwt-toast-title-color, var(--lwt-color-text-strong, #111827)); margin-bottom: 0.1rem; }' +
     '.toast-message { font-size: 0.86rem; color: var(--lwt-toast-text-color, var(--lwt-color-text, #374151)); word-wrap: break-word; }' +
-    '.toast-close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.15rem; line-height: 1; color: inherit; opacity: 0.55; padding: 0; }' +
+    '.toast-close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.15rem; line-height: 1; color: inherit; opacity: 0.7; padding: 0;' +
+    '  min-width: 24px; min-height: 24px; margin: -0.25rem -0.3rem -0.25rem 0; border-radius: 4px; }' +
+    '.toast-close:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; opacity: 1; }' +
     '.toast-close:hover { opacity: 1; }' +
     '@keyframes lwt-toast-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }';
 
@@ -3131,8 +3477,43 @@
     }
 
     render() {
-      this._renderShadow('<div class="toast-stack" part="stack"></div>', CSS);
+      // The stack exists before any toast is added, so it works as a live
+      // region: new toasts are read out politely (WCAG 4.1.3).
+      this._renderShadow('<div class="toast-stack" part="stack" role="region" aria-label="Notifications" aria-live="polite" aria-relevant="additions"></div>', CSS);
       this._stack = this._root.querySelector('.toast-stack');
+
+      // Hovering or focusing a toast pauses auto-dismiss so people have
+      // time to read it (WCAG 2.2.1); leaving resumes the countdown.
+      var self = this;
+      this._stack.addEventListener('mouseenter', function () { self._pauseAll(); });
+      this._stack.addEventListener('mouseleave', function () { self._resumeAll(); });
+      this._stack.addEventListener('focusin', function () { self._pauseAll(); });
+      this._stack.addEventListener('focusout', function (e) {
+        if (!self._stack.contains(e.relatedTarget)) self._resumeAll();
+      });
+    }
+
+    _startTimer(card) {
+      var self = this;
+      if (!(card._lwtRemaining > 0)) return;
+      card._lwtStarted = Date.now();
+      card._lwtTimer = setTimeout(function () { self.close(card.getAttribute('data-toast-id'), 'timeout'); }, card._lwtRemaining);
+    }
+
+    _pauseAll() {
+      Array.prototype.forEach.call(this._stack.children, function (card) {
+        if (!card._lwtTimer) return;
+        clearTimeout(card._lwtTimer);
+        card._lwtTimer = null;
+        card._lwtRemaining -= Date.now() - card._lwtStarted;
+      });
+    }
+
+    _resumeAll() {
+      var self = this;
+      Array.prototype.forEach.call(this._stack.children, function (card) {
+        if (!card._lwtTimer && card._lwtRemaining > 0) self._startTimer(card);
+      });
     }
 
     show(options) {
@@ -3150,22 +3531,25 @@
         type: 'div',
         attr: { class: 'toast-card variant-' + variant, 'data-toast-id': id },
         children: [
-          { type: 'div', attr: { class: 'toast-icon-wrap' }, html: ICONS[variant] },
+          { type: 'div', attr: { class: 'toast-icon-wrap', 'aria-hidden': 'true' }, html: ICONS[variant] },
           { type: 'div', attr: { class: 'toast-content' }, children: contentChildren },
           {
             type: 'button',
-            attr: { type: 'button', class: 'toast-close', 'aria-label': 'Dismiss' },
+            attr: { type: 'button', class: 'toast-close', 'aria-label': 'Dismiss notification' },
             html: '&times;',
             events: { click: function () { self.close(id, 'dismiss'); } }
           }
         ]
       });
 
+      // Errors and warnings interrupt; everything else waits its turn.
+      if (variant === 'error' || variant === 'warning') card.setAttribute('role', 'alert');
       this._stack.appendChild(card);
       this.emit('show', { id: id, variant: variant });
 
       if (duration > 0) {
-        card._lwtTimer = setTimeout(function () { self.close(id, 'timeout'); }, duration);
+        card._lwtRemaining = duration;
+        this._startTimer(card);
       }
 
       return id;
@@ -3356,10 +3740,12 @@
         (hasChildren
           ? '<span class="toggle" part="toggle">' + CHEVRON_SVG + '</span>'
           : '<span class="toggle no-children" part="toggle"></span>') +
-        (checkable ? '<input type="checkbox" class="check" part="checkbox" tabindex="-1">' : '') +
+        // The treeitem itself carries aria-checked; the visual checkbox is
+        // hidden from assistive tech so it isn't announced twice.
+        (checkable ? '<input type="checkbox" class="check" part="checkbox" tabindex="-1" aria-hidden="true">' : '') +
         '<span class="label" part="label"><slot name="label">' + fallbackLabel + '</slot></span>' +
         '</div>' +
-        '<div class="children" part="children"><slot></slot></div>';
+        '<div class="children" part="children" role="group"><slot></slot></div>';
 
       this._renderShadow(html, CSS);
 
@@ -3371,6 +3757,15 @@
 
       this.setAttribute('role', 'treeitem');
       this.setAttribute('aria-level', String(this._depth()));
+      // Name = this item's own label only. Without this, a parent item's
+      // name would include the text of every nested child.
+      var self = this;
+      var labelSlot = this._root.querySelector('slot[name="label"]');
+      var syncName = function () {
+        self._ensureAttr('aria-label', self._a11yName([self.labelText], 'Tree item', 'Add a label attribute'));
+      };
+      labelSlot.addEventListener('slotchange', syncName);
+      if (this._strAttr('label', '') || this._hostLabel()) syncName(); else this._whenParsed(syncName);
       if (hasChildren) this.setAttribute('aria-expanded', this._expanded ? 'true' : 'false');
       else this.removeAttribute('aria-expanded');
 
@@ -3390,9 +3785,14 @@
       } else {
         this.removeAttribute('aria-checked');
       }
-      if (this._selected) this.setAttribute('aria-selected', 'true');
-      else this.setAttribute('aria-selected', 'false');
-      this.tabIndex = this._boolAttr('disabled') ? -1 : 0;
+      // Checkable trees use aria-checked; aria-selected is for select mode.
+      if (this._checkboxEl) this.removeAttribute('aria-selected');
+      else this.setAttribute('aria-selected', this._selected ? 'true' : 'false');
+      if (this._boolAttr('disabled')) this.setAttribute('aria-disabled', 'true');
+      else this.removeAttribute('aria-disabled');
+      // Inside a <lwtg-tree>, the tree runs a roving tabindex (one item in
+      // the Tab order at a time); standalone items stay focusable.
+      if (!this.hasAttribute('data-lwt-roving')) this.tabIndex = this._boolAttr('disabled') ? -1 : 0;
     }
 
     get isLeaf() {
@@ -3432,7 +3832,7 @@
       this._selected = !!value;
       if (this._selected) this.setAttribute('selected', '');
       else this.removeAttribute('selected');
-      this.setAttribute('aria-selected', this._selected ? 'true' : 'false');
+      if (!this._checkboxEl) this.setAttribute('aria-selected', this._selected ? 'true' : 'false');
     }
 
     expand() {
@@ -3644,7 +4044,7 @@
 
   class LWTTree extends window.LWT.Element {
     static get observedAttributes() {
-      return ['checkable'];
+      return ['checkable', 'label', 'aria-label'];
     }
 
     constructor() {
@@ -3653,6 +4053,7 @@
       this._handleSelect = this._handleSelect.bind(this);
       this._handleCheckChange = this._handleCheckChange.bind(this);
       this._handleKeydown = this._handleKeydown.bind(this);
+      this._handleFocusIn = this._handleFocusIn.bind(this);
       this._treeObserver = null;
       this._syncQueued = false;
     }
@@ -3662,6 +4063,7 @@
       this.addEventListener('lwt-itemselect', this._handleSelect);
       this.addEventListener('lwt-itemcheck', this._handleCheckChange);
       this.addEventListener('keydown', this._handleKeydown);
+      this.addEventListener('focusin', this._handleFocusIn);
 
       if (!this._initialized) {
         this._initialized = true;
@@ -3694,6 +4096,7 @@
         self._syncQueued = false;
         self._syncCheckable();
         self._recomputeChecked();
+        self._syncRoving();
       });
     }
 
@@ -3702,16 +4105,50 @@
       this.removeEventListener('lwt-itemselect', this._handleSelect);
       this.removeEventListener('lwt-itemcheck', this._handleCheckChange);
       this.removeEventListener('keydown', this._handleKeydown);
+      this.removeEventListener('focusin', this._handleFocusIn);
       if (this._treeObserver) this._treeObserver.disconnect();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue) return;
       if (name === 'checkable') this._syncCheckable();
+      this._syncTreeA11y();
     }
 
     render() {
       this._renderShadow(TEMPLATE, CSS);
+      this._syncTreeA11y();
+    }
+
+    // role="tree" lives on the shadow wrapper; give it a name and say
+    // whether several items can be checked at once.
+    _syncTreeA11y() {
+      var tree = this._root.querySelector('.tree');
+      if (!tree) return;
+      tree.setAttribute('aria-label', this._a11yName([this._strAttr('label', '')], 'Tree', 'Add a label attribute'));
+      if (this._boolAttr('checkable')) tree.setAttribute('aria-multiselectable', 'true');
+      else tree.removeAttribute('aria-multiselectable');
+    }
+
+    // Roving tabindex (WAI-ARIA tree pattern): exactly one visible item is
+    // in the Tab order -- the last one focused, else the selected one,
+    // else the first. Arrow keys (see _handleKeydown) move between items.
+    _syncRoving(preferred) {
+      var items = Array.prototype.slice.call(this.querySelectorAll('lwtg-tree-item'));
+      if (!items.length) return;
+      var visible = this._visibleItems().filter(function (i) { return !i.hasAttribute('disabled'); });
+      var current = preferred && visible.indexOf(preferred) !== -1 ? preferred
+        : (visible.filter(function (i) { return i.tabIndex === 0 && i.hasAttribute('data-lwt-roving'); })[0] ||
+           visible.filter(function (i) { return i.hasAttribute('selected'); })[0] || visible[0]);
+      items.forEach(function (item) {
+        item.setAttribute('data-lwt-roving', '');
+        item.tabIndex = item === current ? 0 : -1;
+      });
+    }
+
+    _handleFocusIn(event) {
+      var item = event.target;
+      if (item && item.tagName === 'LWTG-TREE-ITEM') this._syncRoving(item);
     }
 
     _syncCheckable() {

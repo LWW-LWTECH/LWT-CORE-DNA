@@ -18,10 +18,236 @@
   // is addEventListener-compatible with regular native form controls.
   var MIRRORED_NATIVE_EVENTS = { input: 1, change: 1, focus: 1, blur: 1 };
 
+  // ---------------------------------------------------------------------
+  // Accessibility helpers (WCAG 2.2 AA)
+  //
+  // Every element uses these so that, when a developer leaves out a label
+  // or name, the library fills in something sensible AND tells them about
+  // it (once per element). Turn the console messages off globally with:
+  //
+  //   LWT.a11y.warn = false;
+  //
+  // (set it before or after the scripts load -- it's read at warn time).
+  // ---------------------------------------------------------------------
+  var a11y = namespace.a11y = namespace.a11y || {};
+  if (typeof a11y.warn !== 'boolean') a11y.warn = true;
+
+  var warned = typeof WeakMap === 'function' ? new WeakMap() : null;
+
+  // Logs one console.warn per (element, key). `el` is included so the
+  // developer can click straight through to the element in DevTools.
+  a11y.report = function (el, key, message) {
+    if (!a11y.warn || typeof console === 'undefined') return;
+    if (warned) {
+      var seen = warned.get(el);
+      if (!seen) { seen = {}; warned.set(el, seen); }
+      if (seen[key]) return;
+      seen[key] = true;
+    }
+    console.warn('[LWT a11y] <' + (el && el.localName) + '> ' + message, el);
+  };
+
+  var uidCounter = 0;
+  // Page-unique id, for wiring aria-controls / aria-labelledby pairs.
+  a11y.uid = function (prefix) {
+    uidCounter++;
+    return (prefix || 'lwt') + '-' + uidCounter.toString(36);
+  };
+
+  // "user_password" / "billingAddress" -> "User password" / "Billing address"
+  a11y.humanize = function (str) {
+    str = String(str || '').replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_\-.]+/g, ' ').trim().toLowerCase();
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+  };
+
+  a11y.escape = function (str) {
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+
+  // Visually hidden but still read by screen readers. Elements include this
+  // in their shadow CSS when they render screen-reader-only content.
+  a11y.SR_ONLY_CSS =
+    '.lwt-sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;' +
+    ' overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }';
+
+  a11y.reducedMotion = function () {
+    return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  };
+
+  // Shared, page-level live regions for status messages (WCAG 4.1.3).
+  // Created lazily, once, and reused by every element.
+  var liveRegions = null;
+  function ensureLiveRegions() {
+    if (liveRegions || !document.body) return liveRegions;
+    var style = 'position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;';
+    liveRegions = {};
+    ['polite', 'assertive'].forEach(function (politeness) {
+      var region = document.createElement('div');
+      region.setAttribute('aria-live', politeness);
+      region.setAttribute('aria-atomic', 'true');
+      region.setAttribute('data-lwt-live-region', politeness);
+      region.setAttribute('style', style);
+      document.body.appendChild(region);
+      liveRegions[politeness] = region;
+    });
+    return liveRegions;
+  }
+
+  // Announces `message` to screen readers without moving focus.
+  a11y.announce = function (message, opts) {
+    opts = opts || {};
+    var regions = ensureLiveRegions();
+    if (!regions || !message) return;
+    var region = regions[opts.assertive ? 'assertive' : 'polite'];
+    // Clear first so repeating the same message is announced again.
+    region.textContent = '';
+    setTimeout(function () { region.textContent = String(message); }, 30);
+  };
+
+  // Builds a screen-reader-only <table> (a text alternative for charts and
+  // other visual-only data, WCAG 1.1.1 / 1.3.1). headers: [string];
+  // rows: [[cell, ...]]; the first cell of each row becomes a row header.
+  a11y.dataTableHtml = function (caption, headers, rows) {
+    var esc = a11y.escape;
+    var html = '<table class="lwt-sr-only" part="data-table">';
+    if (caption) html += '<caption>' + esc(caption) + '</caption>';
+    if (headers && headers.length) {
+      html += '<thead><tr>' + headers.map(function (h) { return '<th scope="col">' + esc(h) + '</th>'; }).join('') + '</tr></thead>';
+    }
+    html += '<tbody>' + (rows || []).map(function (row) {
+      return '<tr>' + row.map(function (cell, i) {
+        return i === 0 ? '<th scope="row">' + esc(cell) + '</th>' : '<td>' + esc(cell) + '</td>';
+      }).join('') + '</tr>';
+    }).join('') + '</tbody></table>';
+    return html;
+  };
+
+  // Screen-reader data table for a Chart.js-shaped `data` object
+  // ({ labels, datasets: [{ label, data }] }). Point datasets
+  // ({ x, y, r } objects, e.g. bubble charts) get one row per point.
+  a11y.chartTableHtml = function (caption, data) {
+    data = data || {};
+    var datasets = Array.isArray(data.datasets) ? data.datasets : [];
+    var labels = Array.isArray(data.labels) ? data.labels : [];
+    if (!datasets.length) return '';
+    var first = datasets[0] && Array.isArray(datasets[0].data) ? datasets[0].data[0] : null;
+    var fmt = function (v) { return v == null || v === '' ? '' : String(v); };
+
+    if (first && typeof first === 'object') {
+      var pointRows = [];
+      datasets.forEach(function (ds, i) {
+        (ds.data || []).forEach(function (p) {
+          p = p || {};
+          pointRows.push([ds.label || ('Series ' + (i + 1)), fmt(p.x), fmt(p.y), fmt(p.r)]);
+        });
+      });
+      return a11y.dataTableHtml(caption, ['Series', 'X', 'Y', 'Size'], pointRows);
+    }
+
+    var count = labels.length;
+    datasets.forEach(function (ds) { count = Math.max(count, (ds.data || []).length); });
+    var rows = [];
+    for (var i = 0; i < count; i++) {
+      rows.push([labels[i] != null ? labels[i] : String(i + 1)].concat(datasets.map(function (ds) {
+        return fmt(ds.data && ds.data[i]);
+      })));
+    }
+    var headers = ['Category'].concat(datasets.map(function (ds, i) { return ds.label || (datasets.length === 1 ? 'Value' : 'Series ' + (i + 1)); }));
+    return a11y.dataTableHtml(caption, headers, rows);
+  };
+
   class LWTElement extends HTMLElement {
     constructor() {
       super();
-      this._root = this.attachShadow({ mode: 'open' });
+      // Subclasses can set `static get shadowOptions()` (e.g. delegatesFocus).
+      this._root = this.attachShadow(Object.assign({ mode: 'open' }, this.constructor.shadowOptions || {}));
+      this._autoAttrs = {};
+    }
+
+    // ---- accessibility helpers (instance) ----
+
+    // Sets an attribute the library chose (not the developer), and
+    // remembers it so _devAttr() can tell the two apart later.
+    _setAutoAttr(name, value) {
+      this._autoAttrs[name] = String(value);
+      this.setAttribute(name, value);
+    }
+
+    // Removes an attribute only if the library set it.
+    _removeAutoAttr(name) {
+      if (this._autoAttrs[name] !== undefined && this.getAttribute(name) === this._autoAttrs[name]) {
+        this.removeAttribute(name);
+      }
+      delete this._autoAttrs[name];
+    }
+
+    // The attribute's value only if the developer set it (null if absent or
+    // if it's a value the library filled in itself).
+    _devAttr(name) {
+      if (!this.hasAttribute(name)) return null;
+      var v = this.getAttribute(name);
+      if (this._autoAttrs[name] !== undefined && v === this._autoAttrs[name]) return null;
+      return v;
+    }
+
+    // Sets an attribute on the host unless the developer already provided
+    // one. Keeps library-chosen values updatable.
+    _ensureAttr(name, value) {
+      if (this._devAttr(name) !== null) return;
+      if (value === null || value === undefined || value === '') this._removeAutoAttr(name);
+      else this._setAutoAttr(name, value);
+    }
+
+    // A label the developer put on the host itself: aria-label, or the text
+    // of the elements named by aria-labelledby (resolved to text because
+    // light-DOM ids can't be referenced from inside a shadow root).
+    _hostLabel() {
+      var label = this._devAttr('aria-label');
+      if (label && label.trim()) return label.trim();
+      var ids = this._devAttr('aria-labelledby');
+      if (ids) {
+        var text = ids.split(/\s+/).map(function (id) {
+          var el = document.getElementById(id);
+          return el ? el.textContent.trim() : '';
+        }).filter(Boolean).join(' ');
+        if (text) return text;
+      }
+      return '';
+    }
+
+    // Picks an accessible name: the host's own aria-label/labelledby, then
+    // each candidate in order; if all are empty, uses `fallback` and warns
+    // the developer which attribute to set.
+    _a11yName(candidates, fallback, hint) {
+      var host = this._hostLabel();
+      if (host) return host;
+      for (var i = 0; i < (candidates || []).length; i++) {
+        var c = candidates[i];
+        if (c != null && String(c).trim()) return String(c).trim();
+      }
+      a11y.report(this, 'name', 'has no accessible name, so "' + fallback + '" is being used. ' +
+        (hint || 'Add a label or aria-label attribute') + ' to describe it properly.');
+      return fallback;
+    }
+
+    _a11yWarn(key, message) {
+      a11y.report(this, key, message);
+    }
+
+    // Runs fn once this element's light-DOM children are in place: after
+    // the document finishes parsing if it's still loading (scripts in
+    // <head> upgrade elements before their children exist), otherwise on
+    // the next microtask. Use it for anything that inspects child content,
+    // so name checks don't warn about children that just haven't arrived.
+    _whenParsed(fn) {
+      var self = this;
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () { fn.call(self); }, { once: true });
+      } else {
+        Promise.resolve().then(function () { fn.call(self); });
+      }
     }
 
     connectedCallback() {

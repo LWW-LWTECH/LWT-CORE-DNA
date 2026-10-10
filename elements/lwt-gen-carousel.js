@@ -10,10 +10,14 @@
     '.track { display: flex; gap: var(--lwt-carousel-gap, 1rem); overflow-x: auto;' +
     '  scroll-snap-type: x mandatory; scroll-behavior: smooth; padding-bottom: 0.25rem; scrollbar-width: thin; }' +
     '::slotted(lwtg-card) { scroll-snap-align: start; flex: 0 0 auto; width: var(--lwt-carousel-card-width, 260px); }' +
-    '.dots { display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 0.9rem; }' +
-    '.dot { width: 8px; height: 8px; padding: 0; margin: 0; border: none; border-radius: 50%;' +
-    '  background: var(--lwt-carousel-dot-color, var(--lwt-color-border-strong, #d1d5db)); cursor: pointer; flex-shrink: 0; }' +
-    '.dot[aria-current="true"] { background: var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151)); }' +
+    '.dots { display: flex; justify-content: center; align-items: center; gap: 0.1rem; margin-top: 0.6rem; }' +
+    // Each dot is a 24x24 tap target (WCAG 2.5.8) drawing a small circle.
+    '.dot { width: 24px; height: 24px; padding: 0; margin: 0; border: none; border-radius: 50%; background: none;' +
+    '  display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }' +
+    '.dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%;' +
+    '  background: var(--lwt-carousel-dot-color, var(--lwt-color-border-strong, #9ca3af)); }' +
+    '.dot[aria-current="true"]::before { background: var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151)); }' +
+    ':host([dot-as-image]) .dot::before { content: none; }' +
     '.dot:focus-visible { outline: 2px solid var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151)); outline-offset: 2px; }' +
     ':host([dot-as-image]) .dot { width: var(--lwt-carousel-dot-size, 32px); height: var(--lwt-carousel-dot-size, 32px);' +
     '  border-radius: 6px; overflow: hidden; background: var(--lwt-carousel-dot-color, var(--lwt-color-border, #e5e7eb)); }' +
@@ -23,12 +27,12 @@
   var TEMPLATE =
     '<div class="wrap" part="wrap">' +
     '<div class="track" part="track" role="region" aria-roledescription="carousel" tabindex="0"><slot></slot></div>' +
-    '<div class="dots" part="dots"></div>' +
+    '<div class="dots" part="dots" role="group" aria-label="Choose slide"></div>' +
     '</div>';
 
   class LWTCarousel extends window.LWT.Element {
     static get observedAttributes() {
-      return ['dot-as-image', 'image-position'];
+      return ['dot-as-image', 'image-position', 'label', 'aria-label'];
     }
 
     constructor() {
@@ -77,12 +81,16 @@
       if (oldValue === newValue) return;
       if (name === 'dot-as-image') this._buildDots();
       else if (name === 'image-position') this._syncImagePosition();
+      else if ((name === 'label' || name === 'aria-label') && this._trackEl) {
+        this._trackEl.setAttribute('aria-label', this._a11yName([this._strAttr('label', '')], 'Carousel', 'Add a label attribute'));
+      }
     }
 
     render() {
       this._renderShadow(TEMPLATE, CSS);
       this._trackEl = this._root.querySelector('.track');
       this._dotsEl = this._root.querySelector('.dots');
+      this._trackEl.setAttribute('aria-label', this._a11yName([this._strAttr('label', '')], 'Carousel', 'Add a label attribute'));
     }
 
     get activeIndex() {
@@ -105,7 +113,20 @@
       var dotAsImage = this._boolAttr('dot-as-image');
       this._dotsEl.innerHTML = '';
 
-      this._cards().forEach(function (card, index) {
+      var cards = this._cards();
+      cards.forEach(function (card, index) {
+        // Announce each card as "slide N of M" unless the developer gave
+        // the card its own role/name.
+        if (!card.hasAttribute('role') || card.hasAttribute('data-lwt-slide')) {
+          card.setAttribute('role', 'group');
+          card.setAttribute('aria-roledescription', 'slide');
+          card.setAttribute('data-lwt-slide', '');
+          if (!card.hasAttribute('aria-label') || card.hasAttribute('data-lwt-slide-label')) {
+            var cardLabel = card.getAttribute('label');
+            card.setAttribute('aria-label', (index + 1) + ' of ' + cards.length + (cardLabel ? ': ' + cardLabel : ''));
+            card.setAttribute('data-lwt-slide-label', '');
+          }
+        }
         var dot = self._genhtml({
           type: 'button',
           attr: {

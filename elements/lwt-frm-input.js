@@ -176,7 +176,7 @@
 
     '.field { flex: 1; min-width: 0; border: none; outline: none; background: transparent; padding: 0.5rem 0;' +
     '  font: inherit; font-size: 0.95rem; color: inherit; }' +
-    '.field::placeholder { color: var(--lwt-color-text-subtle, #9ca3af); }' +
+    '.field::placeholder { color: var(--lwt-color-text-subtle, #6b7280); }' +
     '.field:disabled { cursor: not-allowed; }' +
 
     '.icon-slot { flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--lwt-color-text-muted, #6b7280); }' +
@@ -239,7 +239,7 @@
     '    <span class="icon-slot leading hidden" part="icon-leading"><slot name="icon-leading"></slot></span>' +
     '    <input class="field" part="input" autocomplete="off">' +
     '    <button type="button" class="built-in-btn clear-btn" part="clear-btn" tabindex="-1" aria-label="Clear">' + CLEAR_SVG + '</button>' +
-    '    <button type="button" class="built-in-btn pw-btn" part="password-toggle" tabindex="-1" aria-label="Show password">' + EYE_SVG + '</button>' +
+    '    <button type="button" class="built-in-btn pw-btn" part="password-toggle" aria-label="Show password" aria-pressed="false">' + EYE_SVG + '</button>' +
     '    <span class="icon-slot trailing hidden" part="icon-trailing"><slot name="icon-trailing"></slot></span>' +
     '  </div>' +
     '  <ul class="listbox" part="listbox" role="listbox"></ul>' +
@@ -255,7 +255,8 @@
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'placeholder', 'value', 'type', 'name',
               'required', 'disabled', 'readonly', 'pattern', 'minlength', 'maxlength',
-              'min', 'max', 'step', 'autocomplete', 'strict', 'max-visible', 'show-counter'];
+              'min', 'max', 'step', 'autocomplete', 'strict', 'max-visible', 'show-counter',
+              'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -334,6 +335,8 @@
       this._input.id = this._id + '-input';
       this._listbox.id = this._id + '-listbox';
       this._labelEl.setAttribute('for', this._input.id);
+      this._helperEl.id = this._id + '-helper';
+      this._counterEl.id = this._id + '-counter';
 
       this._input.addEventListener('input', this._onInput);
       this._input.addEventListener('focus', this._onFocus);
@@ -392,6 +395,20 @@
       this._labelText.textContent = label;
       this._labelEl.style.display = label ? '' : 'none';
       this._requiredMark.hidden = !required;
+
+      // Accessible name. A visible label wins; without one, fall back to
+      // the host's aria-label, the placeholder, a humanized name="", then
+      // the input type -- and tell the developer (WCAG 3.3.2 / 4.1.2).
+      var hostLabel = this._hostLabel();
+      if (label && !hostLabel) {
+        input.removeAttribute('aria-label');
+      } else {
+        var TYPE_NAMES = { email: 'Email address', tel: 'Phone number', url: 'Web address', search: 'Search',
+          password: 'Password', number: 'Number', date: 'Date', month: 'Month', week: 'Week', time: 'Time' };
+        input.setAttribute('aria-label', this._a11yName([placeholder, window.LWT.a11y.humanize(name)],
+          TYPE_NAMES[type] || 'Text field', 'Add a label attribute'));
+      }
+      this._listbox.setAttribute('aria-label', (label || input.getAttribute('aria-label') || 'Options') + ' suggestions');
 
       // type — password toggle only meaningful for type=password.
       // If the user has clicked the eye, actual DOM type is 'text'; the
@@ -453,10 +470,21 @@
         this._helperEl.textContent = helper;
       }
       this.toggleAttribute('data-invalid', !!errorMsg);
+      if (errorMsg) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
 
       this._syncClearBtn();
       this._syncCounter();
+      this._syncDescribedBy();
       this._reportValidity();
+    }
+
+    // Helper/error text and the character counter describe the field.
+    _syncDescribedBy() {
+      var ids = [];
+      if (this._helperEl.textContent) ids.push(this._helperEl.id);
+      if (!this._counterEl.hidden) ids.push(this._counterEl.id);
+      if (ids.length) this._input.setAttribute('aria-describedby', ids.join(' '));
+      else this._input.removeAttribute('aria-describedby');
     }
 
     _syncClearBtn() {
@@ -624,6 +652,7 @@
       this._input.type = this._passwordVisible ? 'text' : 'password';
       this._pwBtn.innerHTML = this._passwordVisible ? EYE_OFF_SVG : EYE_SVG;
       this._pwBtn.setAttribute('aria-label', this._passwordVisible ? 'Hide password' : 'Show password');
+      this._pwBtn.setAttribute('aria-pressed', this._passwordVisible ? 'true' : 'false');
       this._input.focus();
     }
 

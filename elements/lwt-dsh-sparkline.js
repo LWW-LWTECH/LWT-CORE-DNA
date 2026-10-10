@@ -86,6 +86,27 @@
         .filter(function (n) { return !isNaN(n); });
     }
 
+    // Name: the label attribute, plus a spoken summary of the trend so a
+    // screen reader gets what the line shows ("rising from 10 to 45 over
+    // 7 points"). Without a label, the summary alone is used (and warned).
+    _spokenName(values) {
+      var summary = '';
+      if (values.length) {
+        var first = values[0], last = values[values.length - 1];
+        var dir = last > first ? 'rising' : (last < first ? 'falling' : 'flat');
+        summary = 'Trend ' + dir + ' from ' + first + ' to ' + last + ' over ' + values.length + ' points' +
+          ', low ' + Math.min.apply(null, values) + ', high ' + Math.max.apply(null, values);
+      } else {
+        summary = 'No data';
+      }
+      var label = this._hostLabel() || this._strAttr('label', '');
+      if (!label) {
+        this._a11yWarn('name', 'has no label, so it is announced as "' + summary + '". Add a label attribute to say what it measures.');
+        return summary;
+      }
+      return label + ': ' + summary;
+    }
+
     _buildSvg() {
       var label = this._strAttr('label', '');
       var VBW = 200, VBH = 50, PAD = 4;
@@ -93,7 +114,7 @@
       var n = values.length;
 
       if (n === 0) {
-        return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="none" role="img" aria-label="' + escapeXml(label || 'Sparkline') + '"></svg>';
+        return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="none" role="img" aria-label="' + escapeXml(this._spokenName(values)) + '"></svg>';
       }
 
       var explicitColor = this._strAttr('color', '');
@@ -124,7 +145,7 @@
           ? (last - first) / Math.abs(first)
           : (last === first ? 0 : (last > first ? 1 : -1));
         var varName, fallback;
-        if (Math.abs(pctChange) < 0.05) { varName = '--lwt-sparkline-flat-color'; fallback = 'var(--lwt-color-text-subtle, #9ca3af)'; }
+        if (Math.abs(pctChange) < 0.05) { varName = '--lwt-sparkline-flat-color'; fallback = 'var(--lwt-color-text-subtle, #6b7280)'; }
         else if (pctChange > 0) { varName = '--lwt-sparkline-up-color'; fallback = 'var(--lwt-color-success, #22c55e)'; }
         else { varName = '--lwt-sparkline-down-color'; fallback = 'var(--lwt-color-danger, #ef4444)'; }
         strokeStyle = 'stroke: var(' + varName + ', ' + fallback + ');';
@@ -152,7 +173,7 @@
 
       var lineSvg = '<path class="spark-line" d="' + linePath + '" style="' + strokeStyle + '" stroke-width="' + lineWidth + '"></path>';
 
-      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="none" role="img" aria-label="' + escapeXml(label || 'Sparkline') + '">' +
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="none" role="img" aria-label="' + escapeXml(this._spokenName(values)) + '">' +
         defsSvg + fillSvg + lineSvg +
         '</svg>';
     }

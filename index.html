@@ -152,7 +152,7 @@
         &lt;/lwtg-accordion-item&gt;
     &lt;/lwtg-accordion&gt;</code></pre>
 
-                <lwtg-accordion>
+                <lwtg-accordion name="general-elements-accordion">
                     <lwtg-accordion-item>
                         <div slot="label">Accordion Item 1</div>
                         <div slot="body">Content for Accordion Item 1</div>
@@ -295,14 +295,14 @@
     &lt;/lwtg-card&gt;
 &lt;/lwtg-carousel&gt;</code></pre>
                 
-                <lwtg-carousel>
-    <lwtg-card image="https://i.pravatar.cc/300?img=11" label="Rachael Kennith">
+                <lwtg-carousel label="general-elements-carousel">
+    <lwtg-card image="https://i.pravatar.cc/300?img=11" image-alt="Rachael Kennith" label="Rachael Kennith">
         I have been in the Design field for over 25 years and have a great passion for all things design related.
     </lwtg-card>
-    <lwtg-card image="https://i.pravatar.cc/300?img=12" label="Dillan Mattie">
+    <lwtg-card image="https://i.pravatar.cc/300?img=12" image-alt="Dillan Mattie" label="Dillan Mattie">
         Working across brand, product, and UX, I love turning complex problems into simple, elegant solutions.
     </lwtg-card>
-    <lwtg-card image="https://i.pravatar.cc/300?img=13" label="Ryland Libby">
+    <lwtg-card image="https://i.pravatar.cc/300?img=13" image-alt="Ryland Libby" label="Ryland Libby">
         Front-end engineer focused on accessible, performant interfaces that hold up at scale.
     </lwtg-card>
 </lwtg-carousel>
@@ -446,7 +446,7 @@
                 <p>Wraps a <a href="https://rive.app" target="_blank" rel="noopener noreferrer">Rive</a> animation in a custom element, auto-loading the Rive web runtime from unpkg the first time it&apos;s needed. Size the host via CSS/width/height &mdash; Rive reads the canvas&apos;s rendered size to pick its drawing resolution.</p>
                 <h4>Implementation</h4>
 
-                <lwtg-rive src="https://static.rive.app/rivs/rives_animated_emojis.riv" state-machine="State Machine 1" autoplay style="width:320px;height:220px;"></lwtg-rive>
+                <lwtg-rive src="https://static.rive.app/rivs/rives_animated_emojis.riv" label="Animated Emojis" state-machine="State Machine 1" autoplay style="width:320px;height:220px;"></lwtg-rive>
 
                 <pre><code>&lt;lwtg-rive src="./media/site_hero.riv" state-machine="hero" autoplay
     style="width:320px;height:220px;"&gt;&lt;/lwtg-rive&gt;</code></pre>
@@ -523,7 +523,7 @@
                 
 <h4>Checkable Tree</h4>
 <pre><code>&lt;lwtg-tree checkable&gt;</code></pre>
-<lwtg-tree checkable>
+<lwtg-tree checkable label="Checkable Tree">
     <lwtg-tree-item label="Small" expanded checked>
         <lwtg-tree-item label="Newsletters" data-value="newsletters" checked></lwtg-tree-item>
         <lwtg-tree-item label="Promotions" expanded checked>
@@ -535,7 +535,7 @@
 
 <h4>Non-Checkable Tree</h4>
 <pre><code>&lt;lwtg-tree &gt;</code></pre>
-<lwtg-tree>
+<lwtg-tree label="Non-Checkable Tree">
     <lwtg-tree-item label="Small" expanded checked>
         <lwtg-tree-item label="Newsletters" data-value="newsletters" checked></lwtg-tree-item>
         <lwtg-tree-item label="Promotions" expanded checked>
@@ -603,7 +603,7 @@
                 <h4>Implementation</h4>
                 <pre><code>&lt;lwtf-color-picker value="#3b82f6" format="hex" mode="hsl"&gt;&lt;/lwtf-color-picker&gt;</code></pre>
                 
-                <lwtf-color-picker value="#3b82f6" format="hex" mode="hsl"></lwtf-color-picker>
+                <lwtf-color-picker label="color picker" value="#3b82f6" format="hex" mode="hsl"></lwtf-color-picker>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>value</code> &mdash; initial color (hex, rgb()/rgba(), or hsl()/hsla()); read once on connect.</li><li><code>format</code> &mdash; 'hex' | 'rgb' | 'hsl' &mdash; controls what .value returns (default 'hex').</li><li><code>mode</code> &mdash; initial interactive mode, read once on connect: 'hsl-wheel' | 'rgb' | 'hsl' (default) | 'cmyk'. Drive changes afterward via .mode, not by re-setting this attribute.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>value, hex, rgba, hsla, cmyk, mode</code> &mdash; get/set &mdash; .value is a string in the chosen format; .rgba/.hsla/.cmyk are plain objects; .mode switches the active panel.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwtf-input</code> &mdash; fires continuously while dragging/typing; detail: { value, hex, rgba, hsla, cmyk }.</li><li><code>lwt-change</code> &mdash; fires once when a drag ends or a field is committed; same detail shape.</li></ul>
             </details>
 
@@ -886,7 +886,7 @@ chart.data = {
     data="10 25 15 40 30 45 35" trend
     style="height: 2rem; width: 160px;"&gt;&lt;/lwtd-sparkline&gt;</code></pre>
                 
-                <lwtd-sparkline
+                <lwtd-sparkline label="Weekly sales performance showing growth"
     label="Weekly sales performance showing growth"
     data="10 25 15 40 30 45 35" trend
     style="height: 2rem; width: 160px;"></lwtd-sparkline>
@@ -905,7 +905,7 @@ chart.data = {
                 
                 <lwtd-stat-card label="Revenue" value="$48,200" delta="+12.4%">
     <span slot="icon">💰</span>
-    <lwtd-sparkline slot="chart" trend data="30 34 31 40 38 45 48"
+    <lwtd-sparkline label="Weekly sales performance showing growth" slot="chart" trend data="30 34 31 40 38 45 48"
         style="width: 100%; height: 28px;"></lwtd-sparkline>
 </lwtd-stat-card>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label</code> &mdash; small caption above the value.</li><li><code>value</code> &mdash; the big stat text &mdash; plain display string, no number formatting (write "$48,200" exactly as you want it shown).</li><li><code>delta</code> &mdash; change text, e.g. "+12.4%" (omit to hide the delta row).</li><li><code>trend</code> &mdash; "up" | "down" | "neutral" &mdash; overrides inference from delta&apos;s leading character (+/-).</li></ul><p><strong>Slots:</strong></p><ul><li><code>icon</code> &mdash; anything &mdash; an emoji, inline SVG, an &lt;img&gt;. Row disappears automatically when empty.</li><li><code>chart</code> &mdash; typically an &lt;lwtd-sparkline&gt;; size it directly on the sparkline itself via style, not via the card.</li></ul><p><strong>Theming:</strong> --lwt-stat-bg, --lwt-stat-border, --lwt-stat-label-color, --lwt-stat-value-color, --lwt-stat-icon-bg (shares --lwt-sparkline-up/-down/-flat-color with Sparkline).</p>
@@ -927,6 +927,12 @@ chart.data = {
         });
     </script>
     <script>
+        // Code samples scroll sideways; make them keyboard-scrollable
+        // (WCAG 2.1.1 -- a scrollable region must be focusable).
+        document.querySelectorAll('pre').forEach(function (pre) {
+            if (!pre.hasAttribute('tabindex')) pre.tabIndex = 0;
+        });
+
         // Live ".value" readout for every form demo on this page. Each
         // readout shows exactly what `element.value` returns (it's a
         // property, not a method) and refreshes on every lwt-* event.

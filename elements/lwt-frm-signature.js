@@ -116,21 +116,23 @@
     '  <span class="required-mark" part="required">*</span>' +
     '</div>' +
     '<div class="panel-box" part="panel">' +
-    '  <div class="tabs" part="tabs">' +
-    '    <button type="button" class="tab" part="tab-type" data-mode="type">Type</button>' +
-    '    <button type="button" class="tab" part="tab-draw" data-mode="draw">Draw</button>' +
+    '  <div class="tabs" part="tabs" role="group" aria-label="Signature method">' +
+    '    <button type="button" class="tab" part="tab-type" data-mode="type" aria-pressed="true">Type</button>' +
+    '    <button type="button" class="tab" part="tab-draw" data-mode="draw" aria-pressed="false">Draw</button>' +
     '  </div>' +
     '  <div class="type-panel" part="type-panel">' +
     '    <input type="text" class="name-input" part="name-input" autocomplete="off" spellcheck="false">' +
     '    <div class="font-swatches" part="font-swatches"></div>' +
     '    <div class="preview" part="preview">' +
     '      <span class="preview-text" part="preview-text"></span>' +
-    '      <span class="preview-placeholder" part="preview-placeholder">Your signature</span>' +
+    '      <span class="preview-placeholder" part="preview-placeholder" aria-hidden="true">Your signature</span>' +
     '    </div>' +
     '  </div>' +
     '  <div class="draw-panel" part="draw-panel">' +
-    '    <canvas class="draw-canvas" part="canvas"></canvas>' +
-    '    <span class="draw-placeholder" part="draw-placeholder">Sign here</span>' +
+    // Drawing needs a pointer; keyboard users sign in Type mode instead
+    // (WCAG 2.1.1 alternative), which the canvas's name points out.
+    '    <canvas class="draw-canvas" part="canvas" role="img" aria-label="Signature drawing area. Draw with a mouse, pen or finger, or switch to Type to type your name."></canvas>' +
+    '    <span class="draw-placeholder" part="draw-placeholder" aria-hidden="true">Sign here</span>' +
     '  </div>' +
     '  <div class="actions" part="actions">' +
     '    <button type="button" class="clear-btn" part="clear">Clear</button>' +
@@ -183,13 +185,13 @@
     '.preview-text { font-size: 2rem; line-height: 1; color: var(--lwt-signature-ink-color, var(--lwt-color-text, #111827)); }' +
     '.preview-text:empty { display: none; }' +
     '.preview-placeholder { position: absolute; left: 0; right: 0; bottom: 0.7rem; text-align: center;' +
-    '  color: var(--lwt-color-text-subtle, #9ca3af); font-size: 0.85rem; }' +
+    '  color: var(--lwt-color-text-subtle, #6b7280); font-size: 0.85rem; }' +
     '.preview-text:not(:empty) ~ .preview-placeholder { display: none; }' +
 
     '.draw-canvas { display: block; width: 100%; height: 160px; touch-action: none; cursor: crosshair; }' +
     ':host([disabled]) .draw-canvas, :host([readonly]) .draw-canvas { cursor: not-allowed; }' +
     '.draw-placeholder { position: absolute; left: 0; right: 0; bottom: 1rem; text-align: center; pointer-events: none;' +
-    '  color: var(--lwt-color-text-subtle, #9ca3af); font-size: 0.85rem; }' +
+    '  color: var(--lwt-color-text-subtle, #6b7280); font-size: 0.85rem; }' +
     '.draw-placeholder.hidden { display: none; }' +
 
     '.actions { display: flex; justify-content: flex-end; padding: 0.5rem 0.85rem; border-top: 1px solid var(--lwt-color-border, #e5e7eb); }' +
@@ -207,7 +209,7 @@
   class LWTSignature extends window.LWT.Element {
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'name', 'required', 'disabled', 'readonly',
-              'mode', 'no-draw', 'fonts', 'pen-color'];
+              'mode', 'no-draw', 'fonts', 'pen-color', 'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -299,7 +301,8 @@
 
       this._id = 'lwt-signature-' + (++uid);
       this._nameInput.id = this._id + '-name';
-      this._labelEl.setAttribute('for', this._nameInput.id);
+      this._labelText.id = this._id + '-label';
+      this._helperEl.id = this._id + '-helper';
 
       this._tabType.addEventListener('click', this._onTabClick);
       this._tabDraw.addEventListener('click', this._onTabClick);
@@ -339,6 +342,9 @@
           text: 'Signature',
           events: { click: function () { self._selectFont(font); } }
         });
+        // Every swatch shows the same word, so name them by font.
+        var fontName = String(font.family).split(',')[0].replace(/["']/g, '').trim() || 'Font';
+        swatch.setAttribute('aria-label', 'Signature font: ' + fontName);
         self._swatchesEl.appendChild(swatch);
       });
       this._highlightFontSwatch();
@@ -349,7 +355,10 @@
       var fonts = this._fontList();
       var idx = fonts.findIndex(function (f) { return sameFont(f, self._font); });
       var swatches = this._swatchesEl.children;
-      for (var i = 0; i < swatches.length; i++) swatches[i].classList.toggle('active', i === idx);
+      for (var i = 0; i < swatches.length; i++) {
+        swatches[i].classList.toggle('active', i === idx);
+        swatches[i].setAttribute('aria-pressed', i === idx ? 'true' : 'false');
+      }
     }
 
     _selectFont(font) {
@@ -398,6 +407,8 @@
       if (!this._tabType) return;
       this._tabType.classList.toggle('active', this._mode === 'type');
       this._tabDraw.classList.toggle('active', this._mode === 'draw');
+      this._tabType.setAttribute('aria-pressed', this._mode === 'type' ? 'true' : 'false');
+      this._tabDraw.setAttribute('aria-pressed', this._mode === 'draw' ? 'true' : 'false');
     }
 
     // ---- draw mode ----
@@ -487,6 +498,16 @@
       this._helperEl.textContent = error || helper;
       this._helperEl.classList.toggle('error', !!error);
       this.toggleAttribute('data-invalid', !!error);
+
+      // The whole widget is one named group; the name box inside is named
+      // by the label (the visible label is a <div>, so `for` can't do it).
+      var groupName = this._a11yName([label], 'Signature', 'Add a label attribute');
+      this._ensureAttr('role', 'group');
+      this._ensureAttr('aria-label', groupName);
+      this._nameInput.setAttribute('aria-label', groupName + ': type your full name');
+      if (error || helper) this._nameInput.setAttribute('aria-describedby', this._helperEl.id);
+      else this._nameInput.removeAttribute('aria-describedby');
+      if (error) this._nameInput.setAttribute('aria-invalid', 'true'); else this._nameInput.removeAttribute('aria-invalid');
 
       this._nameInput.disabled = disabled;
       this._nameInput.readOnly = readonly;

@@ -157,7 +157,13 @@
     }
 
     render() {
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + '</div>', CSS);
+      // Charts are images: name the SVG, and add a screen-reader-only
+      // data table with the same numbers (WCAG 1.1.1 / 1.3.1).
+      var a11y = window.LWT.a11y;
+      this._chartName = this._a11yName([this._strAttr('title', '')], 'Radar chart', 'Add a title attribute');
+      var table = a11y.chartTableHtml(this._chartName, this._data);
+      this._hasTable = !!table;
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
     }
 
     _measureText(text, fontSize) {
@@ -321,7 +327,7 @@
 
       var titleSvg = title ? '<text class="chart-title" x="' + (VBW / 2) + '" y="' + (PAD + 20) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
 
-      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml(title || 'Radar chart') + '">' +
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((this._chartName || title || 'Radar chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
         titleSvg + legendSvg + gridSvg + shapesSvg + tickSvg + labelSvg +
         '</svg>';
     }

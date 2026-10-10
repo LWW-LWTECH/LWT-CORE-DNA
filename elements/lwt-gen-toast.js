@@ -34,7 +34,9 @@
     '.toast-content { flex: 1; min-width: 0; }' +
     '.toast-title { font-weight: 700; font-size: 0.9rem; color: var(--lwt-toast-title-color, var(--lwt-color-text-strong, #111827)); margin-bottom: 0.1rem; }' +
     '.toast-message { font-size: 0.86rem; color: var(--lwt-toast-text-color, var(--lwt-color-text, #374151)); word-wrap: break-word; }' +
-    '.toast-close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.15rem; line-height: 1; color: inherit; opacity: 0.55; padding: 0; }' +
+    '.toast-close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.15rem; line-height: 1; color: inherit; opacity: 0.7; padding: 0;' +
+    '  min-width: 24px; min-height: 24px; margin: -0.25rem -0.3rem -0.25rem 0; border-radius: 4px; }' +
+    '.toast-close:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; opacity: 1; }' +
     '.toast-close:hover { opacity: 1; }' +
     '@keyframes lwt-toast-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }';
 
@@ -51,8 +53,43 @@
     }
 
     render() {
-      this._renderShadow('<div class="toast-stack" part="stack"></div>', CSS);
+      // The stack exists before any toast is added, so it works as a live
+      // region: new toasts are read out politely (WCAG 4.1.3).
+      this._renderShadow('<div class="toast-stack" part="stack" role="region" aria-label="Notifications" aria-live="polite" aria-relevant="additions"></div>', CSS);
       this._stack = this._root.querySelector('.toast-stack');
+
+      // Hovering or focusing a toast pauses auto-dismiss so people have
+      // time to read it (WCAG 2.2.1); leaving resumes the countdown.
+      var self = this;
+      this._stack.addEventListener('mouseenter', function () { self._pauseAll(); });
+      this._stack.addEventListener('mouseleave', function () { self._resumeAll(); });
+      this._stack.addEventListener('focusin', function () { self._pauseAll(); });
+      this._stack.addEventListener('focusout', function (e) {
+        if (!self._stack.contains(e.relatedTarget)) self._resumeAll();
+      });
+    }
+
+    _startTimer(card) {
+      var self = this;
+      if (!(card._lwtRemaining > 0)) return;
+      card._lwtStarted = Date.now();
+      card._lwtTimer = setTimeout(function () { self.close(card.getAttribute('data-toast-id'), 'timeout'); }, card._lwtRemaining);
+    }
+
+    _pauseAll() {
+      Array.prototype.forEach.call(this._stack.children, function (card) {
+        if (!card._lwtTimer) return;
+        clearTimeout(card._lwtTimer);
+        card._lwtTimer = null;
+        card._lwtRemaining -= Date.now() - card._lwtStarted;
+      });
+    }
+
+    _resumeAll() {
+      var self = this;
+      Array.prototype.forEach.call(this._stack.children, function (card) {
+        if (!card._lwtTimer && card._lwtRemaining > 0) self._startTimer(card);
+      });
     }
 
     show(options) {
@@ -70,22 +107,25 @@
         type: 'div',
         attr: { class: 'toast-card variant-' + variant, 'data-toast-id': id },
         children: [
-          { type: 'div', attr: { class: 'toast-icon-wrap' }, html: ICONS[variant] },
+          { type: 'div', attr: { class: 'toast-icon-wrap', 'aria-hidden': 'true' }, html: ICONS[variant] },
           { type: 'div', attr: { class: 'toast-content' }, children: contentChildren },
           {
             type: 'button',
-            attr: { type: 'button', class: 'toast-close', 'aria-label': 'Dismiss' },
+            attr: { type: 'button', class: 'toast-close', 'aria-label': 'Dismiss notification' },
             html: '&times;',
             events: { click: function () { self.close(id, 'dismiss'); } }
           }
         ]
       });
 
+      // Errors and warnings interrupt; everything else waits its turn.
+      if (variant === 'error' || variant === 'warning') card.setAttribute('role', 'alert');
       this._stack.appendChild(card);
       this.emit('show', { id: id, variant: variant });
 
       if (duration > 0) {
-        card._lwtTimer = setTimeout(function () { self.close(id, 'timeout'); }, duration);
+        card._lwtRemaining = duration;
+        this._startTimer(card);
       }
 
       return id;

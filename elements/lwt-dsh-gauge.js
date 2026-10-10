@@ -96,7 +96,7 @@
     ':host { display: block; width: 100%; aspect-ratio: var(--lwt-gauge-aspect-ratio, 1 / 1); font-family: inherit; background: var(--lwt-gauge-bg, transparent); }' +
     '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
     '.track { fill: none; stroke: var(--lwt-gauge-track-color, var(--lwt-color-border, #e5e7eb)); }' +
-    '.tick-text { fill: var(--lwt-gauge-tick-color, var(--lwt-color-text-subtle, #9ca3af)); font-size: 12px; }' +
+    '.tick-text { fill: var(--lwt-gauge-tick-color, var(--lwt-color-text-subtle, #6b7280)); font-size: 12px; }' +
     '.value-text { fill: var(--lwt-gauge-value-color, var(--lwt-color-text-strong, #111827)); font-size: 34px; font-weight: 700; }' +
     '.label-text { fill: var(--lwt-gauge-label-color, var(--lwt-color-text-muted, #6b7280)); font-size: 13px; }' +
     '.title-text { fill: var(--lwt-gauge-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }';
@@ -216,7 +216,8 @@
 
       var titleSvg = title ? '<text class="title-text" x="' + (VBW / 2) + '" y="' + (PAD + 16) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
 
-      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((title || label || 'Gauge') + ': ' + displayValue + unit) + '">' +
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml(this._a11yName([title, label], 'Gauge', 'Add a title or label attribute') +
+        ': ' + displayValue + unit + ' (range ' + min + ' to ' + max + ')') + '">' +
         titleSvg + trackSvg + progressSvg + indicatorSvg + tickSvg + centerSvg +
         '</svg>';
     }

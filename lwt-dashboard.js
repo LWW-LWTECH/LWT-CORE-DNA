@@ -1,7 +1,7 @@
 /*!
  * LWT Dashboard Elements
  * Developer: Lee W Winter
- * Last Generated: 2026-10-10T12:01:50.478Z
+ * Last Generated: 2026-10-10T23:44:27.140Z
  * Requires lwt-core.js to be loaded first.
  */
 
@@ -168,7 +168,13 @@
     }
 
     render() {
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + '</div>', CSS);
+      // Charts are images: name the SVG, and add a screen-reader-only
+      // data table with the same numbers (WCAG 1.1.1 / 1.3.1).
+      var a11y = window.LWT.a11y;
+      this._chartName = this._a11yName([this._strAttr('title', '')], 'Bar chart', 'Add a title attribute');
+      var table = a11y.chartTableHtml(this._chartName, this._data);
+      this._hasTable = !!table;
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
     }
 
     _measureText(text, fontSize) {
@@ -397,7 +403,7 @@
         ? '<text class="axis-title" x="0" y="0" text-anchor="middle" transform="translate(' + (PAD + 10) + ',' + ((plotTop + plotBottom) / 2) + ') rotate(-90)">' + escapeXml(yLabel) + '</text>'
         : '';
 
-      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml(title || 'Bar chart') + '">' +
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((this._chartName || title || 'Bar chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
         titleSvg + legendSvg + gridSvg + borderSvg + barsSvg + targetSvg + tickSvg + xLabelSvg + yLabelSvg +
         '</svg>';
     }
@@ -555,7 +561,13 @@
     }
 
     render() {
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + '</div>', CSS);
+      // Charts are images: name the SVG, and add a screen-reader-only
+      // data table with the same numbers (WCAG 1.1.1 / 1.3.1).
+      var a11y = window.LWT.a11y;
+      this._chartName = this._a11yName([this._strAttr('title', '')], 'Bubble chart', 'Add a title attribute');
+      var table = a11y.chartTableHtml(this._chartName, this._data);
+      this._hasTable = !!table;
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
     }
 
     _measureText(text, fontSize) {
@@ -700,7 +712,7 @@
         ? '<text class="axis-title" x="0" y="0" text-anchor="middle" transform="translate(' + (PAD + 10) + ',' + ((plotTop + plotBottom) / 2) + ') rotate(-90)">' + escapeXml(yLabel) + '</text>'
         : '';
 
-      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml(title || 'Bubble chart') + '">' +
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((this._chartName || title || 'Bubble chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
         titleSvg + legendSvg + gridSvg + borderSvg + bubblesSvg + tickSvg + xLabelSvg + yLabelSvg +
         '</svg>';
     }
@@ -840,7 +852,13 @@
     }
 
     render() {
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + '</div>', CSS);
+      // Charts are images: name the SVG, and add a screen-reader-only
+      // data table with the same numbers (WCAG 1.1.1 / 1.3.1).
+      var a11y = window.LWT.a11y;
+      this._chartName = this._a11yName([this._strAttr('title', '')], 'Doughnut chart', 'Add a title attribute');
+      var table = a11y.chartTableHtml(this._chartName, this._data);
+      this._hasTable = !!table;
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
     }
 
     _measureText(text, fontSize) {
@@ -937,7 +955,7 @@
 
       var titleSvg = title ? '<text class="chart-title" x="' + (VBW / 2) + '" y="' + (PAD + 20) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
 
-      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml(title || 'Doughnut chart') + '">' +
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((this._chartName || title || 'Doughnut chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
         titleSvg + slicesSvg + legendSvg +
         '</svg>';
     }
@@ -1045,7 +1063,7 @@
     ':host { display: block; width: 100%; aspect-ratio: var(--lwt-gauge-aspect-ratio, 1 / 1); font-family: inherit; background: var(--lwt-gauge-bg, transparent); }' +
     '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
     '.track { fill: none; stroke: var(--lwt-gauge-track-color, var(--lwt-color-border, #e5e7eb)); }' +
-    '.tick-text { fill: var(--lwt-gauge-tick-color, var(--lwt-color-text-subtle, #9ca3af)); font-size: 12px; }' +
+    '.tick-text { fill: var(--lwt-gauge-tick-color, var(--lwt-color-text-subtle, #6b7280)); font-size: 12px; }' +
     '.value-text { fill: var(--lwt-gauge-value-color, var(--lwt-color-text-strong, #111827)); font-size: 34px; font-weight: 700; }' +
     '.label-text { fill: var(--lwt-gauge-label-color, var(--lwt-color-text-muted, #6b7280)); font-size: 13px; }' +
     '.title-text { fill: var(--lwt-gauge-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }';
@@ -1165,7 +1183,8 @@
 
       var titleSvg = title ? '<text class="title-text" x="' + (VBW / 2) + '" y="' + (PAD + 16) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
 
-      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((title || label || 'Gauge') + ': ' + displayValue + unit) + '">' +
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml(this._a11yName([title, label], 'Gauge', 'Add a title or label attribute') +
+        ': ' + displayValue + unit + ' (range ' + min + ' to ' + max + ')') + '">' +
         titleSvg + trackSvg + progressSvg + indicatorSvg + tickSvg + centerSvg +
         '</svg>';
     }
@@ -1339,7 +1358,13 @@
     }
 
     render() {
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + '</div>', CSS);
+      // Charts are images: name the SVG, and add a screen-reader-only
+      // data table with the same numbers (WCAG 1.1.1 / 1.3.1).
+      var a11y = window.LWT.a11y;
+      this._chartName = this._a11yName([this._strAttr('title', '')], 'Line chart', 'Add a title attribute');
+      var table = a11y.chartTableHtml(this._chartName, this._data);
+      this._hasTable = !!table;
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
     }
 
     _measureText(text, fontSize) {
@@ -1505,7 +1530,7 @@
         ? '<text class="axis-title" x="0" y="0" text-anchor="middle" transform="translate(' + (PAD + 10) + ',' + ((plotTop + plotBottom) / 2) + ') rotate(-90)">' + escapeXml(yLabel) + '</text>'
         : '';
 
-      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml(title || 'Line chart') + '">' +
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((this._chartName || title || 'Line chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
         titleSvg + legendSvg + gridSvg + borderSvg + fillsSvg + linesSvg + tickSvg + xLabelSvg + yLabelSvg +
         '</svg>';
     }
@@ -1642,7 +1667,13 @@
     }
 
     render() {
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + '</div>', CSS);
+      // Charts are images: name the SVG, and add a screen-reader-only
+      // data table with the same numbers (WCAG 1.1.1 / 1.3.1).
+      var a11y = window.LWT.a11y;
+      this._chartName = this._a11yName([this._strAttr('title', '')], 'Pie chart', 'Add a title attribute');
+      var table = a11y.chartTableHtml(this._chartName, this._data);
+      this._hasTable = !!table;
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
     }
 
     _measureText(text, fontSize) {
@@ -1746,7 +1777,7 @@
 
       var titleSvg = title ? '<text class="chart-title" x="' + (VBW / 2) + '" y="' + (PAD + 20) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
 
-      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml(title || 'Pie chart') + '">' +
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((this._chartName || title || 'Pie chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
         titleSvg + slicesSvg + legendSvg +
         '</svg>';
     }
@@ -1915,7 +1946,13 @@
     }
 
     render() {
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + '</div>', CSS);
+      // Charts are images: name the SVG, and add a screen-reader-only
+      // data table with the same numbers (WCAG 1.1.1 / 1.3.1).
+      var a11y = window.LWT.a11y;
+      this._chartName = this._a11yName([this._strAttr('title', '')], 'Radar chart', 'Add a title attribute');
+      var table = a11y.chartTableHtml(this._chartName, this._data);
+      this._hasTable = !!table;
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
     }
 
     _measureText(text, fontSize) {
@@ -2079,7 +2116,7 @@
 
       var titleSvg = title ? '<text class="chart-title" x="' + (VBW / 2) + '" y="' + (PAD + 20) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
 
-      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml(title || 'Radar chart') + '">' +
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((this._chartName || title || 'Radar chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
         titleSvg + legendSvg + gridSvg + shapesSvg + tickSvg + labelSvg +
         '</svg>';
     }
@@ -2177,6 +2214,27 @@
         .filter(function (n) { return !isNaN(n); });
     }
 
+    // Name: the label attribute, plus a spoken summary of the trend so a
+    // screen reader gets what the line shows ("rising from 10 to 45 over
+    // 7 points"). Without a label, the summary alone is used (and warned).
+    _spokenName(values) {
+      var summary = '';
+      if (values.length) {
+        var first = values[0], last = values[values.length - 1];
+        var dir = last > first ? 'rising' : (last < first ? 'falling' : 'flat');
+        summary = 'Trend ' + dir + ' from ' + first + ' to ' + last + ' over ' + values.length + ' points' +
+          ', low ' + Math.min.apply(null, values) + ', high ' + Math.max.apply(null, values);
+      } else {
+        summary = 'No data';
+      }
+      var label = this._hostLabel() || this._strAttr('label', '');
+      if (!label) {
+        this._a11yWarn('name', 'has no label, so it is announced as "' + summary + '". Add a label attribute to say what it measures.');
+        return summary;
+      }
+      return label + ': ' + summary;
+    }
+
     _buildSvg() {
       var label = this._strAttr('label', '');
       var VBW = 200, VBH = 50, PAD = 4;
@@ -2184,7 +2242,7 @@
       var n = values.length;
 
       if (n === 0) {
-        return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="none" role="img" aria-label="' + escapeXml(label || 'Sparkline') + '"></svg>';
+        return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="none" role="img" aria-label="' + escapeXml(this._spokenName(values)) + '"></svg>';
       }
 
       var explicitColor = this._strAttr('color', '');
@@ -2215,7 +2273,7 @@
           ? (last - first) / Math.abs(first)
           : (last === first ? 0 : (last > first ? 1 : -1));
         var varName, fallback;
-        if (Math.abs(pctChange) < 0.05) { varName = '--lwt-sparkline-flat-color'; fallback = 'var(--lwt-color-text-subtle, #9ca3af)'; }
+        if (Math.abs(pctChange) < 0.05) { varName = '--lwt-sparkline-flat-color'; fallback = 'var(--lwt-color-text-subtle, #6b7280)'; }
         else if (pctChange > 0) { varName = '--lwt-sparkline-up-color'; fallback = 'var(--lwt-color-success, #22c55e)'; }
         else { varName = '--lwt-sparkline-down-color'; fallback = 'var(--lwt-color-danger, #ef4444)'; }
         strokeStyle = 'stroke: var(' + varName + ', ' + fallback + ');';
@@ -2243,7 +2301,7 @@
 
       var lineSvg = '<path class="spark-line" d="' + linePath + '" style="' + strokeStyle + '" stroke-width="' + lineWidth + '"></path>';
 
-      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="none" role="img" aria-label="' + escapeXml(label || 'Sparkline') + '">' +
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="none" role="img" aria-label="' + escapeXml(this._spokenName(values)) + '">' +
         defsSvg + fillSvg + lineSvg +
         '</svg>';
     }
@@ -2336,9 +2394,11 @@
     '.value-row { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }' +
     '.value { font-size: 1.75rem; font-weight: 700; line-height: 1.1; color: var(--lwt-stat-value-color, var(--lwt-color-text-strong, #111827)); }' +
     '.delta { font-size: 0.85rem; font-weight: 600; }' +
-    '.delta-up { color: var(--lwt-sparkline-up-color, var(--lwt-color-success, #22c55e)); }' +
-    '.delta-down { color: var(--lwt-sparkline-down-color, var(--lwt-color-danger, #ef4444)); }' +
-    '.delta-neutral { color: var(--lwt-sparkline-flat-color, var(--lwt-color-text-subtle, #9ca3af)); }' +
+    // Text colors that pass 4.5:1 on white (the line colors are often
+    // lighter, which is fine for a graphic but not for small text).
+    '.delta-up { color: var(--lwt-stat-delta-up-color, #15803d); }' +
+    '.delta-down { color: var(--lwt-stat-delta-down-color, #b91c1c); }' +
+    '.delta-neutral { color: var(--lwt-sparkline-flat-color, var(--lwt-color-text-subtle, #6b7280)); }' +
     '.chart-slot { margin-top: 0.25rem; }' +
     '::slotted([slot="chart"]) { display: block; width: 100%; }';
 
@@ -2348,8 +2408,13 @@
     }
 
     render() {
-      this._renderShadow(TEMPLATE, CSS);
+      this._renderShadow(TEMPLATE, CSS + window.LWT.a11y.SR_ONLY_CSS);
       var root = this._root;
+      // Read the card as one named group ("Revenue, $48,200, up 12.4%").
+      this._ensureAttr('role', 'group');
+      this._ensureAttr('aria-label', this._a11yName([this._strAttr('label', '')], 'Statistic', 'Add a label attribute'));
+      var iconWrapEl = root.querySelector('.icon-slot');
+      if (iconWrapEl) iconWrapEl.setAttribute('aria-hidden', 'true');
 
       root.querySelector('.label').textContent = this._strAttr('label', '');
       root.querySelector('.value').textContent = this._strAttr('value', '');
@@ -2363,7 +2428,11 @@
       }
       var arrow = trend === 'up' ? '▲ ' : trend === 'down' ? '▼ ' : '';
       var deltaEl = root.querySelector('.delta');
-      deltaEl.textContent = delta ? arrow + delta : '';
+      // The arrow is decorative; say the direction in words instead.
+      var spoken = trend === 'up' ? 'Up ' : trend === 'down' ? 'Down ' : '';
+      deltaEl.innerHTML = delta
+        ? '<span aria-hidden="true">' + arrow + '</span><span class="lwt-sr-only">' + spoken + '</span>' + window.LWT.a11y.escape(delta)
+        : '';
       deltaEl.className = 'delta delta-' + trend;
       deltaEl.style.display = delta ? '' : 'none';
 

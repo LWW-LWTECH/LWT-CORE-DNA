@@ -203,32 +203,37 @@
     { ch: 'k', label: 'K', max: 100 }
   ];
 
+  // Full spoken names for the one-letter visual labels.
+  var CHANNEL_NAMES = { h: 'Hue', s: 'Saturation', l: 'Lightness', a: 'Opacity', r: 'Red', g: 'Green', b: 'Blue',
+                        c: 'Cyan', m: 'Magenta', y: 'Yellow', k: 'Black', hex: 'Hex color code' };
+  var CHANNEL_UNITS = { h: ' degrees', s: '%', l: '%', a: '%', c: '%', m: '%', y: '%', k: '%' };
+
   function sliderRowHtml(row) {
     var extra = row.ch === 'a'
       ? '<div class="alpha-checkerboard"></div><div class="alpha-gradient" part="alpha-gradient"></div>'
       : '';
     return (
       '<div class="slider-row">' +
-      '  <label>' + row.label + '</label>' +
-      '  <div class="slider" data-channel="' + row.ch + '" data-max="' + row.max + '" part="' + row.ch + '-slider" tabindex="0" role="slider" aria-label="' + row.label + '" aria-valuemin="0" aria-valuemax="' + row.max + '">' +
+      '  <label aria-hidden="true">' + row.label + '</label>' +
+      '  <div class="slider" data-channel="' + row.ch + '" data-max="' + row.max + '" part="' + row.ch + '-slider" tabindex="0" role="slider" aria-label="' + CHANNEL_NAMES[row.ch] + '" aria-valuemin="0" aria-valuemax="' + row.max + '" aria-valuenow="0">' +
       extra +
       '    <div class="slider-handle" part="' + row.ch + '-handle"></div>' +
       '  </div>' +
-      '  <input type="number" class="field" data-channel="' + row.ch + '" data-source="slider" min="0" max="' + row.max + '" step="1">' +
+      '  <input type="number" class="field" data-channel="' + row.ch + '" data-source="slider" min="0" max="' + row.max + '" step="1" aria-label="' + CHANNEL_NAMES[row.ch] + ' value">' +
       '</div>'
     );
   }
 
   function outputFieldHtml(ch, label, opts) {
     opts = opts || {};
-    var attrs = 'type="text" class="field" data-channel="' + ch + '" data-source="panel"';
+    var attrs = 'type="text" class="field" data-channel="' + ch + '" data-source="panel" aria-label="' + CHANNEL_NAMES[ch] + '"';
     if (opts.maxlength) attrs += ' maxlength="' + opts.maxlength + '"';
     if (opts.numeric) attrs = attrs.replace('type="text"', 'type="number" min="0" max="' + opts.numeric + '"');
     return '<label>' + label + '<input ' + attrs + '></label>';
   }
 
   var SQUARE_HTML =
-    '<div class="square" part="square" tabindex="0" role="slider" aria-label="Saturation and lightness">' +
+    '<div class="square" part="square" tabindex="0" role="slider" aria-label="Saturation and lightness" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
     '  <canvas></canvas>' +
     '  <div class="square-handle" part="square-handle"></div>' +
     '</div>';
@@ -236,21 +241,21 @@
   var TEMPLATE =
     '<div class="picker" part="picker">' +
     '  <div class="top-row">' +
-    '    <select class="mode-select" part="mode-select">' +
+    '    <select class="mode-select" part="mode-select" aria-label="Color picker mode">' +
     '      <option value="hsl-wheel">HSL Color Wheel</option>' +
     '      <option value="rgb">RGB Sliders</option>' +
     '      <option value="hsl">HSL Sliders</option>' +
     '      <option value="cmyk">CMYK Sliders</option>' +
     '    </select>' +
     '    <div class="swatch-row">' +
-    '      <div class="swatch-checkerboard" part="swatch-wrap"><div class="swatch" part="swatch"></div></div>' +
-    '      <button type="button" class="eyedropper" part="eyedropper" title="Pick color from screen" hidden>&#9681;</button>' +
+    '      <div class="swatch-checkerboard" part="swatch-wrap" role="img" aria-label="Selected color"><div class="swatch" part="swatch"></div></div>' +
+    '      <button type="button" class="eyedropper" part="eyedropper" title="Pick color from screen" aria-label="Pick color from screen" hidden>&#9681;</button>' +
     '    </div>' +
     '  </div>' +
 
     '  <div class="mode-panel" data-mode="hsl-wheel" part="wheel-panel">' +
     '    <div class="wheel-wrap">' +
-    '      <div class="wheel" part="wheel" tabindex="0" role="slider" aria-label="Hue" aria-valuemin="0" aria-valuemax="360"><div class="wheel-handle" part="wheel-handle"></div></div>' +
+    '      <div class="wheel" part="wheel" tabindex="0" role="slider" aria-label="Hue" aria-valuemin="0" aria-valuemax="360" aria-valuenow="0"><div class="wheel-handle" part="wheel-handle"></div></div>' +
     '      <div class="square-slot square-slot--wheel"></div>' +
     '    </div>' +
     '  </div>' +
@@ -398,6 +403,10 @@
       // Read-only classification attribute — see lwt-frm-choices.js for
       // the convention every lwtf- element follows.
       this.setAttribute('control-type', 'color');
+      // The whole picker is one named group of controls.
+      this._ensureAttr('role', 'group');
+      this._ensureAttr('aria-label', this._a11yName([this._strAttr('label', ''), window.LWT.a11y.humanize(this._strAttr('name', ''))],
+        'Color picker', 'Add a label attribute'));
 
       if (!this._initialized) {
         this._initialized = true;
@@ -671,11 +680,32 @@
       this._setFieldValue('y', cmyk.y);
       this._setFieldValue('k', cmyk.k);
       this._setFieldValue('hex', Color.toHex(rgb.r, rgb.g, rgb.b, this._a).toUpperCase());
+      this._syncA11y(Color.toHex(rgb.r, rgb.g, rgb.b, this._a).toUpperCase());
     }
 
     _syncSlider(channel, frac) {
-      var handle = this._root.querySelector('.slider[data-channel="' + channel + '"] .slider-handle');
+      var track = this._root.querySelector('.slider[data-channel="' + channel + '"]');
+      if (!track) return;
+      var handle = track.querySelector('.slider-handle');
       if (handle) handle.style.left = (clamp(frac, 0, 1) * 100) + '%';
+      // Current value for assistive tech (role="slider" requires it).
+      var max = parseFloat(track.dataset.max) || 100;
+      var now = Math.round(clamp(frac, 0, 1) * max);
+      track.setAttribute('aria-valuenow', String(now));
+      track.setAttribute('aria-valuetext', now + (CHANNEL_UNITS[channel] || ''));
+    }
+
+    // Name/value for the parts that aren't plain channel sliders.
+    _syncA11y(hex) {
+      var s = Math.round(this._s), l = Math.round(this._l), h = Math.round(this._h);
+      this._squareWrap.setAttribute('aria-valuenow', String(s));
+      this._squareWrap.setAttribute('aria-valuetext', 'Saturation ' + s + '%, lightness ' + l + '%');
+      if (this._wheel) {
+        this._wheel.setAttribute('aria-valuenow', String(h));
+        this._wheel.setAttribute('aria-valuetext', h + ' degrees');
+      }
+      var swatchWrap = this._root.querySelector('.swatch-checkerboard');
+      if (swatchWrap) swatchWrap.setAttribute('aria-label', 'Selected color ' + hex);
     }
 
     _setSliderGradient(channel, gradient) {

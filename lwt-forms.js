@@ -1,7 +1,7 @@
 /*!
  * LWT Form Elements
  * Developer: Lee W Winter
- * Last Generated: 2026-10-10T12:01:50.478Z
+ * Last Generated: 2026-10-10T23:44:27.140Z
  * Requires lwt-core.js to be loaded first.
  */
 
@@ -85,7 +85,7 @@
     '<polyline points="4 12 9 18 20 6"/></svg>';
 
   var CSS =
-    ':host { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font: inherit; font-size: 0.95rem;' +
+    ':host { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font: inherit; font-size: 0.95rem; min-height: 24px;' +
     '  color: var(--lwt-choices-color, var(--lwt-color-text, #1f2937)); user-select: none; outline: none; }' +
     ':host([hidden]) { display: none; }' +
     ':host([disabled]) { cursor: not-allowed; opacity: 0.55; }' +
@@ -163,6 +163,7 @@
       this.setAttribute('control-type', 'option');
       this.addEventListener('click', this._handleClick);
       this.addEventListener('keydown', this._handleKeydown);
+      this._whenParsed(this._syncName);
     }
 
     disconnectedCallback() {
@@ -195,8 +196,19 @@
 
       this.setAttribute('aria-checked', checked ? 'true' : 'false');
       this.setAttribute('aria-disabled', disabled ? 'true' : 'false');
-      this.tabIndex = disabled ? -1 : 0;
+      // In a radio group <lwtf-choices> runs a roving tabindex (only the
+      // checked radio is a Tab stop); otherwise every option is.
+      if (disabled) this.tabIndex = -1;
+      else if (!this.hasAttribute('data-lwt-roving')) this.tabIndex = 0;
       if (!this.hasAttribute('role')) this.setAttribute('role', role);
+    }
+
+    // Image tiles with no text still need a name: use the value (e.g.
+    // "facebook" -> "Facebook") and warn.
+    _syncName() {
+      if (this.textContent.trim() || this._hostLabel()) { this._removeAutoAttr('aria-label'); return; }
+      this._ensureAttr('aria-label', this._a11yName([window.LWT.a11y.humanize(this.value)], 'Option',
+        'Add text content to the option'));
     }
 
     _syncMedia() {
@@ -205,7 +217,8 @@
       var image = this._strAttr('image', '');
       if (image) {
         this._img.src = image;
-        this._img.alt = this.textContent.trim();
+        // Decorative: the option's own name (its text) already says it.
+        this._img.alt = '';
       } else {
         this._img.removeAttribute('src');
         this._img.alt = '';
@@ -491,8 +504,17 @@
       this._requiredMark.hidden = !required;
 
       this.setAttribute('role', multiple ? 'group' : 'radiogroup');
-      if (label) this.setAttribute('aria-label', label); else this.removeAttribute('aria-label');
+      // Group name: label, else derived from name="", else generic.
+      if (!this._devAttr('aria-label') && !this._devAttr('aria-labelledby')) {
+        this._setAutoAttr('aria-label', this._a11yName([label, window.LWT.a11y.humanize(this._strAttr('name', ''))],
+          'Options', 'Add a label attribute'));
+      }
       this.setAttribute('aria-required', required ? 'true' : 'false');
+      // Helper/error text lives in the shadow root, which aria-describedby
+      // can't reach from the host -- aria-description carries it instead.
+      var description = error || helper;
+      if (description) this._setAutoAttr('aria-description', description); else this._removeAutoAttr('aria-description');
+      if (error) this.setAttribute('aria-invalid', 'true'); else this.removeAttribute('aria-invalid');
 
       var errorMsg = error;
       if (errorMsg) {
@@ -506,6 +528,7 @@
 
       this._syncChildRoles();
       this._enforceSingleSelect();
+      this._syncRoving();
       this._reportValidity();
     }
 
@@ -719,7 +742,29 @@
 
     // ---- form-association + validity ----
 
+    // Radio groups: only the checked option (or the first enabled one) is
+    // in the Tab order; arrow keys move within the group. Checkbox groups:
+    // every option is a Tab stop.
+    _syncRoving() {
+      var multiple = this._strAttr('type', 'single') === 'multiple';
+      var options = Array.prototype.slice.call(this.querySelectorAll(':scope > lwtf-choice-option'));
+      if (multiple) {
+        options.forEach(function (o) {
+          if (o.hasAttribute('data-lwt-roving')) o.removeAttribute('data-lwt-roving');
+          o.tabIndex = o.hasAttribute('disabled') ? -1 : 0;
+        });
+        return;
+      }
+      var enabled = options.filter(function (o) { return !o.hasAttribute('disabled'); });
+      var current = enabled.filter(function (o) { return o.hasAttribute('checked'); })[0] || enabled[0];
+      options.forEach(function (o) {
+        o.setAttribute('data-lwt-roving', '');
+        o.tabIndex = o === current ? 0 : -1;
+      });
+    }
+
     _reportValue() {
+      this._syncRoving();
       if (!this._internals) return;
       var vals = this._collectValues();
       var multiple = this._strAttr('type', 'single') === 'multiple';
@@ -958,32 +1003,37 @@
     { ch: 'k', label: 'K', max: 100 }
   ];
 
+  // Full spoken names for the one-letter visual labels.
+  var CHANNEL_NAMES = { h: 'Hue', s: 'Saturation', l: 'Lightness', a: 'Opacity', r: 'Red', g: 'Green', b: 'Blue',
+                        c: 'Cyan', m: 'Magenta', y: 'Yellow', k: 'Black', hex: 'Hex color code' };
+  var CHANNEL_UNITS = { h: ' degrees', s: '%', l: '%', a: '%', c: '%', m: '%', y: '%', k: '%' };
+
   function sliderRowHtml(row) {
     var extra = row.ch === 'a'
       ? '<div class="alpha-checkerboard"></div><div class="alpha-gradient" part="alpha-gradient"></div>'
       : '';
     return (
       '<div class="slider-row">' +
-      '  <label>' + row.label + '</label>' +
-      '  <div class="slider" data-channel="' + row.ch + '" data-max="' + row.max + '" part="' + row.ch + '-slider" tabindex="0" role="slider" aria-label="' + row.label + '" aria-valuemin="0" aria-valuemax="' + row.max + '">' +
+      '  <label aria-hidden="true">' + row.label + '</label>' +
+      '  <div class="slider" data-channel="' + row.ch + '" data-max="' + row.max + '" part="' + row.ch + '-slider" tabindex="0" role="slider" aria-label="' + CHANNEL_NAMES[row.ch] + '" aria-valuemin="0" aria-valuemax="' + row.max + '" aria-valuenow="0">' +
       extra +
       '    <div class="slider-handle" part="' + row.ch + '-handle"></div>' +
       '  </div>' +
-      '  <input type="number" class="field" data-channel="' + row.ch + '" data-source="slider" min="0" max="' + row.max + '" step="1">' +
+      '  <input type="number" class="field" data-channel="' + row.ch + '" data-source="slider" min="0" max="' + row.max + '" step="1" aria-label="' + CHANNEL_NAMES[row.ch] + ' value">' +
       '</div>'
     );
   }
 
   function outputFieldHtml(ch, label, opts) {
     opts = opts || {};
-    var attrs = 'type="text" class="field" data-channel="' + ch + '" data-source="panel"';
+    var attrs = 'type="text" class="field" data-channel="' + ch + '" data-source="panel" aria-label="' + CHANNEL_NAMES[ch] + '"';
     if (opts.maxlength) attrs += ' maxlength="' + opts.maxlength + '"';
     if (opts.numeric) attrs = attrs.replace('type="text"', 'type="number" min="0" max="' + opts.numeric + '"');
     return '<label>' + label + '<input ' + attrs + '></label>';
   }
 
   var SQUARE_HTML =
-    '<div class="square" part="square" tabindex="0" role="slider" aria-label="Saturation and lightness">' +
+    '<div class="square" part="square" tabindex="0" role="slider" aria-label="Saturation and lightness" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
     '  <canvas></canvas>' +
     '  <div class="square-handle" part="square-handle"></div>' +
     '</div>';
@@ -991,21 +1041,21 @@
   var TEMPLATE =
     '<div class="picker" part="picker">' +
     '  <div class="top-row">' +
-    '    <select class="mode-select" part="mode-select">' +
+    '    <select class="mode-select" part="mode-select" aria-label="Color picker mode">' +
     '      <option value="hsl-wheel">HSL Color Wheel</option>' +
     '      <option value="rgb">RGB Sliders</option>' +
     '      <option value="hsl">HSL Sliders</option>' +
     '      <option value="cmyk">CMYK Sliders</option>' +
     '    </select>' +
     '    <div class="swatch-row">' +
-    '      <div class="swatch-checkerboard" part="swatch-wrap"><div class="swatch" part="swatch"></div></div>' +
-    '      <button type="button" class="eyedropper" part="eyedropper" title="Pick color from screen" hidden>&#9681;</button>' +
+    '      <div class="swatch-checkerboard" part="swatch-wrap" role="img" aria-label="Selected color"><div class="swatch" part="swatch"></div></div>' +
+    '      <button type="button" class="eyedropper" part="eyedropper" title="Pick color from screen" aria-label="Pick color from screen" hidden>&#9681;</button>' +
     '    </div>' +
     '  </div>' +
 
     '  <div class="mode-panel" data-mode="hsl-wheel" part="wheel-panel">' +
     '    <div class="wheel-wrap">' +
-    '      <div class="wheel" part="wheel" tabindex="0" role="slider" aria-label="Hue" aria-valuemin="0" aria-valuemax="360"><div class="wheel-handle" part="wheel-handle"></div></div>' +
+    '      <div class="wheel" part="wheel" tabindex="0" role="slider" aria-label="Hue" aria-valuemin="0" aria-valuemax="360" aria-valuenow="0"><div class="wheel-handle" part="wheel-handle"></div></div>' +
     '      <div class="square-slot square-slot--wheel"></div>' +
     '    </div>' +
     '  </div>' +
@@ -1153,6 +1203,10 @@
       // Read-only classification attribute — see lwt-frm-choices.js for
       // the convention every lwtf- element follows.
       this.setAttribute('control-type', 'color');
+      // The whole picker is one named group of controls.
+      this._ensureAttr('role', 'group');
+      this._ensureAttr('aria-label', this._a11yName([this._strAttr('label', ''), window.LWT.a11y.humanize(this._strAttr('name', ''))],
+        'Color picker', 'Add a label attribute'));
 
       if (!this._initialized) {
         this._initialized = true;
@@ -1426,11 +1480,32 @@
       this._setFieldValue('y', cmyk.y);
       this._setFieldValue('k', cmyk.k);
       this._setFieldValue('hex', Color.toHex(rgb.r, rgb.g, rgb.b, this._a).toUpperCase());
+      this._syncA11y(Color.toHex(rgb.r, rgb.g, rgb.b, this._a).toUpperCase());
     }
 
     _syncSlider(channel, frac) {
-      var handle = this._root.querySelector('.slider[data-channel="' + channel + '"] .slider-handle');
+      var track = this._root.querySelector('.slider[data-channel="' + channel + '"]');
+      if (!track) return;
+      var handle = track.querySelector('.slider-handle');
       if (handle) handle.style.left = (clamp(frac, 0, 1) * 100) + '%';
+      // Current value for assistive tech (role="slider" requires it).
+      var max = parseFloat(track.dataset.max) || 100;
+      var now = Math.round(clamp(frac, 0, 1) * max);
+      track.setAttribute('aria-valuenow', String(now));
+      track.setAttribute('aria-valuetext', now + (CHANNEL_UNITS[channel] || ''));
+    }
+
+    // Name/value for the parts that aren't plain channel sliders.
+    _syncA11y(hex) {
+      var s = Math.round(this._s), l = Math.round(this._l), h = Math.round(this._h);
+      this._squareWrap.setAttribute('aria-valuenow', String(s));
+      this._squareWrap.setAttribute('aria-valuetext', 'Saturation ' + s + '%, lightness ' + l + '%');
+      if (this._wheel) {
+        this._wheel.setAttribute('aria-valuenow', String(h));
+        this._wheel.setAttribute('aria-valuetext', h + ' degrees');
+      }
+      var swatchWrap = this._root.querySelector('.swatch-checkerboard');
+      if (swatchWrap) swatchWrap.setAttribute('aria-label', 'Selected color ' + hex);
     }
 
     _setSliderGradient(channel, gradient) {
@@ -1821,11 +1896,11 @@
     '  </svg>' +
     '  <span class="trigger-text" part="trigger-text"></span>' +
     '</div>' +
-    '<div class="popup" part="popup">' +
+    '<div class="popup" part="popup" role="dialog">' +
     '  <div class="popup-inner">' +
     '    <div class="presets" part="presets"></div>' +
     '    <div class="calendars-pane" part="calendars-pane">' +
-    '      <div class="range-heading" part="heading"></div>' +
+    '      <div class="range-heading" part="heading" aria-live="polite"></div>' +
     '      <div class="cal-nav" part="cal-nav">' +
     '        <button type="button" class="nav prev" part="nav-prev" aria-label="Previous month">&#8249;</button>' +
     '        <button type="button" class="nav next" part="nav-next" aria-label="Next month">&#8250;</button>' +
@@ -1863,7 +1938,7 @@
     ':host([data-invalid]) .trigger-box { border-color: var(--lwt-daterange-error-color, var(--lwt-color-danger, #ef4444)); }' +
     '.cal-icon { flex-shrink: 0; color: var(--lwt-color-text-muted, #6b7280); }' +
     '.trigger-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }' +
-    '.trigger-text.placeholder { color: var(--lwt-color-text-subtle, #9ca3af); }' +
+    '.trigger-text.placeholder { color: var(--lwt-color-text-subtle, #6b7280); }' +
 
     '.popup { position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; display: none;' +
     '  background: var(--lwt-daterange-bg, var(--lwt-color-surface, #fff));' +
@@ -1939,7 +2014,7 @@
   class LWTDateRange extends window.LWT.Element {
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'placeholder', 'name', 'months', 'time',
-              'min', 'max', 'presets', 'no-presets', 'required', 'disabled', 'readonly'];
+              'min', 'max', 'presets', 'no-presets', 'required', 'disabled', 'readonly', 'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -2044,6 +2119,10 @@
       this._inlineApplyBtn = root.querySelector('.apply-row-inline .apply-btn');
 
       this._id = 'lwt-daterange-' + (++uid);
+      this._popup.id = this._id + '-popup';
+      this._helperEl.id = this._id + '-helper';
+      this._trigger.setAttribute('aria-controls', this._popup.id);
+      this._calRow.addEventListener('keydown', this._onCalendarKeydown.bind(this));
 
       this._trigger.addEventListener('click', this._onTriggerClick);
       this._trigger.addEventListener('keydown', this._onTriggerKeydown);
@@ -2081,6 +2160,11 @@
 
       this._trigger.tabIndex = disabled ? -1 : 0;
       this._trigger.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+      if (required) this._trigger.setAttribute('aria-required', 'true'); else this._trigger.removeAttribute('aria-required');
+      if (error) this._trigger.setAttribute('aria-invalid', 'true'); else this._trigger.removeAttribute('aria-invalid');
+      if (error || helper) this._trigger.setAttribute('aria-describedby', this._helperEl.id);
+      else this._trigger.removeAttribute('aria-describedby');
+      this._popup.setAttribute('aria-label', 'Choose ' + this._a11yName([label], 'Date range', 'Add a label attribute').toLowerCase());
       if (disabled || readonly) this._close();
 
       this._syncTrigger();
@@ -2089,6 +2173,7 @@
 
     _syncTrigger() {
       if (!this._triggerText) return;
+      this._syncTriggerName();
       if (this._start && this._end) {
         var text = formatDisplay(this._start) + ' - ' + formatDisplay(this._end);
         if (this._boolAttr('time')) {
@@ -2100,6 +2185,75 @@
         this._triggerText.textContent = this._strAttr('placeholder', 'Select date range');
         this._triggerText.classList.add('placeholder');
       }
+      this._syncTriggerName();
+    }
+
+    // The trigger is announced as "<label>, <current range>" (or
+    // "<label>, no dates selected") -- WCAG 4.1.2 name + value.
+    _syncTriggerName() {
+      var name = this._a11yName([this._strAttr('label', '')], 'Date range', 'Add a label attribute');
+      var value = this._start && this._end ? this._triggerText.textContent : 'no dates selected';
+      this._trigger.setAttribute('aria-label', name + ', ' + value);
+    }
+
+    // Spoken form of a date, e.g. "Friday, November 6, 2026".
+    _spokenDate(date) {
+      var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      return DAYS[date.getDay()] + ', ' + MONTH_LABELS[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
+    }
+
+    // ---- calendar keyboard navigation (roving tabindex) ----
+    // One day button is in the Tab order; arrows move by day/week,
+    // Home/End to week start/end, PageUp/PageDown by month.
+    _focusableDayFor(target) {
+      var cells = (this._dayCells || []).filter(function (c) { return !c.outside && !c.el.disabled; });
+      if (!cells.length) return null;
+      var exact = cells.filter(function (c) { return target && sameDay(c.date, target); })[0];
+      return exact || null;
+    }
+
+    _syncDayTabStops(preferred) {
+      if (!this._dayCells) return null;
+      var cells = this._dayCells.filter(function (c) { return !c.outside && !c.el.disabled; });
+      var today = stripTime(new Date());
+      var pick = (preferred && this._focusableDayFor(preferred)) ||
+        this._focusableDayFor(this._draftStart) || this._focusableDayFor(today) || cells[0] || null;
+      this._dayCells.forEach(function (c) { c.el.tabIndex = -1; });
+      if (pick) pick.el.tabIndex = 0;
+      return pick;
+    }
+
+    _onCalendarKeydown(e) {
+      var cell = (this._dayCells || []).filter(function (c) { return c.el === e.target; })[0];
+      if (!cell) return;
+      var date = cell.date, next = null;
+      switch (e.key) {
+        case 'ArrowLeft': next = addDays(date, -1); break;
+        case 'ArrowRight': next = addDays(date, 1); break;
+        case 'ArrowUp': next = addDays(date, -7); break;
+        case 'ArrowDown': next = addDays(date, 7); break;
+        case 'Home': next = addDays(date, -date.getDay()); break;
+        case 'End': next = addDays(date, 6 - date.getDay()); break;
+        case 'PageUp': next = makeDate(date.getFullYear(), date.getMonth() - 1, Math.min(date.getDate(), 28)); break;
+        case 'PageDown': next = makeDate(date.getFullYear(), date.getMonth() + 1, Math.min(date.getDate(), 28)); break;
+        default: return;
+      }
+      e.preventDefault();
+      var bounds = this._bounds();
+      next = clampDate(next, bounds.min, bounds.max);
+      if (!this._focusableDayFor(next)) {
+        // Off the visible months: page the view so `next` is shown.
+        this._viewYear = next.getFullYear();
+        this._viewMonth = next.getMonth();
+        if (isBefore(next, date)) {
+          var back = addMonths(this._viewYear, this._viewMonth, -(this._monthsCount() - 1));
+          this._viewYear = back.y; this._viewMonth = back.m;
+        }
+        this._clampView();
+        this._renderCalendars();
+      }
+      var target = this._syncDayTabStops(next);
+      if (target) target.el.focus();
     }
 
     // ---- presets ----
@@ -2116,7 +2270,7 @@
         var preset = PRESET_BY_KEY[key];
         var btn = self._genhtml({
           type: 'button',
-          attr: { type: 'button', class: 'preset-btn', part: 'preset', 'data-key': key },
+          attr: { type: 'button', class: 'preset-btn', part: 'preset', 'data-key': key, 'aria-pressed': 'false' },
           text: preset.label,
           events: { click: function () { self._onPresetClick(key); } }
         });
@@ -2179,6 +2333,7 @@
       var self = this;
       this._presetsEl.querySelectorAll('.preset-btn').forEach(function (btn) {
         btn.classList.toggle('active', btn.dataset.key === self._activePreset);
+        btn.setAttribute('aria-pressed', btn.dataset.key === self._activePreset ? 'true' : 'false');
       });
     }
 
@@ -2223,21 +2378,22 @@
       var heading = (this._draftStart ? formatDisplay(this._draftStart) : '—') + ' - ' +
         (this._draftEnd ? formatDisplay(this._draftEnd) : '—');
       this._headingEl.textContent = heading;
+      this._syncDayTabStops(this._lastFocusedDate);
     }
 
     _buildCalendar(y, m, bounds) {
       var self = this;
-      var cal = this._genhtml({ type: 'div', attr: { class: 'calendar', part: 'calendar' } });
+      var cal = this._genhtml({ type: 'div', attr: { class: 'calendar', part: 'calendar', role: 'group', 'aria-label': MONTH_LABELS[m] + ' ' + y } });
       var title = this._genhtml({
         type: 'span',
-        attr: { class: 'cal-title', part: 'cal-title' },
+        attr: { class: 'cal-title', part: 'cal-title', 'aria-hidden': 'true' },
         text: MONTH_LABELS[m].slice(0, 3) + ' \'' + String(y).slice(2)
       });
       cal.appendChild(title);
 
       var grid = this._genhtml({ type: 'div', attr: { class: 'cal-grid', part: 'cal-grid' } });
       WEEKDAY_LABELS.forEach(function (wd, idx) {
-        grid.appendChild(self._genhtml({ type: 'span', attr: { class: 'cal-weekday', part: 'weekday' }, text: wd, data: { idx: idx } }));
+        grid.appendChild(self._genhtml({ type: 'span', attr: { class: 'cal-weekday', part: 'weekday', 'aria-hidden': 'true' }, text: wd, data: { idx: idx } }));
       });
 
       var firstOfMonth = makeDate(y, m, 1);
@@ -2294,11 +2450,30 @@
         }
       });
       if (disabled) cell.disabled = true;
+      // Days from neighbouring months are visual filler: skip them for AT.
+      if (outside) { cell.setAttribute('aria-hidden', 'true'); cell.tabIndex = -1; }
+      this._labelDayCell(cell, date);
+      cell.addEventListener('focus', function () { self._lastFocusedDate = date; });
       this._dayCells.push({ el: cell, date: date, outside: outside });
       return cell;
     }
 
+    _labelDayCell(cell, date) {
+      var parts = [this._spokenDate(date)];
+      var isStart = this._draftStart && sameDay(date, this._draftStart);
+      var isEnd = this._draftEnd && sameDay(date, this._draftEnd);
+      if (isStart && isEnd) parts.push('range start and end');
+      else if (isStart) parts.push('range start');
+      else if (isEnd) parts.push('range end');
+      else if (this._draftStart && this._draftEnd && inRange(date, this._draftStart, this._draftEnd)) parts.push('in selected range');
+      cell.setAttribute('aria-label', parts.join(', '));
+      cell.setAttribute('aria-pressed', (isStart || isEnd) ? 'true' : 'false');
+    }
+
     _onDayClick(date) {
+      // Picking re-renders the grid; keep keyboard focus on the picked day.
+      var active = this._root.activeElement;
+      var hadFocus = !!(active && this._calRow.contains(active));
       if (!this._draftStart || (this._draftStart && this._draftEnd)) {
         this._draftStart = date;
         this._draftEnd = null;
@@ -2313,7 +2488,12 @@
       }
       this._activePreset = 'custom';
       this._highlightPreset();
+      this._lastFocusedDate = date;
       this._renderCalendars();
+      if (hadFocus) {
+        var cell = this._syncDayTabStops(date);
+        if (cell) cell.el.focus();
+      }
       this._emitDraftInput();
     }
 
@@ -2395,6 +2575,7 @@
       var endV = parseInt(this._timeEndInput.value, 10);
       if (v > endV) { v = endV; this._timeStartInput.value = String(v); }
       this._draftStartTime = minutesToLabel(v);
+      this._timeStartInput.setAttribute('aria-valuetext', this._draftStartTime);
       this._syncTimeRow();
       this._emitDraftInput();
     }
@@ -2403,6 +2584,7 @@
       var startV = parseInt(this._timeStartInput.value, 10);
       if (v < startV) { v = startV; this._timeEndInput.value = String(v); }
       this._draftEndTime = minutesToLabel(v);
+      this._timeEndInput.setAttribute('aria-valuetext', this._draftEndTime);
       this._syncTimeRow();
       this._emitDraftInput();
     }
@@ -2421,6 +2603,10 @@
       this._timeEndLabel.style.left = endPct + '%';
       this._timeStartLabel.textContent = this._draftStartTime;
       this._timeEndLabel.textContent = this._draftEndTime;
+      this._timeStartInput.setAttribute('aria-valuetext', this._draftStartTime);
+      this._timeEndInput.setAttribute('aria-valuetext', this._draftEndTime);
+      this._timeStartLabel.setAttribute('aria-hidden', 'true');
+      this._timeEndLabel.setAttribute('aria-hidden', 'true');
     }
 
     // ---- popup open/close ----
@@ -2457,6 +2643,10 @@
       this._renderCalendars();
       this._syncTimeRow();
       this.emit('open', {});
+      // Move focus into the dialog: the selected start day, else today,
+      // else the first available day.
+      var first = this._syncDayTabStops(this._draftStart);
+      if (first) first.el.focus();
     }
     close() { this._close(); }
     _close() {
@@ -2465,6 +2655,9 @@
       this._popup.classList.remove('open');
       this._trigger.classList.remove('open');
       this._trigger.setAttribute('aria-expanded', 'false');
+      // If focus was inside the popup, return it to the trigger.
+      var active = this._root.activeElement;
+      if (active && active !== this._trigger && this._popup.contains(active)) this._trigger.focus();
       this.emit('close', {});
     }
     toggle() { if (this._isOpen) this._close(); else this.open(); }
@@ -2748,7 +2941,7 @@
 
     '.field { flex: 1; min-width: 0; border: none; outline: none; background: transparent; padding: 0.5rem 0;' +
     '  font: inherit; font-size: 0.95rem; color: inherit; }' +
-    '.field::placeholder { color: var(--lwt-color-text-subtle, #9ca3af); }' +
+    '.field::placeholder { color: var(--lwt-color-text-subtle, #6b7280); }' +
     '.field:disabled { cursor: not-allowed; }' +
 
     '.icon-slot { flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--lwt-color-text-muted, #6b7280); }' +
@@ -2811,7 +3004,7 @@
     '    <span class="icon-slot leading hidden" part="icon-leading"><slot name="icon-leading"></slot></span>' +
     '    <input class="field" part="input" autocomplete="off">' +
     '    <button type="button" class="built-in-btn clear-btn" part="clear-btn" tabindex="-1" aria-label="Clear">' + CLEAR_SVG + '</button>' +
-    '    <button type="button" class="built-in-btn pw-btn" part="password-toggle" tabindex="-1" aria-label="Show password">' + EYE_SVG + '</button>' +
+    '    <button type="button" class="built-in-btn pw-btn" part="password-toggle" aria-label="Show password" aria-pressed="false">' + EYE_SVG + '</button>' +
     '    <span class="icon-slot trailing hidden" part="icon-trailing"><slot name="icon-trailing"></slot></span>' +
     '  </div>' +
     '  <ul class="listbox" part="listbox" role="listbox"></ul>' +
@@ -2827,7 +3020,8 @@
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'placeholder', 'value', 'type', 'name',
               'required', 'disabled', 'readonly', 'pattern', 'minlength', 'maxlength',
-              'min', 'max', 'step', 'autocomplete', 'strict', 'max-visible', 'show-counter'];
+              'min', 'max', 'step', 'autocomplete', 'strict', 'max-visible', 'show-counter',
+              'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -2906,6 +3100,8 @@
       this._input.id = this._id + '-input';
       this._listbox.id = this._id + '-listbox';
       this._labelEl.setAttribute('for', this._input.id);
+      this._helperEl.id = this._id + '-helper';
+      this._counterEl.id = this._id + '-counter';
 
       this._input.addEventListener('input', this._onInput);
       this._input.addEventListener('focus', this._onFocus);
@@ -2964,6 +3160,20 @@
       this._labelText.textContent = label;
       this._labelEl.style.display = label ? '' : 'none';
       this._requiredMark.hidden = !required;
+
+      // Accessible name. A visible label wins; without one, fall back to
+      // the host's aria-label, the placeholder, a humanized name="", then
+      // the input type -- and tell the developer (WCAG 3.3.2 / 4.1.2).
+      var hostLabel = this._hostLabel();
+      if (label && !hostLabel) {
+        input.removeAttribute('aria-label');
+      } else {
+        var TYPE_NAMES = { email: 'Email address', tel: 'Phone number', url: 'Web address', search: 'Search',
+          password: 'Password', number: 'Number', date: 'Date', month: 'Month', week: 'Week', time: 'Time' };
+        input.setAttribute('aria-label', this._a11yName([placeholder, window.LWT.a11y.humanize(name)],
+          TYPE_NAMES[type] || 'Text field', 'Add a label attribute'));
+      }
+      this._listbox.setAttribute('aria-label', (label || input.getAttribute('aria-label') || 'Options') + ' suggestions');
 
       // type — password toggle only meaningful for type=password.
       // If the user has clicked the eye, actual DOM type is 'text'; the
@@ -3025,10 +3235,21 @@
         this._helperEl.textContent = helper;
       }
       this.toggleAttribute('data-invalid', !!errorMsg);
+      if (errorMsg) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
 
       this._syncClearBtn();
       this._syncCounter();
+      this._syncDescribedBy();
       this._reportValidity();
+    }
+
+    // Helper/error text and the character counter describe the field.
+    _syncDescribedBy() {
+      var ids = [];
+      if (this._helperEl.textContent) ids.push(this._helperEl.id);
+      if (!this._counterEl.hidden) ids.push(this._counterEl.id);
+      if (ids.length) this._input.setAttribute('aria-describedby', ids.join(' '));
+      else this._input.removeAttribute('aria-describedby');
     }
 
     _syncClearBtn() {
@@ -3196,6 +3417,7 @@
       this._input.type = this._passwordVisible ? 'text' : 'password';
       this._pwBtn.innerHTML = this._passwordVisible ? EYE_OFF_SVG : EYE_SVG;
       this._pwBtn.setAttribute('aria-label', this._passwordVisible ? 'Hide password' : 'Show password');
+      this._pwBtn.setAttribute('aria-pressed', this._passwordVisible ? 'true' : 'false');
       this._input.focus();
     }
 
@@ -3528,9 +3750,12 @@
     '  <span class="label-text" part="label-text"></span>' +
     '  <span class="required-mark" part="required">*</span>' +
     '</div>' +
-    '<div class="boxes" part="boxes"></div>' +
+    '<div class="boxes" part="boxes" role="group"></div>' +
+    // Off-screen helper that lets mobile OSes autofill an SMS code. Hidden
+    // from assistive tech AND out of the Tab order (aria-hidden content
+    // must never be focusable).
     '<input class="autofill-input" part="autofill-input" type="text" inputmode="numeric" ' +
-    '  autocomplete="one-time-code" aria-hidden="true">' +
+    '  autocomplete="one-time-code" aria-hidden="true" tabindex="-1">' +
     '<div class="below" part="below">' +
     '  <span class="helper" part="helper"></span>' +
     '</div>';
@@ -3568,7 +3793,7 @@
 
   class LWTOtp extends window.LWT.Element {
     static get observedAttributes() {
-      return ['label', 'helper', 'error', 'length', 'type', 'name', 'required', 'disabled', 'readonly', 'auto-focus'];
+      return ['label', 'helper', 'error', 'length', 'type', 'name', 'required', 'disabled', 'readonly', 'auto-focus', 'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -3626,6 +3851,8 @@
       this._autofillInput = root.querySelector('.autofill-input');
 
       this._id = 'lwt-otp-' + (++uid);
+      this._labelText.id = this._id + '-label';
+      this._helperEl.id = this._id + '-helper';
       this._autofillInput.addEventListener('input', this._onAutofillInput);
 
       this._rebuildBoxes();
@@ -3710,10 +3937,24 @@
       this._helperEl.classList.toggle('error', !!error);
       this.toggleAttribute('data-invalid', !!error);
 
+      // The boxes form one named group ("Verification code" if unlabelled),
+      // described by the helper/error text.
+      var hostLabel = this._hostLabel();
+      if (label && !hostLabel) {
+        this._boxesEl.setAttribute('aria-labelledby', this._labelText.id);
+        this._boxesEl.removeAttribute('aria-label');
+      } else {
+        this._boxesEl.removeAttribute('aria-labelledby');
+        this._boxesEl.setAttribute('aria-label', this._a11yName([], 'Verification code', 'Add a label attribute'));
+      }
+      if (error || helper) this._boxesEl.setAttribute('aria-describedby', this._helperEl.id);
+      else this._boxesEl.removeAttribute('aria-describedby');
+
       this._boxEls.forEach(function (box) {
         box.disabled = disabled;
         box.readOnly = readonly;
         box.tabIndex = disabled ? -1 : 0;
+        if (error) box.setAttribute('aria-invalid', 'true'); else box.removeAttribute('aria-invalid');
       });
       this._autofillInput.disabled = disabled;
       this._reportValidity();
@@ -4115,15 +4356,16 @@
     '  color: var(--lwt-select-tag-color, var(--lwt-color-primary, #2563eb)); }' +
     '.tag-label { overflow: hidden; text-overflow: ellipsis; }' +
     '.tag-label img { vertical-align: middle; max-height: 1.2em; }' +
-    '.tag-remove { flex-shrink: 0; border: none; background: none; padding: 0; margin: 0; display: flex; align-items: center;' +
-    '  cursor: pointer; color: inherit; opacity: 0.65; border-radius: 3px; }' +
+    '.tag-remove { flex-shrink: 0; border: none; background: none; padding: 0; margin: -0.2rem -0.25rem -0.2rem 0; display: flex; align-items: center;' +
+    '  justify-content: center; min-width: 24px; min-height: 24px; cursor: pointer; color: inherit; opacity: 0.75; border-radius: 3px; }' +
+    '.tag-remove:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; opacity: 1; }' +
     '.tag-remove:hover { opacity: 1; }' +
     '.tag-remove svg { width: 0.75rem; height: 0.75rem; }' +
     ':host([disabled]) .tag-remove { pointer-events: none; }' +
 
     '.field { flex: 1; min-width: 60px; border: none; outline: none; background: transparent; padding: 0.3rem 0;' +
     '  font: inherit; font-size: 0.95rem; color: inherit; }' +
-    '.field::placeholder { color: var(--lwt-color-text-subtle, #9ca3af); }' +
+    '.field::placeholder { color: var(--lwt-color-text-subtle, #6b7280); }' +
     '.field:disabled { cursor: not-allowed; }' +
 
     '.below { display: flex; align-items: flex-start; gap: 0.75rem; margin-top: 0.3rem; font-size: 0.78rem; min-height: 1rem; }' +
@@ -4138,7 +4380,9 @@
     '  display: none; }' +
     '.listbox.open { display: block; }' +
     '.option { display: flex; align-items: center; padding: 0.45rem 0.75rem; cursor: pointer; font-size: 0.9rem; gap: 0.4rem; }' +
-    '.option[aria-selected="true"] { background: var(--lwt-color-primary-soft, #eff6ff); color: var(--lwt-color-primary, #2563eb); font-weight: 600; }' +
+    // .active = the keyboard/hover position; aria-selected/data-picked =
+    // actually chosen (kept separate so multi-select announces correctly).
+    '.option.active { background: var(--lwt-color-primary-soft, #eff6ff); color: var(--lwt-color-primary, #2563eb); font-weight: 600; }' +
     '.option[data-picked="true"] { background: var(--lwt-color-primary, #2563eb); color: #fff; }' +
     '.option[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }' +
     '.option-label { overflow: hidden; text-overflow: ellipsis; }' +
@@ -4178,7 +4422,7 @@
 
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'placeholder', 'name', 'multiple',
-              'max-selections', 'max-visible', 'required', 'disabled', 'readonly'];
+              'max-selections', 'max-visible', 'required', 'disabled', 'readonly', 'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -4264,6 +4508,7 @@
       this._input.id = this._id + '-input';
       this._listbox.id = this._id + '-listbox';
       this._labelEl.setAttribute('for', this._input.id);
+      this._helperEl.id = this._id + '-helper';
       this._input.setAttribute('role', 'combobox');
       this._input.setAttribute('aria-autocomplete', 'list');
       this._input.setAttribute('aria-controls', this._listbox.id);
@@ -4320,6 +4565,21 @@
       this._labelEl.style.display = label ? '' : 'none';
       this._requiredMark.hidden = !required;
 
+      // Accessible name: visible label, else host aria-label, placeholder,
+      // humanized name="", else "Select" -- with a developer warning.
+      var hostLabel = this._hostLabel();
+      var nameText = label;
+      if (label && !hostLabel) {
+        this._input.removeAttribute('aria-label');
+      } else {
+        nameText = this._a11yName([placeholder, window.LWT.a11y.humanize(this._strAttr('name', ''))],
+          this._boolAttr('multiple') ? 'Select options' : 'Select an option', 'Add a label attribute');
+        this._input.setAttribute('aria-label', nameText);
+      }
+      this._listbox.setAttribute('aria-label', nameText);
+      if (this._boolAttr('multiple')) this._listbox.setAttribute('aria-multiselectable', 'true');
+      else this._listbox.removeAttribute('aria-multiselectable');
+
       this._input.placeholder = placeholder;
       this._input.required = required && this._selected().length === 0;
       this._input.disabled = disabled;
@@ -4334,6 +4594,9 @@
         this._helperEl.textContent = helper;
       }
       this.toggleAttribute('data-invalid', !!errorMsg);
+      if (errorMsg) this._input.setAttribute('aria-invalid', 'true'); else this._input.removeAttribute('aria-invalid');
+      if (this._helperEl.textContent) this._input.setAttribute('aria-describedby', this._helperEl.id);
+      else this._input.removeAttribute('aria-describedby');
 
       this._reportValidity();
     }
@@ -4538,6 +4801,9 @@
 
       if (!opts.skipEvents) {
         this.emit(selected ? 'select' : 'remove', { value: opt.value, option: this._publicOption(opt) });
+        // Tags appear/disappear visually; say so for screen readers too.
+        window.LWT.a11y.announce(opt.text + (selected ? ' selected' : ' removed') +
+          (multiple ? ', ' + this._selected().length + ' selected' : ''));
       }
       return true;
     }
@@ -4656,7 +4922,7 @@
         var attrs = 'class="option" role="option" data-idx="' + i + '" id="' + self._id + '-opt-' + i + '"' +
           (opt.disabled ? ' aria-disabled="true"' : '') +
           (opt.selected ? ' data-picked="true"' : '') +
-          ' aria-selected="false"';
+          ' aria-selected="' + (opt.selected ? 'true' : 'false') + '"';
         return '<li ' + attrs + '><span class="option-label" part="option-label">' + opt.label + '</span></li>';
       }).join('');
       this._listbox.innerHTML = html;
@@ -4669,8 +4935,8 @@
     }
 
     _setActiveIndex(idx) {
-      var prev = this._listbox.querySelector('.option[aria-selected="true"]');
-      if (prev) prev.setAttribute('aria-selected', 'false');
+      var prev = this._listbox.querySelector('.option.active');
+      if (prev) prev.classList.remove('active');
 
       if (idx < 0 || idx >= this._filtered.length) {
         this._activeIndex = -1;
@@ -4681,7 +4947,7 @@
       this._activeIndex = idx;
       var el = this._listbox.querySelector('.option[data-idx="' + idx + '"]');
       if (!el) return;
-      el.setAttribute('aria-selected', 'true');
+      el.classList.add('active');
       this._input.setAttribute('aria-activedescendant', el.id);
 
       var lb = this._listbox;
@@ -4984,21 +5250,23 @@
     '  <span class="required-mark" part="required">*</span>' +
     '</div>' +
     '<div class="panel-box" part="panel">' +
-    '  <div class="tabs" part="tabs">' +
-    '    <button type="button" class="tab" part="tab-type" data-mode="type">Type</button>' +
-    '    <button type="button" class="tab" part="tab-draw" data-mode="draw">Draw</button>' +
+    '  <div class="tabs" part="tabs" role="group" aria-label="Signature method">' +
+    '    <button type="button" class="tab" part="tab-type" data-mode="type" aria-pressed="true">Type</button>' +
+    '    <button type="button" class="tab" part="tab-draw" data-mode="draw" aria-pressed="false">Draw</button>' +
     '  </div>' +
     '  <div class="type-panel" part="type-panel">' +
     '    <input type="text" class="name-input" part="name-input" autocomplete="off" spellcheck="false">' +
     '    <div class="font-swatches" part="font-swatches"></div>' +
     '    <div class="preview" part="preview">' +
     '      <span class="preview-text" part="preview-text"></span>' +
-    '      <span class="preview-placeholder" part="preview-placeholder">Your signature</span>' +
+    '      <span class="preview-placeholder" part="preview-placeholder" aria-hidden="true">Your signature</span>' +
     '    </div>' +
     '  </div>' +
     '  <div class="draw-panel" part="draw-panel">' +
-    '    <canvas class="draw-canvas" part="canvas"></canvas>' +
-    '    <span class="draw-placeholder" part="draw-placeholder">Sign here</span>' +
+    // Drawing needs a pointer; keyboard users sign in Type mode instead
+    // (WCAG 2.1.1 alternative), which the canvas's name points out.
+    '    <canvas class="draw-canvas" part="canvas" role="img" aria-label="Signature drawing area. Draw with a mouse, pen or finger, or switch to Type to type your name."></canvas>' +
+    '    <span class="draw-placeholder" part="draw-placeholder" aria-hidden="true">Sign here</span>' +
     '  </div>' +
     '  <div class="actions" part="actions">' +
     '    <button type="button" class="clear-btn" part="clear">Clear</button>' +
@@ -5051,13 +5319,13 @@
     '.preview-text { font-size: 2rem; line-height: 1; color: var(--lwt-signature-ink-color, var(--lwt-color-text, #111827)); }' +
     '.preview-text:empty { display: none; }' +
     '.preview-placeholder { position: absolute; left: 0; right: 0; bottom: 0.7rem; text-align: center;' +
-    '  color: var(--lwt-color-text-subtle, #9ca3af); font-size: 0.85rem; }' +
+    '  color: var(--lwt-color-text-subtle, #6b7280); font-size: 0.85rem; }' +
     '.preview-text:not(:empty) ~ .preview-placeholder { display: none; }' +
 
     '.draw-canvas { display: block; width: 100%; height: 160px; touch-action: none; cursor: crosshair; }' +
     ':host([disabled]) .draw-canvas, :host([readonly]) .draw-canvas { cursor: not-allowed; }' +
     '.draw-placeholder { position: absolute; left: 0; right: 0; bottom: 1rem; text-align: center; pointer-events: none;' +
-    '  color: var(--lwt-color-text-subtle, #9ca3af); font-size: 0.85rem; }' +
+    '  color: var(--lwt-color-text-subtle, #6b7280); font-size: 0.85rem; }' +
     '.draw-placeholder.hidden { display: none; }' +
 
     '.actions { display: flex; justify-content: flex-end; padding: 0.5rem 0.85rem; border-top: 1px solid var(--lwt-color-border, #e5e7eb); }' +
@@ -5075,7 +5343,7 @@
   class LWTSignature extends window.LWT.Element {
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'name', 'required', 'disabled', 'readonly',
-              'mode', 'no-draw', 'fonts', 'pen-color'];
+              'mode', 'no-draw', 'fonts', 'pen-color', 'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -5167,7 +5435,8 @@
 
       this._id = 'lwt-signature-' + (++uid);
       this._nameInput.id = this._id + '-name';
-      this._labelEl.setAttribute('for', this._nameInput.id);
+      this._labelText.id = this._id + '-label';
+      this._helperEl.id = this._id + '-helper';
 
       this._tabType.addEventListener('click', this._onTabClick);
       this._tabDraw.addEventListener('click', this._onTabClick);
@@ -5207,6 +5476,9 @@
           text: 'Signature',
           events: { click: function () { self._selectFont(font); } }
         });
+        // Every swatch shows the same word, so name them by font.
+        var fontName = String(font.family).split(',')[0].replace(/["']/g, '').trim() || 'Font';
+        swatch.setAttribute('aria-label', 'Signature font: ' + fontName);
         self._swatchesEl.appendChild(swatch);
       });
       this._highlightFontSwatch();
@@ -5217,7 +5489,10 @@
       var fonts = this._fontList();
       var idx = fonts.findIndex(function (f) { return sameFont(f, self._font); });
       var swatches = this._swatchesEl.children;
-      for (var i = 0; i < swatches.length; i++) swatches[i].classList.toggle('active', i === idx);
+      for (var i = 0; i < swatches.length; i++) {
+        swatches[i].classList.toggle('active', i === idx);
+        swatches[i].setAttribute('aria-pressed', i === idx ? 'true' : 'false');
+      }
     }
 
     _selectFont(font) {
@@ -5266,6 +5541,8 @@
       if (!this._tabType) return;
       this._tabType.classList.toggle('active', this._mode === 'type');
       this._tabDraw.classList.toggle('active', this._mode === 'draw');
+      this._tabType.setAttribute('aria-pressed', this._mode === 'type' ? 'true' : 'false');
+      this._tabDraw.setAttribute('aria-pressed', this._mode === 'draw' ? 'true' : 'false');
     }
 
     // ---- draw mode ----
@@ -5355,6 +5632,16 @@
       this._helperEl.textContent = error || helper;
       this._helperEl.classList.toggle('error', !!error);
       this.toggleAttribute('data-invalid', !!error);
+
+      // The whole widget is one named group; the name box inside is named
+      // by the label (the visible label is a <div>, so `for` can't do it).
+      var groupName = this._a11yName([label], 'Signature', 'Add a label attribute');
+      this._ensureAttr('role', 'group');
+      this._ensureAttr('aria-label', groupName);
+      this._nameInput.setAttribute('aria-label', groupName + ': type your full name');
+      if (error || helper) this._nameInput.setAttribute('aria-describedby', this._helperEl.id);
+      else this._nameInput.removeAttribute('aria-describedby');
+      if (error) this._nameInput.setAttribute('aria-invalid', 'true'); else this._nameInput.removeAttribute('aria-invalid');
 
       this._nameInput.disabled = disabled;
       this._nameInput.readOnly = readonly;
@@ -5656,7 +5943,7 @@
     '.segments { position: absolute; top: 50%; left: -0.7rem; right: -0.7rem; height: 4px; transform: translateY(-50%); }' +
     '.segment { position: absolute; top: 0; height: 100%; background: var(--lwt-slider-segment-color, var(--lwt-color-primary, #2563eb)); }' +
     '.handles { position: absolute; inset: 0; }' +
-    '.handle { position: absolute; top: 50%; width: 1.3rem; height: 1.3rem; border-radius: 999px;' +
+    '.handle { position: absolute; top: 50%; width: 1.5rem; height: 1.5rem; border-radius: 999px;' +
     '  transform: translate(-50%, -50%); cursor: grab; touch-action: none;' +
     '  background: var(--lwt-slider-handle-bg, #fff);' +
     '  border: 2px solid var(--lwt-slider-handle-border, var(--lwt-color-primary, #2563eb));' +
@@ -5687,7 +5974,8 @@
   class LWTSlider extends window.LWT.Element {
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'min', 'max', 'step', 'name', 'required',
-              'disabled', 'readonly', 'ticks', 'tick-step', 'label-format', 'unit', 'tooltip'];
+              'disabled', 'readonly', 'ticks', 'tick-step', 'label-format', 'unit', 'tooltip',
+              'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -5746,6 +6034,7 @@
       this._helperEl = root.querySelector('.helper');
 
       this._id = 'lwt-slider-' + (++uid);
+      this._helperEl.id = this._id + '-helper';
       this._wrap.addEventListener('pointerdown', this._onTrackPointerDown);
 
       this._rebuild();
@@ -5802,6 +6091,7 @@
       this._buildSegments();
       this._buildTicks();
       this._syncPositions();
+      if (this._labelText) this._syncAttrs(); // new handles need their names/states again
     }
 
     _buildSegments() {
@@ -6016,11 +6306,21 @@
       this._helperEl.classList.toggle('error', !!error);
       this.toggleAttribute('data-invalid', !!error);
 
-      this._handleEls.forEach(function (h) {
+      // Each handle needs a name: the label, plus "minimum"/"maximum" for
+      // a two-handle range (or "value N of M" for more).
+      var base = this._a11yName([label, window.LWT.a11y.humanize(this._strAttr('name', ''))], 'Value', 'Add a label attribute');
+      var count = this._handleEls.length;
+      var helperId = (error || helper) ? this._helperEl.id : '';
+      this._handleEls.forEach(function (h, i) {
         h.tabIndex = disabled ? -1 : 0;
         h.setAttribute('aria-disabled', disabled ? 'true' : 'false');
-        h.setAttribute('aria-readonly', readonly ? 'true' : 'false');
+        if (readonly) h.setAttribute('aria-readonly', 'true'); else h.removeAttribute('aria-readonly');
+        var suffix = count === 1 ? '' : (count === 2 ? (i === 0 ? ' minimum' : ' maximum') : ' value ' + (i + 1) + ' of ' + count);
+        h.setAttribute('aria-label', base + suffix);
+        if (helperId) h.setAttribute('aria-describedby', helperId); else h.removeAttribute('aria-describedby');
+        if (error) h.setAttribute('aria-invalid', 'true'); else h.removeAttribute('aria-invalid');
       });
+      if (count > 1) { this._ensureAttr('role', 'group'); this._ensureAttr('aria-label', base); }
     }
 
     // ---- value ----
@@ -6223,7 +6523,7 @@
     '.helper.error { color: var(--lwt-transfer-error-color, var(--lwt-color-danger, #ef4444)); }';
 
   var TEMPLATE =
-    '<label class="group-label" part="label"><span class="label-text"></span><span class="required-mark" hidden>*</span></label>' +
+    '<div class="group-label" part="label"><span class="label-text"></span><span class="required-mark" hidden aria-hidden="true">*</span></div>' +
     '<div class="wrap" part="wrap">' +
     '  <div class="col" part="available-col">' +
     '    <span class="col-label" part="available-label"></span>' +
@@ -6253,7 +6553,7 @@
 
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'available-label', 'selected-label',
-              'sortable', 'size', 'name', 'required', 'disabled'];
+              'sortable', 'size', 'name', 'required', 'disabled', 'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -6355,6 +6655,14 @@
       this._upBtn = root.querySelector('.up-btn');
       this._downBtn = root.querySelector('.down-btn');
 
+      // ids so the selects can be labelled by "<label> <column>" and
+      // described by the helper text (all inside this shadow root).
+      var a11y = window.LWT.a11y;
+      this._labelText.id = a11y.uid('lwt-transfer-label');
+      this._availLabelEl.id = a11y.uid('lwt-transfer-avail');
+      this._selLabelEl.id = a11y.uid('lwt-transfer-sel');
+      this._helperEl.id = a11y.uid('lwt-transfer-helper');
+
       this._addBtn.addEventListener('click', this._onAddClick);
       this._removeBtn.addEventListener('click', this._onRemoveClick);
       this._upBtn.addEventListener('click', this._onUpClick);
@@ -6380,8 +6688,31 @@
       this._labelEl.style.display = label ? '' : 'none';
       this._requiredMark.hidden = !required;
 
-      this._availLabelEl.textContent = this._strAttr('available-label', 'Available');
-      this._selLabelEl.textContent = this._strAttr('selected-label', 'Selected');
+      var availName = this._strAttr('available-label', 'Available');
+      var selName = this._strAttr('selected-label', 'Selected');
+      this._availLabelEl.textContent = availName;
+      this._selLabelEl.textContent = selName;
+
+      // Group name for the whole control, then name each list as
+      // "<group> <column>" and say what each button does.
+      var groupName = this._a11yName([label, window.LWT.a11y.humanize(this._strAttr('name', ''))],
+        'Transfer list', 'Add a label attribute');
+      this._ensureAttr('role', 'group');
+      this._ensureAttr('aria-label', groupName);
+      this._availSelect.setAttribute('aria-label', groupName + ': ' + availName);
+      this._selSelect.setAttribute('aria-label', groupName + ': ' + selName);
+      this._addBtn.setAttribute('aria-label', 'Add chosen items to ' + selName);
+      this._removeBtn.setAttribute('aria-label', 'Remove chosen items from ' + selName);
+      this._upBtn.setAttribute('aria-label', 'Move chosen items up');
+      this._downBtn.setAttribute('aria-label', 'Move chosen items down');
+      if (helper || error) {
+        this._availSelect.setAttribute('aria-describedby', this._helperEl.id);
+        this._selSelect.setAttribute('aria-describedby', this._helperEl.id);
+      } else {
+        this._availSelect.removeAttribute('aria-describedby');
+        this._selSelect.removeAttribute('aria-describedby');
+      }
+      if (error) this._selSelect.setAttribute('aria-invalid', 'true'); else this._selSelect.removeAttribute('aria-invalid');
 
       this._availSelect.size = size;
       this._selSelect.size = size;
@@ -6470,7 +6801,14 @@
       this._renderLists();
       this._reportValue();
       this._reportValidity();
+      this._announceMove(vals.length, false);
       this.emit('change', { value: this._order.slice() });
+    }
+
+    _announceMove(count, added) {
+      var col = this._strAttr('selected-label', 'Selected');
+      window.LWT.a11y.announce(count + (count === 1 ? ' item ' : ' items ') + (added ? 'added to ' : 'removed from ') + col +
+        '. ' + this._order.length + ' in ' + col + '.');
     }
 
     _onUpClick() {
@@ -6498,6 +6836,7 @@
       this._renderLists();
       this._reportValue();
       this._reportValidity();
+      this._announceMove(1, false);
       this.emit('change', { value: this._order.slice() });
     }
 
@@ -6521,6 +6860,7 @@
       this._renderLists();
       this._reportValue();
       this._reportValidity();
+      this._announceMove(toAdd.length, true);
       this.emit('change', { value: this._order.slice() });
     }
 

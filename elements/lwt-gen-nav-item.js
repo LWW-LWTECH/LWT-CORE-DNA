@@ -79,6 +79,7 @@
       this._handleTriggerClick = this._handleTriggerClick.bind(this);
       this._handleTriggerKeydown = this._handleTriggerKeydown.bind(this);
       this._handleChildOpen = this._handleChildOpen.bind(this);
+      this._syncName = this._syncName.bind(this);
     }
 
     connectedCallback() {
@@ -113,6 +114,24 @@
       this.addEventListener('mouseenter', this._onMouseEnter);
       this.addEventListener('mouseleave', this._onMouseLeave);
       this.addEventListener('lwt-navopen', this._handleChildOpen);
+
+      // Items live inside the menu's (or parent item's) list.
+      this._ensureAttr('role', 'listitem');
+      this._whenParsed(this._syncName);
+    }
+
+    // Name for the trigger: its slotted text, else label, else something
+    // derived from the link target, else a generic fallback.
+    _syncName() {
+      if (!this._triggerEl) return;
+      var slot = this._root.querySelector('.content slot');
+      var text = slot ? slot.assignedNodes({ flatten: true }).map(function (n) { return n.textContent; }).join('').trim() : '';
+      var host = this._hostLabel();
+      if (host) { this._triggerEl.setAttribute('aria-label', host); return; }
+      if (text || this._strAttr('label', '')) { this._triggerEl.removeAttribute('aria-label'); return; }
+      var href = this._strAttr('href', '');
+      var fromHref = href ? window.LWT.a11y.humanize(href.split(/[?#]/)[0].split('/').filter(Boolean).pop() || '') : '';
+      this._triggerEl.setAttribute('aria-label', this._a11yName([fromHref], 'Menu item', 'Add text content or a label attribute'));
     }
 
     disconnectedCallback() {
@@ -175,6 +194,16 @@
 
       this._triggerEl.addEventListener('click', this._handleTriggerClick);
       this._triggerEl.addEventListener('keydown', this._handleTriggerKeydown);
+
+      // The current page's link is announced as such.
+      if (this._boolAttr('active') && this._triggerEl.tagName === 'A') this._triggerEl.setAttribute('aria-current', 'page');
+      if (this._submenuEl) this._submenuEl.setAttribute('role', 'list');
+      var self = this;
+      var labelSlot = this._root.querySelector('.content slot');
+      if (labelSlot) labelSlot.addEventListener('slotchange', function () { self._syncName(); });
+      // Re-renders can happen mid-parse (the menu pushes mobile/orientation
+      // down before an item's text exists); only re-check once parsed.
+      if (this._initialized && document.readyState !== 'loading') this._syncName();
 
       this._applyOpenState();
     }

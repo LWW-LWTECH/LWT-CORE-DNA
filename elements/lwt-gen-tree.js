@@ -41,7 +41,7 @@
 
   class LWTTree extends window.LWT.Element {
     static get observedAttributes() {
-      return ['checkable'];
+      return ['checkable', 'label', 'aria-label'];
     }
 
     constructor() {
@@ -50,6 +50,7 @@
       this._handleSelect = this._handleSelect.bind(this);
       this._handleCheckChange = this._handleCheckChange.bind(this);
       this._handleKeydown = this._handleKeydown.bind(this);
+      this._handleFocusIn = this._handleFocusIn.bind(this);
       this._treeObserver = null;
       this._syncQueued = false;
     }
@@ -59,6 +60,7 @@
       this.addEventListener('lwt-itemselect', this._handleSelect);
       this.addEventListener('lwt-itemcheck', this._handleCheckChange);
       this.addEventListener('keydown', this._handleKeydown);
+      this.addEventListener('focusin', this._handleFocusIn);
 
       if (!this._initialized) {
         this._initialized = true;
@@ -91,6 +93,7 @@
         self._syncQueued = false;
         self._syncCheckable();
         self._recomputeChecked();
+        self._syncRoving();
       });
     }
 
@@ -99,16 +102,50 @@
       this.removeEventListener('lwt-itemselect', this._handleSelect);
       this.removeEventListener('lwt-itemcheck', this._handleCheckChange);
       this.removeEventListener('keydown', this._handleKeydown);
+      this.removeEventListener('focusin', this._handleFocusIn);
       if (this._treeObserver) this._treeObserver.disconnect();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue) return;
       if (name === 'checkable') this._syncCheckable();
+      this._syncTreeA11y();
     }
 
     render() {
       this._renderShadow(TEMPLATE, CSS);
+      this._syncTreeA11y();
+    }
+
+    // role="tree" lives on the shadow wrapper; give it a name and say
+    // whether several items can be checked at once.
+    _syncTreeA11y() {
+      var tree = this._root.querySelector('.tree');
+      if (!tree) return;
+      tree.setAttribute('aria-label', this._a11yName([this._strAttr('label', '')], 'Tree', 'Add a label attribute'));
+      if (this._boolAttr('checkable')) tree.setAttribute('aria-multiselectable', 'true');
+      else tree.removeAttribute('aria-multiselectable');
+    }
+
+    // Roving tabindex (WAI-ARIA tree pattern): exactly one visible item is
+    // in the Tab order -- the last one focused, else the selected one,
+    // else the first. Arrow keys (see _handleKeydown) move between items.
+    _syncRoving(preferred) {
+      var items = Array.prototype.slice.call(this.querySelectorAll('lwtg-tree-item'));
+      if (!items.length) return;
+      var visible = this._visibleItems().filter(function (i) { return !i.hasAttribute('disabled'); });
+      var current = preferred && visible.indexOf(preferred) !== -1 ? preferred
+        : (visible.filter(function (i) { return i.tabIndex === 0 && i.hasAttribute('data-lwt-roving'); })[0] ||
+           visible.filter(function (i) { return i.hasAttribute('selected'); })[0] || visible[0]);
+      items.forEach(function (item) {
+        item.setAttribute('data-lwt-roving', '');
+        item.tabIndex = item === current ? 0 : -1;
+      });
+    }
+
+    _handleFocusIn(event) {
+      var item = event.target;
+      if (item && item.tagName === 'LWTG-TREE-ITEM') this._syncRoving(item);
     }
 
     _syncCheckable() {

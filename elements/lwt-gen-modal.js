@@ -26,7 +26,7 @@
 
   class LWTModal extends window.LWT.Element {
     static get observedAttributes() {
-      return ['label'];
+      return ['label', 'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -53,7 +53,7 @@
 
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue) return;
-      if (name === 'label' && this._dialog) {
+      if (this._dialog) {
         this._applyLabel();
       }
     }
@@ -64,19 +64,27 @@
       this._dialog.addEventListener('cancel', this._handleCancel);
       this._dialog.addEventListener('close', this._handleClose);
       this._dialog.addEventListener('click', this._handleBackdropClick);
-      this._applyLabel();
+      this._whenParsed(this._applyLabel);
     }
 
+    // A dialog must have a name (WCAG 4.1.2): label attribute, the host's
+    // aria-label/labelledby, or the first heading inside it.
     _applyLabel() {
-      var label = this._strAttr('label', '');
-      if (label) this._dialog.setAttribute('aria-label', label);
-      else this._dialog.removeAttribute('aria-label');
+      var heading = this.querySelector('h1, h2, h3, h4, h5, h6, [role="heading"]');
+      var name = this._a11yName([this._strAttr('label', ''), heading ? heading.textContent : ''],
+        'Dialog', 'Add a label attribute or a heading inside the modal');
+      this._dialog.setAttribute('aria-label', name);
     }
 
     // Public API -----------------------------------------------------
 
     show() {
       if (!this._dialog || this._dialog.open) return;
+      // Remember where focus was so it can go back there on close.
+      var active = document.activeElement;
+      while (active && active.shadowRoot && active.shadowRoot.activeElement) active = active.shadowRoot.activeElement;
+      this._returnFocus = active && active !== document.body ? active : null;
+      this._applyLabel(); // content may have changed since connect
       this._dialog.showModal();
       this.setAttribute('open', '');
       this.emit('open', {});
@@ -118,10 +126,14 @@
     }
 
     _handleBackdropClick(event) {
-      // The dialog element's own box is exactly its content; a click that
-      // lands on the dialog itself (not a descendant) means the backdrop
-      // was clicked.
+      // Only a click OUTSIDE the dialog's box is a backdrop click. (Clicks
+      // on the dialog's own padding also target the <dialog> element, so
+      // checking the target alone would close it by accident.)
       if (event.target !== this._dialog) return;
+      var rect = this._dialog.getBoundingClientRect();
+      var inside = event.clientX >= rect.left && event.clientX <= rect.right &&
+                   event.clientY >= rect.top && event.clientY <= rect.bottom;
+      if (inside || (event.clientX === 0 && event.clientY === 0 && event.detail === 0)) return;
       if (this._boolAttr('no-dismiss')) return;
       this.close('backdrop');
     }
@@ -131,6 +143,9 @@
       this.removeAttribute('open');
       var reason = this._closeReason || 'api';
       this._closeReason = null;
+      var target = this._returnFocus;
+      this._returnFocus = null;
+      if (target && target.isConnected && typeof target.focus === 'function') target.focus();
       this.emit('close', { reason: reason });
     }
   }

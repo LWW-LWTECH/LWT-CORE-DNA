@@ -50,7 +50,12 @@
 
   class LWTButton extends window.LWT.Element {
     static get observedAttributes() {
-      return ['variant', 'disabled', 'label'];
+      return ['variant', 'disabled', 'label', 'aria-label', 'aria-labelledby', 'aria-pressed', 'aria-expanded', 'aria-haspopup', 'aria-current'];
+    }
+
+    // Clicking/focusing the host lands focus on the real <button> inside.
+    static get shadowOptions() {
+      return { delegatesFocus: true };
     }
 
     static get observedProps() {
@@ -96,12 +101,35 @@
       var disabled = this.disabled;
       var label = this.label;
 
+      var esc = window.LWT.a11y.escape;
       this._renderShadow(
-        '<button class="' + variant + '"' + (disabled ? ' disabled' : '') + ' part="button">' +
-        '<slot>' + label + '</slot>' +
+        '<button type="button" class="' + esc(variant) + '"' + (disabled ? ' disabled' : '') + ' part="button">' +
+        '<slot>' + esc(label) + '</slot>' +
         '</button>',
         CSS
       );
+
+      this._button = this._root.querySelector('button');
+      // State attributes set on the host are what developers naturally
+      // reach for; mirror them onto the real button so they're announced.
+      var self = this;
+      ['aria-pressed', 'aria-expanded', 'aria-haspopup', 'aria-current'].forEach(function (name) {
+        if (self.hasAttribute(name)) self._button.setAttribute(name, self.getAttribute(name));
+      });
+
+      var slot = this._root.querySelector('slot');
+      var syncName = function () {
+        // A later render() replaces the shadow contents; a check queued by an
+        // earlier render must not run against its now-detached slot.
+        if (!self._button || !slot.isConnected) return;
+        var text = slot.assignedNodes({ flatten: true }).map(function (n) { return n.textContent; }).join('').trim();
+        var host = self._hostLabel();
+        if (host) self._button.setAttribute('aria-label', host);
+        else if (text || label) self._button.removeAttribute('aria-label');
+        else self._button.setAttribute('aria-label', self._a11yName([], 'Button', 'Add text content or a label attribute'));
+      };
+      slot.addEventListener('slotchange', syncName);
+      this._whenParsed(syncName);
     }
   }
 

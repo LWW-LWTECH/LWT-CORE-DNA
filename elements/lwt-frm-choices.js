@@ -213,8 +213,17 @@
       this._requiredMark.hidden = !required;
 
       this.setAttribute('role', multiple ? 'group' : 'radiogroup');
-      if (label) this.setAttribute('aria-label', label); else this.removeAttribute('aria-label');
+      // Group name: label, else derived from name="", else generic.
+      if (!this._devAttr('aria-label') && !this._devAttr('aria-labelledby')) {
+        this._setAutoAttr('aria-label', this._a11yName([label, window.LWT.a11y.humanize(this._strAttr('name', ''))],
+          'Options', 'Add a label attribute'));
+      }
       this.setAttribute('aria-required', required ? 'true' : 'false');
+      // Helper/error text lives in the shadow root, which aria-describedby
+      // can't reach from the host -- aria-description carries it instead.
+      var description = error || helper;
+      if (description) this._setAutoAttr('aria-description', description); else this._removeAutoAttr('aria-description');
+      if (error) this.setAttribute('aria-invalid', 'true'); else this.removeAttribute('aria-invalid');
 
       var errorMsg = error;
       if (errorMsg) {
@@ -228,6 +237,7 @@
 
       this._syncChildRoles();
       this._enforceSingleSelect();
+      this._syncRoving();
       this._reportValidity();
     }
 
@@ -441,7 +451,29 @@
 
     // ---- form-association + validity ----
 
+    // Radio groups: only the checked option (or the first enabled one) is
+    // in the Tab order; arrow keys move within the group. Checkbox groups:
+    // every option is a Tab stop.
+    _syncRoving() {
+      var multiple = this._strAttr('type', 'single') === 'multiple';
+      var options = Array.prototype.slice.call(this.querySelectorAll(':scope > lwtf-choice-option'));
+      if (multiple) {
+        options.forEach(function (o) {
+          if (o.hasAttribute('data-lwt-roving')) o.removeAttribute('data-lwt-roving');
+          o.tabIndex = o.hasAttribute('disabled') ? -1 : 0;
+        });
+        return;
+      }
+      var enabled = options.filter(function (o) { return !o.hasAttribute('disabled'); });
+      var current = enabled.filter(function (o) { return o.hasAttribute('checked'); })[0] || enabled[0];
+      options.forEach(function (o) {
+        o.setAttribute('data-lwt-roving', '');
+        o.tabIndex = o === current ? 0 : -1;
+      });
+    }
+
     _reportValue() {
+      this._syncRoving();
       if (!this._internals) return;
       var vals = this._collectValues();
       var multiple = this._strAttr('type', 'single') === 'multiple';

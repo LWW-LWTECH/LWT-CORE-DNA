@@ -192,15 +192,16 @@
     '  color: var(--lwt-select-tag-color, var(--lwt-color-primary, #2563eb)); }' +
     '.tag-label { overflow: hidden; text-overflow: ellipsis; }' +
     '.tag-label img { vertical-align: middle; max-height: 1.2em; }' +
-    '.tag-remove { flex-shrink: 0; border: none; background: none; padding: 0; margin: 0; display: flex; align-items: center;' +
-    '  cursor: pointer; color: inherit; opacity: 0.65; border-radius: 3px; }' +
+    '.tag-remove { flex-shrink: 0; border: none; background: none; padding: 0; margin: -0.2rem -0.25rem -0.2rem 0; display: flex; align-items: center;' +
+    '  justify-content: center; min-width: 24px; min-height: 24px; cursor: pointer; color: inherit; opacity: 0.75; border-radius: 3px; }' +
+    '.tag-remove:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; opacity: 1; }' +
     '.tag-remove:hover { opacity: 1; }' +
     '.tag-remove svg { width: 0.75rem; height: 0.75rem; }' +
     ':host([disabled]) .tag-remove { pointer-events: none; }' +
 
     '.field { flex: 1; min-width: 60px; border: none; outline: none; background: transparent; padding: 0.3rem 0;' +
     '  font: inherit; font-size: 0.95rem; color: inherit; }' +
-    '.field::placeholder { color: var(--lwt-color-text-subtle, #9ca3af); }' +
+    '.field::placeholder { color: var(--lwt-color-text-subtle, #6b7280); }' +
     '.field:disabled { cursor: not-allowed; }' +
 
     '.below { display: flex; align-items: flex-start; gap: 0.75rem; margin-top: 0.3rem; font-size: 0.78rem; min-height: 1rem; }' +
@@ -215,7 +216,9 @@
     '  display: none; }' +
     '.listbox.open { display: block; }' +
     '.option { display: flex; align-items: center; padding: 0.45rem 0.75rem; cursor: pointer; font-size: 0.9rem; gap: 0.4rem; }' +
-    '.option[aria-selected="true"] { background: var(--lwt-color-primary-soft, #eff6ff); color: var(--lwt-color-primary, #2563eb); font-weight: 600; }' +
+    // .active = the keyboard/hover position; aria-selected/data-picked =
+    // actually chosen (kept separate so multi-select announces correctly).
+    '.option.active { background: var(--lwt-color-primary-soft, #eff6ff); color: var(--lwt-color-primary, #2563eb); font-weight: 600; }' +
     '.option[data-picked="true"] { background: var(--lwt-color-primary, #2563eb); color: #fff; }' +
     '.option[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }' +
     '.option-label { overflow: hidden; text-overflow: ellipsis; }' +
@@ -255,7 +258,7 @@
 
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'placeholder', 'name', 'multiple',
-              'max-selections', 'max-visible', 'required', 'disabled', 'readonly'];
+              'max-selections', 'max-visible', 'required', 'disabled', 'readonly', 'aria-label', 'aria-labelledby'];
     }
 
     constructor() {
@@ -341,6 +344,7 @@
       this._input.id = this._id + '-input';
       this._listbox.id = this._id + '-listbox';
       this._labelEl.setAttribute('for', this._input.id);
+      this._helperEl.id = this._id + '-helper';
       this._input.setAttribute('role', 'combobox');
       this._input.setAttribute('aria-autocomplete', 'list');
       this._input.setAttribute('aria-controls', this._listbox.id);
@@ -397,6 +401,21 @@
       this._labelEl.style.display = label ? '' : 'none';
       this._requiredMark.hidden = !required;
 
+      // Accessible name: visible label, else host aria-label, placeholder,
+      // humanized name="", else "Select" -- with a developer warning.
+      var hostLabel = this._hostLabel();
+      var nameText = label;
+      if (label && !hostLabel) {
+        this._input.removeAttribute('aria-label');
+      } else {
+        nameText = this._a11yName([placeholder, window.LWT.a11y.humanize(this._strAttr('name', ''))],
+          this._boolAttr('multiple') ? 'Select options' : 'Select an option', 'Add a label attribute');
+        this._input.setAttribute('aria-label', nameText);
+      }
+      this._listbox.setAttribute('aria-label', nameText);
+      if (this._boolAttr('multiple')) this._listbox.setAttribute('aria-multiselectable', 'true');
+      else this._listbox.removeAttribute('aria-multiselectable');
+
       this._input.placeholder = placeholder;
       this._input.required = required && this._selected().length === 0;
       this._input.disabled = disabled;
@@ -411,6 +430,9 @@
         this._helperEl.textContent = helper;
       }
       this.toggleAttribute('data-invalid', !!errorMsg);
+      if (errorMsg) this._input.setAttribute('aria-invalid', 'true'); else this._input.removeAttribute('aria-invalid');
+      if (this._helperEl.textContent) this._input.setAttribute('aria-describedby', this._helperEl.id);
+      else this._input.removeAttribute('aria-describedby');
 
       this._reportValidity();
     }
@@ -615,6 +637,9 @@
 
       if (!opts.skipEvents) {
         this.emit(selected ? 'select' : 'remove', { value: opt.value, option: this._publicOption(opt) });
+        // Tags appear/disappear visually; say so for screen readers too.
+        window.LWT.a11y.announce(opt.text + (selected ? ' selected' : ' removed') +
+          (multiple ? ', ' + this._selected().length + ' selected' : ''));
       }
       return true;
     }
@@ -733,7 +758,7 @@
         var attrs = 'class="option" role="option" data-idx="' + i + '" id="' + self._id + '-opt-' + i + '"' +
           (opt.disabled ? ' aria-disabled="true"' : '') +
           (opt.selected ? ' data-picked="true"' : '') +
-          ' aria-selected="false"';
+          ' aria-selected="' + (opt.selected ? 'true' : 'false') + '"';
         return '<li ' + attrs + '><span class="option-label" part="option-label">' + opt.label + '</span></li>';
       }).join('');
       this._listbox.innerHTML = html;
@@ -746,8 +771,8 @@
     }
 
     _setActiveIndex(idx) {
-      var prev = this._listbox.querySelector('.option[aria-selected="true"]');
-      if (prev) prev.setAttribute('aria-selected', 'false');
+      var prev = this._listbox.querySelector('.option.active');
+      if (prev) prev.classList.remove('active');
 
       if (idx < 0 || idx >= this._filtered.length) {
         this._activeIndex = -1;
@@ -758,7 +783,7 @@
       this._activeIndex = idx;
       var el = this._listbox.querySelector('.option[data-idx="' + idx + '"]');
       if (!el) return;
-      el.setAttribute('aria-selected', 'true');
+      el.classList.add('active');
       this._input.setAttribute('aria-activedescendant', el.id);
 
       var lb = this._listbox;

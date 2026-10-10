@@ -55,7 +55,7 @@
 
   class LWTNavMenu extends window.LWT.Element {
     static get observedAttributes() {
-      return ['orientation', 'breakpoint'];
+      return ['orientation', 'breakpoint', 'label', 'aria-label'];
     }
 
     constructor() {
@@ -77,6 +77,11 @@
       super.connectedCallback(); // builds shadow via render()
 
       if (!this.hasAttribute('role')) this.setAttribute('role', 'navigation');
+      // A page can have several navigation landmarks; each needs a name.
+      if (!this._devAttr('aria-label') && !this._devAttr('aria-labelledby')) {
+        this._setAutoAttr('aria-label', this._a11yName([this._strAttr('label', '')], 'Main',
+          'Add a label attribute (e.g. label="Main" or label="Footer")'));
+      }
 
       this.addEventListener('lwt-navopen', this._handleChildOpen);
       this.addEventListener('lwt-select', this._handleSelect);
@@ -132,6 +137,9 @@
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue) return;
       if (name === 'orientation') this._syncOrientation();
+      else if (name === 'label' && this._autoAttrs && !this._devAttr('aria-label')) {
+        this._setAutoAttr('aria-label', this._strAttr('label', '') || 'Main');
+      }
       else if (name === 'breakpoint' && this._initialized) {
         this._applyMobileState(this._measureWidth() < this._breakpointPx());
       }
@@ -143,6 +151,11 @@
       this._panelEl = this._root.querySelector('.panel');
       this._listEl = this._root.querySelector('.list');
       this._hamburgerBtn.addEventListener('click', this._handleHamburgerClick);
+      var panelId = window.LWT.a11y.uid('lwt-nav-panel');
+      this._panelEl.id = panelId;
+      this._hamburgerBtn.setAttribute('aria-controls', panelId);
+      // The <ul> holds slotted <lwtg-nav-item>s, which take role="listitem".
+      this._listEl.setAttribute('role', 'list');
       this._applyMobileOpenState();
     }
 

@@ -162,7 +162,13 @@
     }
 
     render() {
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + '</div>', CSS);
+      // Charts are images: name the SVG, and add a screen-reader-only
+      // data table with the same numbers (WCAG 1.1.1 / 1.3.1).
+      var a11y = window.LWT.a11y;
+      this._chartName = this._a11yName([this._strAttr('title', '')], 'Line chart', 'Add a title attribute');
+      var table = a11y.chartTableHtml(this._chartName, this._data);
+      this._hasTable = !!table;
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
     }
 
     _measureText(text, fontSize) {
@@ -328,7 +334,7 @@
         ? '<text class="axis-title" x="0" y="0" text-anchor="middle" transform="translate(' + (PAD + 10) + ',' + ((plotTop + plotBottom) / 2) + ') rotate(-90)">' + escapeXml(yLabel) + '</text>'
         : '';
 
-      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml(title || 'Line chart') + '">' +
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((this._chartName || title || 'Line chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
         titleSvg + legendSvg + gridSvg + borderSvg + fillsSvg + linesSvg + tickSvg + xLabelSvg + yLabelSvg +
         '</svg>';
     }

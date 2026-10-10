@@ -32,13 +32,9 @@
     render() {
       this._renderShadow('<slot></slot>', CSS);
 
-      var name = this._strAttr('name', '');
+      // id / aria-labelledby are wired by <lwtg-tabs> to the matching tab.
       this.setAttribute('role', 'tabpanel');
-      this.setAttribute('tabindex', '0');
-      if (name) {
-        this.id = 'lwt-tabpanel-' + name;
-        this.setAttribute('aria-labelledby', 'lwt-tab-' + name);
-      }
+      if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0');
     }
   }
 

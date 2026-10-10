@@ -27,12 +27,14 @@
     '.message { font-size: 0.88rem; color: var(--lwt-alert-text-color, var(--lwt-color-text, #374151)); }' +
     '::slotted(*:first-child) { margin-top: 0; }' +
     '::slotted(*:last-child) { margin-bottom: 0; }' +
-    '.close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; color: inherit; opacity: 0.6; padding: 0; }' +
+    '.close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; color: inherit; opacity: 0.6; padding: 0;' +
+    '  min-width: 24px; min-height: 24px; margin: -0.2rem -0.3rem -0.2rem 0; border-radius: 4px; }' +
+    '.close:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; opacity: 1; }' +
     '.close:hover { opacity: 1; }';
 
   var TEMPLATE =
     '<div class="alert" part="alert">' +
-    '  <div class="icon-wrap" part="icon"></div>' +
+    '  <div class="icon-wrap" part="icon" aria-hidden="true"></div>' +
     '  <div class="content">' +
     '    <div class="title" part="title"></div>' +
     '    <div class="message" part="message"><slot></slot></div>' +
@@ -65,6 +67,13 @@
       var closeBtn = root.querySelector('.close');
       var dismissible = this._boolAttr('dismissible');
       closeBtn.hidden = !dismissible;
+
+      // Errors and warnings interrupt (role="alert"); info and success are
+      // polite status messages (role="status") -- WCAG 4.1.3. A role the
+      // developer set themselves is left alone.
+      var urgent = variant === 'error' || variant === 'warning';
+      this._ensureAttr('role', urgent ? 'alert' : 'status');
+      closeBtn.setAttribute('aria-label', 'Dismiss ' + (title ? title : (ICONS[variant] ? variant : 'info') + ' message'));
       if (dismissible) closeBtn.addEventListener('click', this._handleClose);
     }
 

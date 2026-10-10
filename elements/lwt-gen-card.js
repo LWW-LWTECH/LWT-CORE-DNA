@@ -32,7 +32,7 @@
 
   class LWTCard extends window.LWT.Element {
     static get observedAttributes() {
-      return ['image', 'image-alt', 'label'];
+      return ['image', 'image-alt', 'label', 'heading-level'];
     }
 
     render() {
@@ -55,6 +55,33 @@
         '</div>';
 
       this._renderShadow(html, CSS);
+
+      // Image without image-alt: the card's own label already describes
+      // it, so treat it as decorative (alt="") rather than leave alt off.
+      if (hasImage && !this.hasAttribute('image-alt')) {
+        this._a11yWarn('image-alt', 'has an image but no image-alt, so it is marked decorative (alt=""). ' +
+          'Set image-alt if the image conveys information the label does not.');
+      }
+
+      // A label given as an attribute becomes a heading (level from
+      // heading-level, default 3) so cards show up in the page outline.
+      // Slotted label content is left alone -- use your own <h2>/<h3> there.
+      var labelEl = this._root.querySelector('.label');
+      var labelSlot = labelEl.querySelector('slot');
+      var level = parseInt(this._strAttr('heading-level', '3'), 10);
+      if (!(level >= 1 && level <= 6)) level = 3;
+      var syncHeading = function () {
+        var slotted = labelSlot.assignedNodes({ flatten: true }).length > 0;
+        if (!slotted && fallbackLabel) {
+          labelEl.setAttribute('role', 'heading');
+          labelEl.setAttribute('aria-level', String(level));
+        } else {
+          labelEl.removeAttribute('role');
+          labelEl.removeAttribute('aria-level');
+        }
+      };
+      labelSlot.addEventListener('slotchange', syncHeading);
+      syncHeading();
     }
   }
 
