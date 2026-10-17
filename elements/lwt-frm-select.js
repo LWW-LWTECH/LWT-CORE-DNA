@@ -191,6 +191,8 @@
       border-radius: var(--lwt-select-radius, var(--lwt-border-radius, 6px));
       background: var(--lwt-select-bg, var(--lwt-color-surface, #fff));
       border: var(--lwt-select-border, var(--lwt-border, 1px solid #d1d5db));
+      padding-right: var(--lwt-select-chevron-space, 2rem);
+      cursor: pointer;
       transition: border-color 120ms ease, box-shadow 120ms ease;
     }
     .field-box:focus-within {
@@ -250,6 +252,22 @@
       color: inherit;
     }
     .field::placeholder { color: var(--lwt-color-text-muted, #6b7280); }
+    .chevron {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      width: var(--lwt-select-chevron-space, 2rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--lwt-select-chevron-color, var(--lwt-icon-color, #6b7280));
+      cursor: pointer;
+    }
+    .chevron svg { width: 1rem; height: 1rem; transition: transform 150ms ease; }
+    .field-box.open .chevron svg { transform: rotate(180deg); }
+    :host([disabled]) .chevron, :host([readonly]) .chevron { cursor: inherit; }
+    @media (prefers-reduced-motion: reduce) { .chevron svg { transition: none; } }
     .field:disabled { cursor: not-allowed; }
     .below {
       display: flex;
@@ -328,12 +346,17 @@
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
     '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 
+  var CHEVRON_SVG =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+    '<polyline points="6 9 12 15 18 9"/></svg>';
+
   var TEMPLATE =
     '<label class="field-label" part="label"><span class="label-text"></span><span class="required-mark" hidden>*</span></label>' +
     '<div class="wrap" part="wrap">' +
     '  <div class="field-box" part="field-box">' +
     '    <div class="tags" part="tags"></div>' +
     '    <input class="field" part="input" autocomplete="off">' +
+    '    <span class="chevron" part="chevron" aria-hidden="true">' + CHEVRON_SVG + '</span>' +
     '  </div>' +
     '  <ul class="listbox" part="listbox" role="listbox"></ul>' +
     '  <div class="tooltip" part="tooltip"></div>' +
@@ -458,12 +481,25 @@
         // first. Clicking the tag now re-opens the list so a new pick
         // replaces it directly.
         if (e.target.closest && e.target.closest('.tag-remove')) return;
-        if (e.target === this._input) return; // let the input's own focus handler fire
+        // document.activeElement is the host when focus is inside our
+        // shadow root, so ask the shadow root which element has focus.
+        var focused = this._root.activeElement === this._input;
+        // The chevron toggles, like a native <select> arrow.
+        if (e.target.closest && e.target.closest('.chevron')) {
+          e.preventDefault();
+          if (this._isOpen) this._closeDropdown();
+          else if (focused) this._openDropdown();
+          else this._input.focus();               // focus handler opens it
+          return;
+        }
+        // Click on the text input: let the browser place the caret. If the
+        // input already has focus no 'focus' event fires, so open here.
+        if (e.target === this._input) {
+          if (focused) this._openDropdown();
+          return;
+        }
         e.preventDefault();
-        // If the input is already focused (e.g. dropdown was closed after
-        // the first pick but focus never left the field), .focus() below
-        // is a no-op and fires no 'focus' event — so open explicitly too.
-        if (document.activeElement === this._input) this._openDropdown();
+        if (focused) this._openDropdown();
         else this._input.focus();
       }).bind(this));
 
@@ -812,6 +848,7 @@
       if (this._boolAttr('disabled') || this._boolAttr('readonly')) return;
       this._isOpen = true;
       this._listbox.classList.add('open');
+      this._fieldBox.classList.add('open');
       this._input.setAttribute('aria-expanded', 'true');
       this._renderList();
     }
@@ -820,6 +857,7 @@
       if (!this._isOpen) return;
       this._isOpen = false;
       this._listbox.classList.remove('open');
+      this._fieldBox.classList.remove('open');
       this._hideTooltip();
       this._activeIndex = -1;
       this._input.setAttribute('aria-expanded', 'false');

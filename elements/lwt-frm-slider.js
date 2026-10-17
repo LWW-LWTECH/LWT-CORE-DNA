@@ -52,10 +52,13 @@
  *   ticks           — boolean; draws tick marks (and labels) along the track
  *   tick-step       — spacing between ticks, in value units (default: a
  *                      step multiple that lands near 10 ticks)
- *   label-format    — "" (default: plain number, optionally suffixed by
- *                      `unit`) | "time" (treats the value as
+ *   label-format    — "" (default: plain number, wrapped in the unit
+ *                      prefix/suffix) | "time" (treats the value as
  *                      minutes-since-midnight and formats "9 AM" style)
- *   unit            — string appended to plain-number labels (e.g. "%")
+ *   unit-prefix     — string placed before plain-number labels (e.g. "$")
+ *   unit-suffix     — string placed after plain-number labels (e.g. "%",
+ *                      " days" -- include the space if you want one)
+ *   unit            — alias for unit-suffix (kept for existing markup)
  *   tooltip         — "none" (default) | "hover" (shown while
  *                      dragging/hovering/focusing a handle) | "always"
  *
@@ -250,7 +253,7 @@
   class LWTSlider extends window.LWT.Element {
     static get observedAttributes() {
       return ['label', 'helper', 'error', 'min', 'max', 'step', 'name', 'required',
-              'disabled', 'readonly', 'ticks', 'tick-step', 'label-format', 'unit', 'tooltip',
+              'disabled', 'readonly', 'ticks', 'tick-step', 'label-format', 'unit', 'unit-prefix', 'unit-suffix', 'tooltip',
               'aria-label', 'aria-labelledby'];
     }
 
@@ -291,7 +294,7 @@
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue) return;
       if (!this._handlesEl) return; // not rendered yet
-      if (['min', 'max', 'step', 'ticks', 'tick-step', 'label-format', 'unit'].indexOf(name) !== -1) {
+      if (['min', 'max', 'step', 'ticks', 'tick-step', 'label-format', 'unit', 'unit-prefix', 'unit-suffix'].indexOf(name) !== -1) {
         this._rebuild();
       }
       this._syncAttrs();
@@ -415,8 +418,9 @@
       if (typeof this.formatLabel === 'function') return this.formatLabel(v);
       var format = this._strAttr('label-format', '');
       if (format === 'time') return formatTime(v);
-      var unit = this._strAttr('unit', '');
-      return (Math.round(v * 1000) / 1000) + unit;
+      var prefix = this._strAttr('unit-prefix', '');
+      var suffix = this._strAttr('unit-suffix', this._strAttr('unit', ''));
+      return prefix + (Math.round(v * 1000) / 1000) + suffix;
     }
 
     // ---- positions ----
