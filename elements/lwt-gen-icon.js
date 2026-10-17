@@ -6,7 +6,7 @@
     throw new Error('lwt-icon requires lwt-core.js to be loaded first.');
   }
 
-  let CSS = '.lwti{ display: inline-block; font-family: inherit; width:24px; height:24px; }';
+  let CSS = '.lwti{ display: inline-block; font-family: inherit; }';
   let TEMPLATE = '';
 
   class LWTIcon extends window.LWT.Element {

@@ -7,19 +7,35 @@
 
   var idCounter = 0;
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.trigger { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; width: 100%;' +
-    '  padding: 0.9rem 0.1rem; background: none; border: none; cursor: pointer; text-align: left; font: inherit; color: inherit; }' +
-    '.trigger:disabled { cursor: not-allowed; opacity: 0.5; }' +
-    '.trigger:focus-visible { outline: 2px solid var(--lwt-accordion-focus-color, var(--lwt-focus-ring, #2563eb)); outline-offset: 2px; border-radius: 4px; }' +
-    '.label { flex: 1; min-width: 0; }' +
-    '.chevron { flex-shrink: 0; width: 18px; height: 18px; color: var(--lwt-accordion-chevron-color, var(--lwt-color-text-muted, #6b7280)); transition: transform 200ms ease; }' +
-    ':host([open]) .chevron { transform: rotate(180deg); }' +
-    '.panel { height: 0; overflow: hidden; transition: height 200ms ease; }' +
-    '.panel-inner { padding: 0 0.1rem 1rem; }' +
-    '.panel-inner ::slotted(*:first-child) { margin-top: 0; }' +
-    '.panel-inner ::slotted(*:last-child) { margin-bottom: 0; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .trigger { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      gap: var(--lwt-accordion-gap, var(--lwt-gap, 0.75rem)); 
+      width: 100%;
+      padding: var(--lwt-accordion-padding, var(--lwt-padding, 0.75rem)); 
+      background: none;  border: none;  cursor: pointer;  text-align: left; font: inherit; color: inherit; 
+    }
+    .trigger:disabled { cursor: not-allowed; opacity: 0.5; }
+    .trigger:focus-visible { 
+      outline: var(--lwt-accordion-focus-color, var(--lwt-focus-ring, 2px solid #2563eb)); 
+      outline-offset: 2px; 
+      border-radius: var(--lwt-accordion-border-radius, var(--lwt-border-radius, 4px)); 
+    }
+    .label { flex: 1; min-width: 0; }
+    .chevron { 
+      flex-shrink: 0; width: 18px; height: 18px; 
+      color: var(--lwt-accordion-icon-color, var(--lwt-icon-color, #6b7280)); 
+      transition: transform 200ms ease; 
+    }
+    :host([open]) .chevron { transform: rotate(180deg); }
+    .panel { height: 0; overflow: hidden; transition: height 200ms ease; }
+    .panel-inner { padding: var(--lwt-accordion-padding, var(--lwt-padding, 0.75rem)); }
+    .panel-inner ::slotted(*:first-child) { margin-top: 0; }
+    .panel-inner ::slotted(*:last-child) { margin-bottom: 0; }
+  `;
 
   // The trigger sits inside a heading (WAI-ARIA accordion pattern) so
   // screen-reader users can jump between sections by heading. Level comes

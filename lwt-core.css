@@ -1,63 +1,52 @@
 :root {
-    /* GENERAL */   
+    --lwt-color-surface: #ffffff;
 
-    /* OVERALL */
+    /* PRIMARY COLORS */
         --lwt-primary: #3b82f6;
         --lwt-primary-hover: #2563eb;
         --lwt-color-primary: #3b82f6;
         --lwt-color-primary-hover: #2563eb;
-
+    /* SECONDARY COLORS */
         --lwt-secondary: #898b8f;
         --lwt-secondary-hover: #4b5563;
         --lwt-color-secondary: #898b8f;
         --lwt-color-secondary-hover: #4b5563;
-
+    /* SUCCESS COLORS */
         --lwt-success: #10b981;
         --lwt-success-hover: #059669;
         --lwt-color-success: #10b981;
         --lwt-color-success-hover: #059669;
-
+    /* WARNING COLORS */
         --lwt-warning: #f59e0b;
         --lwt-warning-hover: #d97706;
         --lwt-color-warning: #f59e0b;
         --lwt-color-warning-hover: #d97706;
-
+    /* INFO COLORS */
         --lwt-info: #3b82f6;
         --lwt-info-hover: #2563eb;
         --lwt-color-info: #3b82f6;
         --lwt-color-info-hover: #2563eb;
-
+    /* DANGER COLORS */
         --lwt-danger: #ef4444;
         --lwt-danger-hover: #b91c1c;
         --lwt-color-danger: #ef4444;
         --lwt-color-danger-hover: #b91c1c;
 
-        --lwt-color-surface: #ffffff;
-
-        --lwt-color-border: #e5e7eb;
+    /* TYPOGRAPHY */
+        --lwt-color-text: #374151;
+        --lwt-color-text-strong: #111827;
+        --lwt-color-text-muted: #6b7280;
+        --lwt-icon-color: #6b7280;
+    /* BORDER STYLES */
+        --lwt-border-color: #e5e7eb;
+        --lwt-border: 1px solid var(--lwt-border-color);
         --lwt-border-radius: 8px;
         --lwt-border-corder: round;
-
-
-    /* lwt-accordion */
-        --lwt-accordion-border: #e5e7eb;
-        --lwt-accordion-bg: #ffffff;
-
-    /* lwt-alert */
-        --lwt-alert-border-radius: 8px;
-        --lwt-alert-success-color: #10b981;
-        --lwt-alert-warning-color: #f59e0b;
-        --lwt-alert-danger-color: #ef4444;
-        --lwt-alert-info-color: #3b82f6;
-
-    /* lwt-button */
-        --lwt-btn-radius: 8px;
+    /* FOCUS STYLES */
         --lwt-focus-color: #3b82f6;
-        --lwt-focus-ring: #2563eb;
-        --lwt-btn-danger-color: #ef4444;        
-
-    /* FORMS */
-
-
-    /* DASHBOARDS */
+        --lwt-focus-ring: 1px solid #2563eb;
+    /* BOX STYLES */
+        --lwt-gap: 0.50rem;
+        --lwt-padding: 0.50rem;
+        --lwt-margin: 0.50rem;
 }

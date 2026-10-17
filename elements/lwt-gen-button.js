@@ -5,48 +5,59 @@
     throw new Error('lwt-gen-button.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host {' +
-    '  display: inline-block;' +
-    '  --lwt-btn-radius: 6px;' +
-    '  font-family: inherit;' +
-    '}' +
-    ':host([hidden]) { display: none; }' +
-    'button {' +
-    '  font: inherit;' +
-    '  cursor: pointer;' +
-    '  border: 1px solid transparent;' +
-    '  border-radius: var(--lwt-btn-radius);' +
-    '  padding: 0.5em 1.1em;' +
-    '  font-size: 0.95em;' +
-    '  line-height: 1.2;' +
-    '  transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;' +
-    '}' +
-    'button:disabled { cursor: not-allowed; opacity: 0.55; }' +
-    'button:focus-visible {' +
-    '  outline: 2px solid var(--lwt-focus-color, var(--lwt-focus-ring, #2563eb));' +
-    '  outline-offset: 2px;' +
-    '}' +
-    ':where(:host([size="sm"]) button) { padding: 0.3em 0.75em; font-size: 0.82em; }' +
-    ':where(:host([size="lg"]) button) { padding: 0.7em 1.4em; font-size: 1.1em; }' +
-    'button.primary {' +
-    '  background: var(--lwt-primary, var(--lwt-color-primary, #2563eb));' +
-    '  border-color: var(--lwt-primary, var(--lwt-color-primary, #2563eb));' +
-    '  color: #fff;' +
-    '}' +
-    'button.primary:not(:disabled):hover { background: var(--lwt-primary-hover, var(--lwt-color-primary-hover, #1d4ed8)); }' +
-    'button.secondary {' +
-    '  background: transparent;' +
-    '  border-color: var(--lwt-secondary, var(--lwt-color-secondary, #6b7280));' +
-    '  color: var(--lwt-secondary, var(--lwt-color-secondary, #6b7280));' +
-    '}' +
-    'button.secondary:not(:disabled):hover { background: var(--lwt-secondary-hover, var(--lwt-color-secondary-hover, rgba(107,114,128,0.08))); }' +
-    'button.danger {' +
-    '  background: var(--lwt-danger, var(--lwt-color-danger-strong, #dc2626));' +
-    '  border-color: var(--lwt-danger, var(--lwt-color-danger-strong, #dc2626));' +
-    '  color: #fff;' +
-    '}' +
-    'button.danger:not(:disabled):hover { background: var(--lwt-danger-hover, var(--lwt-color-danger-hover, #b91c1c)); }';
+  var CSS = `
+    :host {
+      display: inline-block;
+      --lwt-btn-radius: 6px;
+      font-family: inherit;
+    }
+    :host([hidden]) { display: none; }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: var(--lwt-button-border, var(--lwt-border, 1px solid transparent));
+      border-radius: var(--lwt-button-border-radius, var(--lwt-border-radius, 6px));
+      padding: var(--lwt-button-padding, var(--lwt-padding, 0.5em));
+      font-size: 0.95em;
+      line-height: 1.2;
+      transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+    }
+
+    button:disabled { cursor: not-allowed; opacity: 0.55; }
+    button:not(:disabled):hover { 
+      filter: brightness(0.8);
+      backdrop-filter: brightness(0.9);
+    }
+
+    button:focus-visible {
+      outline: var(--lwt-button-focus-ring, var(--lwt-focus-color, #2563eb));
+      outline-offset: 2px;
+    }
+    :where(:host([size="sm"]) button) { padding: var(--lwt-button-padding, var(--lwt-padding, 0.3em 0.75em)); font-size: 0.82em; }
+    :where(:host([size="lg"]) button) { padding: var(--lwt-button-padding, var(--lwt-padding, 0.7em 1.4em)); font-size: 1.1em; }
+    
+    button.primary {
+      background:   var(--lwt-primary, var(--lwt-color-primary, #2563eb));
+      border-color: var(--lwt-primary, var(--lwt-color-primary, #2563eb));
+      color: #fff;
+    }
+    button.primary:not(:disabled):hover {}
+
+    button.secondary {
+      background: transparent;
+      border-color: var(--lwt-button-secondary, var(--lwt-secondary, #6b7280));
+      color: var(--lwt-button-color-secondary, var(--lwt-color-secondary, #6b7280));
+    }
+    button.secondary:not(:disabled):hover {}
+
+    button.danger {
+      background:   var(--lwt-button-danger, var(--lwt-danger, #dc2626));
+      border-color: var(--lwt-button-danger, var(--lwt-danger, #dc2626));
+      color: #fff;
+    }
+    button.danger:not(:disabled):hover {}
+    `;
+  // background: var(--lwt-secondary-hover, var(--lwt-color-secondary-hover, rgba(107,114,128,0.08))); 
 
   class LWTButton extends window.LWT.Element {
     static get observedAttributes() {

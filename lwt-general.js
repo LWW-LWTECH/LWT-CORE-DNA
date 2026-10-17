@@ -1,7 +1,7 @@
 /*!
  * LWT General Elements
  * Developer: Lee W Winter
- * Last Generated: 2026-10-10T23:44:27.140Z
+ * Last Generated: 2026-10-17T16:20:23.265Z
  * Requires lwt-core.js to be loaded first.
  */
 
@@ -15,19 +15,35 @@
 
   var idCounter = 0;
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.trigger { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; width: 100%;' +
-    '  padding: 0.9rem 0.1rem; background: none; border: none; cursor: pointer; text-align: left; font: inherit; color: inherit; }' +
-    '.trigger:disabled { cursor: not-allowed; opacity: 0.5; }' +
-    '.trigger:focus-visible { outline: 2px solid var(--lwt-accordion-focus-color, var(--lwt-focus-ring, #2563eb)); outline-offset: 2px; border-radius: 4px; }' +
-    '.label { flex: 1; min-width: 0; }' +
-    '.chevron { flex-shrink: 0; width: 18px; height: 18px; color: var(--lwt-accordion-chevron-color, var(--lwt-color-text-muted, #6b7280)); transition: transform 200ms ease; }' +
-    ':host([open]) .chevron { transform: rotate(180deg); }' +
-    '.panel { height: 0; overflow: hidden; transition: height 200ms ease; }' +
-    '.panel-inner { padding: 0 0.1rem 1rem; }' +
-    '.panel-inner ::slotted(*:first-child) { margin-top: 0; }' +
-    '.panel-inner ::slotted(*:last-child) { margin-bottom: 0; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .trigger { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      gap: var(--lwt-accordion-gap, var(--lwt-gap, 0.75rem)); 
+      width: 100%;
+      padding: var(--lwt-accordion-padding, var(--lwt-padding, 0.75rem)); 
+      background: none;  border: none;  cursor: pointer;  text-align: left; font: inherit; color: inherit; 
+    }
+    .trigger:disabled { cursor: not-allowed; opacity: 0.5; }
+    .trigger:focus-visible { 
+      outline: var(--lwt-accordion-focus-color, var(--lwt-focus-ring, 2px solid #2563eb)); 
+      outline-offset: 2px; 
+      border-radius: var(--lwt-accordion-border-radius, var(--lwt-border-radius, 4px)); 
+    }
+    .label { flex: 1; min-width: 0; }
+    .chevron { 
+      flex-shrink: 0; width: 18px; height: 18px; 
+      color: var(--lwt-accordion-icon-color, var(--lwt-icon-color, #6b7280)); 
+      transition: transform 200ms ease; 
+    }
+    :host([open]) .chevron { transform: rotate(180deg); }
+    .panel { height: 0; overflow: hidden; transition: height 200ms ease; }
+    .panel-inner { padding: var(--lwt-accordion-padding, var(--lwt-padding, 0.75rem)); }
+    .panel-inner ::slotted(*:first-child) { margin-top: 0; }
+    .panel-inner ::slotted(*:last-child) { margin-bottom: 0; }
+  `;
 
   // The trigger sits inside a heading (WAI-ARIA accordion pattern) so
   // screen-reader users can jump between sections by heading. Level comes
@@ -182,11 +198,17 @@
     throw new Error('lwt-gen-accordion.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.accordion { border: 1px solid var(--lwt-accordion-border, var(--lwt-color-border, #e5e7eb)); border-radius: 10px; overflow: hidden; background: var(--lwt-accordion-bg, transparent); }' +
-    '.accordion { padding: 0 0.75rem; }' +
-    '::slotted(lwtg-accordion-item + lwtg-accordion-item) { display: block; border-top: 1px solid var(--lwt-accordion-border, var(--lwt-color-border, #e5e7eb)); }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .accordion { 
+      border: var(--lwt-accordion-border, var(--lwt-border, 1px solid #e5e7eb)); 
+      border-radius: var(--lwt-accordion-border-radius, var(--lwt-border-radius, 8px)); 
+      overflow: hidden; 
+      background: var(--lwt-accordion-bg, transparent); 
+    }
+    .accordion { padding: var(--lwt-accordion-padding, var(--lwt-padding, 0.75rem)); }
+    ::slotted(lwtg-accordion-item + lwtg-accordion-item) { display: block; border-top: var(--lwt-accordion-border, var(--lwt-border, 1px solid #e5e7eb)); }
+  `;
 
   class LWTAccordion extends window.LWT.Element {
     constructor() {
@@ -238,25 +260,51 @@
     error: '<svg class="icon" viewBox="0 0 20 20"><circle class="icon-bg" cx="10" cy="10" r="10"></circle><line x1="7" y1="7" x2="13" y2="13" stroke="#fff" stroke-width="2" stroke-linecap="round"></line><line x1="13" y1="7" x2="7" y2="13" stroke="#fff" stroke-width="2" stroke-linecap="round"></line></svg>'
   };
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    ':host([variant="success"]) { color: var(--lwt-alert-success-color, var(--lwt-color-success, #22c55e)); }' +
-    ':host([variant="warning"]) { color: var(--lwt-alert-warning-color, var(--lwt-color-warning, #f59e0b)); }' +
-    ':host([variant="info"]), :host(:not([variant])) { color: var(--lwt-alert-info-color, var(--lwt-color-info, #3b82f6)); }' +
-    ':host([variant="error"]) { color: var(--lwt-alert-error-color, var(--lwt-color-danger, #ef4444)); }' +
-    '.alert { display: flex; align-items: flex-start; gap: 0.65rem; padding: 0.85rem 1rem; border-radius: 10px;' +
-    '  border: 1px solid currentColor; background: var(--lwt-alert-bg, color-mix(in srgb, currentColor 8%, var(--lwt-color-surface, white))); }' +
-    '.icon { flex-shrink: 0; width: 20px; height: 20px; margin-top: 0.1rem; }' +
-    '.icon-bg { fill: currentColor; }' +
-    '.content { flex: 1; min-width: 0; }' +
-    '.title { font-weight: 700; font-size: 0.92rem; color: var(--lwt-alert-title-color, var(--lwt-color-text-strong, #111827)); margin-bottom: 0.15rem; }' +
-    '.message { font-size: 0.88rem; color: var(--lwt-alert-text-color, var(--lwt-color-text, #374151)); }' +
-    '::slotted(*:first-child) { margin-top: 0; }' +
-    '::slotted(*:last-child) { margin-bottom: 0; }' +
-    '.close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; color: inherit; opacity: 0.6; padding: 0;' +
-    '  min-width: 24px; min-height: 24px; margin: -0.2rem -0.3rem -0.2rem 0; border-radius: 4px; }' +
-    '.close:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; opacity: 1; }' +
-    '.close:hover { opacity: 1; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    :host([variant="success"]) { color: var(--lwt-alert-success-color, var(--lwt-color-success, #22c55e)); }
+    :host([variant="warning"]) { color: var(--lwt-alert-warning-color, var(--lwt-color-warning, #f59e0b)); }
+    :host([variant="info"]), :host(:not([variant])) { color: var(--lwt-alert-info-color, var(--lwt-color-info, #3b82f6)); }
+    :host([variant="error"]) { color: var(--lwt-alert-error-color, var(--lwt-color-danger, #ef4444)); }
+    .alert { 
+      display: flex; 
+      align-items: flex-start; 
+      gap: var(--lwt-accordion-gap, var(--lwt-gap, 0.75rem));
+      padding: var(--lwt-accordion-padding, var(--lwt-padding, 0.75rem)); 
+      border-radius: var(--lwt-accordion-border-radius, var(--lwt-border-radius, 10px)); 
+      border: 1px solid currentColor; 
+      background: var(--lwt-alert-bg, color-mix(in srgb, currentColor 8%, var(--lwt-color-surface, white))); 
+    }
+    .icon { flex-shrink: 0; width: 20px; height: 20px; margin-top: 0.1rem; }
+    .icon-bg { fill: currentColor; }
+    .content { flex: 1; min-width: 0; }
+    .title { 
+      font-weight: 700; 
+      font-size: 0.92rem; 
+      color: var(--lwt-alert-title-color, var(--lwt-color-text-strong, #111827)); 
+      margin-bottom: 0.15rem; 
+    }
+    .message { 
+      font-size: 0.88rem; 
+      color: var(--lwt-alert-text-color, var(--lwt-color-text, #374151)); 
+    }
+    ::slotted(*:first-child) { margin-top: 0; }
+    ::slotted(*:last-child) { margin-bottom: 0; }
+    .close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; color: inherit; opacity: 0.6; padding: 0;
+      min-width: 24px; min-height: 24px; margin: -0.2rem -0.3rem -0.2rem 0; border-radius: 4px; }
+    .close:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; opacity: 1; }
+    .close:hover { opacity: 1; };
+    '.icon { flex-shrink: 0; width: 20px; height: 20px; margin-top: 0.1rem; }
+    '.icon-bg { fill: currentColor; }
+    '.content { flex: 1; min-width: 0; }
+    '.title { font-weight: 700; font-size: 0.92rem; color: var(--lwt-alert-title-color, var(--lwt-color-text-strong, #111827)); margin-bottom: 0.15rem; }
+    '.message { font-size: 0.88rem; color: var(--lwt-alert-text-color, var(--lwt-color-text, #374151)); }
+    '::slotted(*:first-child) { margin-top: 0; }
+    '::slotted(*:last-child) { margin-bottom: 0; }
+    '.close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; color: inherit; opacity: 0.6; padding: 0;
+    '  min-width: 24px; min-height: 24px; margin: -0.2rem -0.3rem -0.2rem 0; border-radius: 4px; }
+    '.close:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; opacity: 1; }
+    '.close:hover { opacity: 1; }`;
 
   var TEMPLATE =
     '<div class="alert" part="alert">' +
@@ -324,48 +372,59 @@
     throw new Error('lwt-gen-button.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host {' +
-    '  display: inline-block;' +
-    '  --lwt-btn-radius: 6px;' +
-    '  font-family: inherit;' +
-    '}' +
-    ':host([hidden]) { display: none; }' +
-    'button {' +
-    '  font: inherit;' +
-    '  cursor: pointer;' +
-    '  border: 1px solid transparent;' +
-    '  border-radius: var(--lwt-btn-radius);' +
-    '  padding: 0.5em 1.1em;' +
-    '  font-size: 0.95em;' +
-    '  line-height: 1.2;' +
-    '  transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;' +
-    '}' +
-    'button:disabled { cursor: not-allowed; opacity: 0.55; }' +
-    'button:focus-visible {' +
-    '  outline: 2px solid var(--lwt-focus-color, var(--lwt-focus-ring, #2563eb));' +
-    '  outline-offset: 2px;' +
-    '}' +
-    ':where(:host([size="sm"]) button) { padding: 0.3em 0.75em; font-size: 0.82em; }' +
-    ':where(:host([size="lg"]) button) { padding: 0.7em 1.4em; font-size: 1.1em; }' +
-    'button.primary {' +
-    '  background: var(--lwt-primary, var(--lwt-color-primary, #2563eb));' +
-    '  border-color: var(--lwt-primary, var(--lwt-color-primary, #2563eb));' +
-    '  color: #fff;' +
-    '}' +
-    'button.primary:not(:disabled):hover { background: var(--lwt-primary-hover, var(--lwt-color-primary-hover, #1d4ed8)); }' +
-    'button.secondary {' +
-    '  background: transparent;' +
-    '  border-color: var(--lwt-secondary, var(--lwt-color-secondary, #6b7280));' +
-    '  color: var(--lwt-secondary, var(--lwt-color-secondary, #6b7280));' +
-    '}' +
-    'button.secondary:not(:disabled):hover { background: var(--lwt-secondary-hover, var(--lwt-color-secondary-hover, rgba(107,114,128,0.08))); }' +
-    'button.danger {' +
-    '  background: var(--lwt-danger, var(--lwt-color-danger-strong, #dc2626));' +
-    '  border-color: var(--lwt-danger, var(--lwt-color-danger-strong, #dc2626));' +
-    '  color: #fff;' +
-    '}' +
-    'button.danger:not(:disabled):hover { background: var(--lwt-danger-hover, var(--lwt-color-danger-hover, #b91c1c)); }';
+  var CSS = `
+    :host {
+      display: inline-block;
+      --lwt-btn-radius: 6px;
+      font-family: inherit;
+    }
+    :host([hidden]) { display: none; }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: var(--lwt-button-border, var(--lwt-border, 1px solid transparent));
+      border-radius: var(--lwt-button-border-radius, var(--lwt-border-radius, 6px));
+      padding: var(--lwt-button-padding, var(--lwt-padding, 0.5em));
+      font-size: 0.95em;
+      line-height: 1.2;
+      transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+    }
+
+    button:disabled { cursor: not-allowed; opacity: 0.55; }
+    button:not(:disabled):hover { 
+      filter: brightness(0.8);
+      backdrop-filter: brightness(0.9);
+    }
+
+    button:focus-visible {
+      outline: var(--lwt-button-focus-ring, var(--lwt-focus-color, #2563eb));
+      outline-offset: 2px;
+    }
+    :where(:host([size="sm"]) button) { padding: var(--lwt-button-padding, var(--lwt-padding, 0.3em 0.75em)); font-size: 0.82em; }
+    :where(:host([size="lg"]) button) { padding: var(--lwt-button-padding, var(--lwt-padding, 0.7em 1.4em)); font-size: 1.1em; }
+    
+    button.primary {
+      background:   var(--lwt-primary, var(--lwt-color-primary, #2563eb));
+      border-color: var(--lwt-primary, var(--lwt-color-primary, #2563eb));
+      color: #fff;
+    }
+    button.primary:not(:disabled):hover {}
+
+    button.secondary {
+      background: transparent;
+      border-color: var(--lwt-button-secondary, var(--lwt-secondary, #6b7280));
+      color: var(--lwt-button-color-secondary, var(--lwt-color-secondary, #6b7280));
+    }
+    button.secondary:not(:disabled):hover {}
+
+    button.danger {
+      background:   var(--lwt-button-danger, var(--lwt-danger, #dc2626));
+      border-color: var(--lwt-button-danger, var(--lwt-danger, #dc2626));
+      color: #fff;
+    }
+    button.danger:not(:disabled):hover {}
+    `;
+  // background: var(--lwt-secondary-hover, var(--lwt-color-secondary-hover, rgba(107,114,128,0.08))); 
 
   class LWTButton extends window.LWT.Element {
     static get observedAttributes() {
@@ -1092,7 +1151,7 @@
     throw new Error('lwt-icon requires lwt-core.js to be loaded first.');
   }
 
-  let CSS = '.lwti{ display: inline-block; font-family: inherit; width:24px; height:24px; }';
+  let CSS = '.lwti{ display: inline-block; font-family: inherit; }';
   let TEMPLATE = '';
 
   class LWTIcon extends window.LWT.Element {
@@ -2744,13 +2803,13 @@
 
   class LWTRive extends window.LWT.Element {
     static get observedAttributes() {
-      return ['src', 'state-machine', 'artboard', 'autoplay', 'fit', 'alignment', 'width', 'height', 'label', 'aria-label'];
+      return ['src', 'state-machine', 'artboard', 'autoplay', 'fit', 'alignment', 'width', 'height', 'label', 'aria-label', 'auto-bind'];
     }
 
     constructor() {
       super();
       this.rive = null;
-      this._inputs = [];
+      this._inputs = null; // state machine inputs, read lazily (deprecated Rive API)
       this._loadToken = 0;
       this._onResize = this._onResize.bind(this);
     }
@@ -2787,7 +2846,7 @@
 
     _teardown() {
       this._loadToken++; // invalidates any in-flight load meant for the previous config
-      this._inputs = [];
+      this._inputs = null;
       if (this.rive && typeof this.rive.cleanup === 'function') {
         try { this.rive.cleanup(); } catch (e) { /* already torn down */ }
       }
@@ -2814,22 +2873,32 @@
           // Respect the visitor's reduced-motion setting (WCAG 2.2.2 /
           // 2.3.3): don't start animating on its own. .play() still works.
           autoplay: self._strAttr('autoplay', 'true') !== 'false' && !window.LWT.a11y.reducedMotion(),
+          // Data binding (Rive's replacement for state machine inputs):
+          // bind the file's default view model instance automatically.
+          // Harmless for files without view models. auto-bind="false" opts out.
+          autoBind: self._strAttr('auto-bind', 'true') !== 'false',
           onLoad: function () {
             if (token !== self._loadToken) return; // superseded before this fired
             var instance = self.rive;
             if (instance && typeof instance.resizeDrawingSurfaceToCanvas === 'function') {
               instance.resizeDrawingSurfaceToCanvas();
             }
-            self._inputs = self._collectInputs(instance);
+            // State machine inputs are NOT read here any more: touching
+            // them makes Rive log a deprecation warning on every load.
+            // They're read lazily only if your code asks for them.
+            self._inputs = null;
+            var viewModel = self.viewModel;
 
-            if (typeof self.onLoad === 'function') {
-              try { self.onLoad(instance, self._inputs); } catch (e) { console.error(e); }
-            }
+            if (typeof self.onLoad === 'function') self._callOnLoad(self.onLoad, instance, viewModel);
             var onLoadFnName = self._strAttr('on-load', '');
             if (onLoadFnName && typeof window[onLoadFnName] === 'function') {
-              try { window[onLoadFnName](instance, self._inputs); } catch (e) { console.error(e); }
+              self._callOnLoad(window[onLoadFnName], instance, viewModel);
             }
-            self.emit('load', { rive: instance, inputs: self._inputs });
+
+            var detail = { rive: instance, viewModel: viewModel };
+            // Kept for backwards compatibility; only collected if accessed.
+            Object.defineProperty(detail, 'inputs', { get: function () { return self._getInputs(); }, enumerable: false });
+            self.emit('load', detail);
           },
           onLoadError: function (err) {
             self.emit('error', { error: err });
@@ -2859,6 +2928,22 @@
       });
     }
 
+    // onLoad callbacks: function (rive, inputs) still works -- the inputs
+    // array is only built when the callback actually declares a second
+    // parameter, so callbacks that only use `rive` never touch the
+    // deprecated API. A third parameter receives the bound view model.
+    _callOnLoad(fn, instance, viewModel) {
+      try {
+        if (fn.length >= 2) fn.call(this, instance, this._getInputs(), viewModel);
+        else fn.call(this, instance);
+      } catch (e) { console.error(e); }
+    }
+
+    _getInputs() {
+      if (this._inputs === null) this._inputs = this._collectInputs(this.rive);
+      return this._inputs;
+    }
+
     _collectInputs(instance) {
       if (!instance || typeof instance.stateMachineInputs !== 'function') return [];
       var names = splitNames(this._strAttr('state-machine', ''));
@@ -2880,9 +2965,93 @@
       this._onResize();
     }
 
+    // Deprecated by Rive (state machine inputs) -- prefer setValue()/fire().
     getInput(name) {
-      var found = this._inputs.filter(function (i) { return i.name === name; });
+      var found = this._getInputs().filter(function (i) { return i.name === name; });
       return found.length ? found[0] : null;
+    }
+
+    // ---- data binding (view model) API ----
+
+    // The bound view model instance (auto-bound on load), or null when the
+    // file has no view model or hasn't loaded yet.
+    get viewModel() {
+      return (this.rive && this.rive.viewModelInstance) || null;
+    }
+
+    // Finds a view model property by name or slash path ("Nested/Prop").
+    // `kinds` limits which property types to try, in order.
+    _property(path, kinds) {
+      var vmi = this.viewModel;
+      if (!vmi || !path) return null;
+      var declared = this._declaredType(path);
+      var order = declared ? [declared] : (kinds || ['number', 'boolean', 'string', 'enum', 'color', 'trigger']);
+      for (var i = 0; i < order.length; i++) {
+        var kind = order[i];
+        if (typeof vmi[kind] !== 'function') continue;
+        try {
+          var prop = vmi[kind](path);
+          if (prop) return { prop: prop, kind: kind };
+        } catch (e) { /* not this type -- try the next */ }
+      }
+      return null;
+    }
+
+    // Uses the view model's property list (when available) to know a
+    // top-level property's type up front instead of guessing.
+    _declaredType(path) {
+      if (path.indexOf('/') !== -1 || !this.rive || typeof this.rive.defaultViewModel !== 'function') return null;
+      var vm;
+      try { vm = this.rive.defaultViewModel(); } catch (e) { return null; }
+      var props = vm && vm.properties;
+      if (!props || !props.length) return null;
+      var match = props.filter(function (p) { return p && p.name === path; })[0];
+      if (!match) return null;
+      var t = String(match.type).toLowerCase();
+      var kinds = ['boolean', 'number', 'string', 'enum', 'color', 'trigger'];
+      for (var i = 0; i < kinds.length; i++) if (t.indexOf(kinds[i]) !== -1) return kinds[i];
+      return null;
+    }
+
+    // Sets a value: view model property if the file has one by that name,
+    // else falls back to a state machine input of the same name (older
+    // files). Returns true if something was set.
+    setValue(path, value) {
+      var kinds = typeof value === 'boolean' ? ['boolean']
+        : typeof value === 'number' ? ['number', 'color']
+        : ['string', 'enum'];
+      var found = this._property(path, kinds);
+      if (found && found.kind !== 'trigger') { found.prop.value = value; return true; }
+      var input = this.viewModel ? null : this.getInput(path);
+      if (input && 'value' in input) { input.value = value; return true; }
+      return false;
+    }
+
+    getValue(path) {
+      var found = this._property(path);
+      if (found && found.kind !== 'trigger') return found.prop.value;
+      var input = this.viewModel ? null : this.getInput(path);
+      return input && 'value' in input ? input.value : undefined;
+    }
+
+    // Fires a trigger property (or, for older files, a trigger input).
+    fire(path) {
+      var found = this._property(path, ['trigger']);
+      if (found && typeof found.prop.trigger === 'function') { found.prop.trigger(); return true; }
+      var input = this.viewModel ? null : this.getInput(path);
+      if (input && typeof input.fire === 'function') { input.fire(); return true; }
+      return false;
+    }
+
+    // Calls callback(value) whenever the property changes (triggers call it
+    // with no value). Returns a function that stops observing.
+    observe(path, callback) {
+      var found = this._property(path);
+      if (!found || typeof found.prop.on !== 'function') return function () {};
+      var prop = found.prop;
+      var handler = function (event) { callback(event && 'data' in event ? event.data : prop.value); };
+      prop.on(handler);
+      return function () { if (typeof prop.off === 'function') prop.off(handler); };
     }
   }
 

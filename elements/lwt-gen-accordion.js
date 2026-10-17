@@ -5,11 +5,17 @@
     throw new Error('lwt-gen-accordion.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.accordion { border: 1px solid var(--lwt-accordion-border, var(--lwt-color-border, #e5e7eb)); border-radius: 10px; overflow: hidden; background: var(--lwt-accordion-bg, transparent); }' +
-    '.accordion { padding: 0 0.75rem; }' +
-    '::slotted(lwtg-accordion-item + lwtg-accordion-item) { display: block; border-top: 1px solid var(--lwt-accordion-border, var(--lwt-color-border, #e5e7eb)); }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .accordion { 
+      border: var(--lwt-accordion-border, var(--lwt-border, 1px solid #e5e7eb)); 
+      border-radius: var(--lwt-accordion-border-radius, var(--lwt-border-radius, 8px)); 
+      overflow: hidden; 
+      background: var(--lwt-accordion-bg, transparent); 
+    }
+    .accordion { padding: var(--lwt-accordion-padding, var(--lwt-padding, 0.75rem)); }
+    ::slotted(lwtg-accordion-item + lwtg-accordion-item) { display: block; border-top: var(--lwt-accordion-border, var(--lwt-border, 1px solid #e5e7eb)); }
+  `;
 
   class LWTAccordion extends window.LWT.Element {
     constructor() {
