@@ -44,9 +44,10 @@
       : [value];
   }
 
-  var CSS =
-    ':host { display: block; position: relative; line-height: 0; }' +
-    'canvas { display: block; width: 100%; height: 100%; }';
+  var CSS = `
+    :host { display: block; position: relative; line-height: 0; }
+    canvas { display: block; width: 100%; height: 100%; }
+  `;
 
   var TEMPLATE = '<canvas part="canvas"></canvas>';
 

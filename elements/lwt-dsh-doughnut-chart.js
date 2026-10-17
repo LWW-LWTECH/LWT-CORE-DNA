@@ -100,12 +100,23 @@
     return { fill: fill, stroke: stroke };
   }
 
-  var CSS =
-    ':host { display: block; width: 100%; aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5); font-family: inherit; background: var(--lwt-chart-bg, transparent); }' +
-    '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
-    '.slice { stroke-width: 1.5; }' +
-    '.chart-title { fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }' +
-    '.legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }';
+  var CSS = `
+    :host {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5);
+      font-family: inherit;
+      background: var(--lwt-chart-bg, transparent);
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .slice { stroke-width: 1.5; }
+    .chart-title {
+      fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937));
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+  `;
 
   class LWTDoughnutChart extends window.LWT.Element {
     static get observedAttributes() {
@@ -200,7 +211,7 @@
         });
       } else {
         slicesSvg = '<circle cx="' + cx.toFixed(2) + '" cy="' + cy.toFixed(2) + '" r="' + outerR.toFixed(2) +
-          '" fill="var(--lwt-chart-empty, var(--lwt-color-surface-muted, #f3f4f6))" stroke="var(--lwt-chart-border, var(--lwt-color-border, #e5e7eb))"></circle>';
+          '" fill="var(--lwt-chart-empty, var(--lwt-color-surface-muted, #f3f4f6))" stroke="var(--lwt-chart-border, var(--lwt-border-color, #e5e7eb))"></circle>';
         if (innerR > 0) {
           slicesSvg += '<circle cx="' + cx.toFixed(2) + '" cy="' + cy.toFixed(2) + '" r="' + innerR.toFixed(2) +
             '" fill="var(--lwt-chart-bg, var(--lwt-color-surface, #fff))"></circle>';

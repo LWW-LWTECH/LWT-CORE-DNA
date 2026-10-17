@@ -24,51 +24,106 @@
     '<path d="M45 24 27 14v20" fill="#fff"></path>' +
     '</svg>';
 
-  var CSS =
-    ':host { display: block; position: relative; box-sizing: border-box; font-family: inherit; cursor: pointer;' +
-    '  border-radius: var(--lwt-grid-item-radius, 10px); overflow: hidden;' +
-    '  background: var(--lwt-grid-item-bg, var(--lwt-color-border, #e5e7eb)); outline: none; }' +
+  var CSS = `
+    :host {
+      display: block;
+      position: relative;
+      box-sizing: border-box;
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: var(--lwt-grid-item-radius, var(--lwt-border-radius, 10px));
+      overflow: hidden;
+      background: var(--lwt-grid-item-bg, var(--lwt-border-color, #e5e7eb));
+      outline: none;
+    }
+    /* Cell spanning defaults — wrapped in :where() so their specificity
+       is (0,0,0). ANY external selector ("lwtg-grid-item.hero", a media
+       query, an id, etc.) wins with no !important, so users can override
+       the span responsively:
 
-    // Cell spanning defaults — wrapped in :where() so their specificity
-    // is (0,0,0). ANY external selector (`lwtg-grid-item.hero`, a media
-    // query, an id, etc.) wins with no !important, so users can override
-    // the span responsively:
-    //
-    //   @media (max-width: 600px) {
-    //     lwtg-grid-item.hero { grid-column: auto; grid-row: auto; }
-    //   }
-    //
-    // Anything outside the 2-8 col / 2-6 row range still works — just set
-    // `style="grid-column: span 12"` directly on the item; inline styles
-    // beat these defaults automatically.
-    ':where(:host([col-span="2"])) { grid-column: span 2; }' +
-    ':where(:host([col-span="3"])) { grid-column: span 3; }' +
-    ':where(:host([col-span="4"])) { grid-column: span 4; }' +
-    ':where(:host([col-span="5"])) { grid-column: span 5; }' +
-    ':where(:host([col-span="6"])) { grid-column: span 6; }' +
-    ':where(:host([col-span="7"])) { grid-column: span 7; }' +
-    ':where(:host([col-span="8"])) { grid-column: span 8; }' +
-    ':where(:host([col-span="full"])) { grid-column: 1 / -1; }' +
-    ':where(:host([row-span="2"])) { grid-row: span 2; }' +
-    ':where(:host([row-span="3"])) { grid-row: span 3; }' +
-    ':where(:host([row-span="4"])) { grid-row: span 4; }' +
-    ':where(:host([row-span="5"])) { grid-row: span 5; }' +
-    ':where(:host([row-span="6"])) { grid-row: span 6; }' +
-    ':host(:focus-visible) { outline: 2px solid var(--lwt-grid-item-focus-color, var(--lwt-focus-ring, #3b82f6)); outline-offset: 2px; }' +
-    '.media { position: absolute; inset: 0; width: 100%; height: 100%; }' +
-    '.media img { width: 100%; height: 100%; object-fit: cover; display: block; }' +
-    '.media a { display: block; width: 100%; height: 100%; }' +
-    '.media ::slotted(*) { width: 100%; height: 100%; }' +
-    '.yt-facade { position: relative; width: 100%; height: 100%; }' +
-    '.yt-facade img { width: 100%; height: 100%; object-fit: cover; display: block; }' +
-    '.yt-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }' +
-    '.yt-play svg { width: 25%; min-width: 40px; max-width: 68px; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }' +
-    '.yt-embed { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }' +
-    '.label-overlay { position: absolute; left: 0; right: 0; bottom: 0; padding: 0.55rem 0.7rem 0.5rem;' +
-    '  background: var(--lwt-grid-item-label-bg, linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0)));' +
-    '  color: var(--lwt-grid-item-label-color, #fff); font-size: 0.85rem; font-weight: 600; line-height: 1.3;' +
-    '  opacity: 0; transform: translateY(4px); transition: opacity 160ms ease, transform 160ms ease; pointer-events: none; }' +
-    ':host(:hover) .label-overlay, :host(:focus-visible) .label-overlay { opacity: 1; transform: translateY(0); }';
+       @media (max-width: 600px) {
+         lwtg-grid-item.hero { grid-column: auto; grid-row: auto; }
+       }
+
+       Anything outside the 2-8 col / 2-6 row range still works — just set
+       style="grid-column: span 12" directly on the item; inline styles
+       beat these defaults automatically. */
+    :where(:host([col-span="2"])) { grid-column: span 2; }
+    :where(:host([col-span="3"])) { grid-column: span 3; }
+    :where(:host([col-span="4"])) { grid-column: span 4; }
+    :where(:host([col-span="5"])) { grid-column: span 5; }
+    :where(:host([col-span="6"])) { grid-column: span 6; }
+    :where(:host([col-span="7"])) { grid-column: span 7; }
+    :where(:host([col-span="8"])) { grid-column: span 8; }
+    :where(:host([col-span="full"])) { grid-column: 1 / -1; }
+    :where(:host([row-span="2"])) { grid-row: span 2; }
+    :where(:host([row-span="3"])) { grid-row: span 3; }
+    :where(:host([row-span="4"])) { grid-row: span 4; }
+    :where(:host([row-span="5"])) { grid-row: span 5; }
+    :where(:host([row-span="6"])) { grid-row: span 6; }
+    :host(:focus-visible) {
+      outline: 2px solid var(--lwt-grid-item-focus-color, var(--lwt-focus-color, #3b82f6));
+      outline-offset: 2px;
+    }
+    .media {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .media a { display: block; width: 100%; height: 100%; }
+    .media ::slotted(*) { width: 100%; height: 100%; }
+    .yt-facade { position: relative; width: 100%; height: 100%; }
+    .yt-facade img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .yt-play {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .yt-play svg {
+      width: 25%;
+      min-width: 40px;
+      max-width: 68px;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+    }
+    .yt-embed {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .label-overlay {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: var(--lwt-grid-item-label-padding, 0.55rem 0.7rem 0.5rem);
+      background: var(--lwt-grid-item-label-bg, linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0)));
+      color: var(--lwt-grid-item-label-color, #fff);
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1.3;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 160ms ease, transform 160ms ease;
+      pointer-events: none;
+    }
+    :host(:hover) .label-overlay, :host(:focus-visible) .label-overlay { opacity: 1; transform: translateY(0); }
+  `;
 
   class LWTGridItem extends window.LWT.Element {
     static get observedAttributes() {

@@ -5,44 +5,28 @@
     throw new Error('lwt-gen-grid.js requires lwt-core.js to be loaded first.');
   }
 
+  // Attributes (gap, columns, rows, ...) are copied onto the host as
+  // --lwt-grid-* variables by _syncVars(), so the CSS itself stays static
+  // and the same variables can also be set from a stylesheet.
+  var CSS = `
+    :host { display: block; font-family: inherit; width: 100%; }
+    :host([hidden]) { display: none; }
+    .grid {
+      display: grid;
+      width: 100%;
+      gap: var(--lwt-grid-gap, var(--lwt-gap, 1rem));
+      grid-template-rows: repeat(var(--lwt-grid-rows, 1), var(--lwt-grid-row-height, 1fr));
+      grid-template-columns: repeat(var(--lwt-grid-columns, 1), var(--lwt-grid-min-col-width, 1fr));
+    }
+    :where(:host([dense]) .grid) { grid-auto-flow: dense; }
+  `;
+
   class LWTGrid extends window.LWT.Element {
     static get observedAttributes() {
       return ['columns', 'rows', 'gap', 'min-col-width', 'row-height', 'dense'];
     }
 
     render() {
-      var CSS = `
-        :host { 
-          display: block; 
-          font-family: inherit; 
-          width:100%;
-        }
-        :host([hidden]) { display: none; }
-        .grid { 
-          --lwt-grid-gap: ${this._strAttr('gap') || '1rem'};
-          --lwt-grid-row-height: ${this._strAttr('row-height') || '1fr'};
-          --lwt-grid-min-col-width: ${this._strAttr('min-col-width') || '1fr'};
-          --lwt-grid-columns: ${this._strAttr('columns') || '1'};
-          --lwt-grid-rows: ${this._strAttr('rows') || '1'};
-
-          display: grid;
-          width: 100%;
-          gap: var(--lwt-grid-gap);
-          grid-template-rows: repeat(var(--lwt-grid-rows, 1), var(--lwt-grid-row-height));
-          grid-template-columns: repeat(var(--lwt-grid-columns, 1), var(--lwt-grid-min-col-width)); 
-        }
-
-        :where(:host([columns]) .grid) { 
-          grid-template-columns: repeat(var(--lwt-grid-columns, 1), var(--lwt-grid-min-col-width, 1fr));  
-        }
-        :where(:host([rows]) .grid) { 
-          grid-template-rows: repeat(var(--lwt-grid-rows, 1), var(--lwt-grid-row-height, 1fr));
-        }
-        :where(:host([dense]) .grid) { 
-          grid-auto-flow: dense; 
-        }
-      `;
-
       this._syncVars();
       this._renderShadow('<div class="grid" part="grid"><slot></slot></div>', CSS);
     }

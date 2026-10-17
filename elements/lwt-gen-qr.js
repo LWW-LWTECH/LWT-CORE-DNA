@@ -400,8 +400,10 @@
     });
   }
 
-  var CSS = ':host { display: inline-block; line-height: 0; }' +
-    'svg { display: block; }';
+  var CSS = `
+    :host { display: inline-block; line-height: 0; }
+    svg { display: block; }
+  `;
 
   class LWTQr extends window.LWT.Element {
     static get observedAttributes() {

@@ -5,24 +5,74 @@
     throw new Error('lwt-gen-carousel.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.track { display: flex; gap: var(--lwt-carousel-gap, 1rem); overflow-x: auto;' +
-    '  scroll-snap-type: x mandatory; scroll-behavior: smooth; padding-bottom: 0.25rem; scrollbar-width: thin; }' +
-    '::slotted(lwtg-card) { scroll-snap-align: start; flex: 0 0 auto; width: var(--lwt-carousel-card-width, 260px); }' +
-    '.dots { display: flex; justify-content: center; align-items: center; gap: 0.1rem; margin-top: 0.6rem; }' +
-    // Each dot is a 24x24 tap target (WCAG 2.5.8) drawing a small circle.
-    '.dot { width: 24px; height: 24px; padding: 0; margin: 0; border: none; border-radius: 50%; background: none;' +
-    '  display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }' +
-    '.dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%;' +
-    '  background: var(--lwt-carousel-dot-color, var(--lwt-color-border-strong, #9ca3af)); }' +
-    '.dot[aria-current="true"]::before { background: var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151)); }' +
-    ':host([dot-as-image]) .dot::before { content: none; }' +
-    '.dot:focus-visible { outline: 2px solid var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151)); outline-offset: 2px; }' +
-    ':host([dot-as-image]) .dot { width: var(--lwt-carousel-dot-size, 32px); height: var(--lwt-carousel-dot-size, 32px);' +
-    '  border-radius: 6px; overflow: hidden; background: var(--lwt-carousel-dot-color, var(--lwt-color-border, #e5e7eb)); }' +
-    ':host([dot-as-image]) .dot img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1 / 1; display: block; }' +
-    ':host([dot-as-image]) .dot[aria-current="true"] { outline: 2px solid var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151)); outline-offset: 2px; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .track {
+      display: flex;
+      gap: var(--lwt-carousel-gap, var(--lwt-gap, 1rem));
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      padding-bottom: 0.25rem;
+      scrollbar-width: thin;
+    }
+    ::slotted(lwtg-card) { scroll-snap-align: start; flex: 0 0 auto; width: var(--lwt-carousel-card-width, 260px); }
+    .dots {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.1rem;
+      margin-top: 0.6rem;
+    }
+    /* Each dot is a 24x24 tap target (WCAG 2.5.8) drawing a small circle. */
+    .dot {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      margin: 0;
+      border: none;
+      border-radius: 50%;
+      background: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .dot::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--lwt-carousel-dot-color, var(--lwt-color-border-strong, #9ca3af));
+    }
+    .dot[aria-current="true"]::before {
+      background: var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151));
+    }
+    :host([dot-as-image]) .dot::before { content: none; }
+    .dot:focus-visible {
+      outline: 2px solid var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151));
+      outline-offset: 2px;
+    }
+    :host([dot-as-image]) .dot {
+      width: var(--lwt-carousel-dot-size, 32px);
+      height: var(--lwt-carousel-dot-size, 32px);
+      border-radius: var(--lwt-carousel-dot-radius, var(--lwt-border-radius, 6px));
+      overflow: hidden;
+      background: var(--lwt-carousel-dot-color, var(--lwt-border-color, #e5e7eb));
+    }
+    :host([dot-as-image]) .dot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      aspect-ratio: 1 / 1;
+      display: block;
+    }
+    :host([dot-as-image]) .dot[aria-current="true"] {
+      outline: 2px solid var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151));
+      outline-offset: 2px;
+    }
+  `;
 
   var TEMPLATE =
     '<div class="wrap" part="wrap">' +

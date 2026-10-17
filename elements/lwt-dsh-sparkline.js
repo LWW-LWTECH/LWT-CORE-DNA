@@ -64,10 +64,15 @@
       .replace(/"/g, '&quot;');
   }
 
-  var CSS =
-    ':host { display: inline-block; width: var(--lwt-sparkline-width, 120px); height: var(--lwt-sparkline-height, 32px); }' +
-    'svg { display: block; width: 100%; height: 100%; }' +
-    '.spark-line { fill: none; stroke-linejoin: round; stroke-linecap: round; }';
+  var CSS = `
+    :host {
+      display: inline-block;
+      width: var(--lwt-sparkline-width, 120px);
+      height: var(--lwt-sparkline-height, 32px);
+    }
+    svg { display: block; width: 100%; height: 100%; }
+    .spark-line { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+  `;
 
   class LWTSparkline extends window.LWT.Element {
     static get observedAttributes() {
@@ -145,7 +150,7 @@
           ? (last - first) / Math.abs(first)
           : (last === first ? 0 : (last > first ? 1 : -1));
         var varName, fallback;
-        if (Math.abs(pctChange) < 0.05) { varName = '--lwt-sparkline-flat-color'; fallback = 'var(--lwt-color-text-subtle, #6b7280)'; }
+        if (Math.abs(pctChange) < 0.05) { varName = '--lwt-sparkline-flat-color'; fallback = 'var(--lwt-color-text-muted, #6b7280)'; }
         else if (pctChange > 0) { varName = '--lwt-sparkline-up-color'; fallback = 'var(--lwt-color-success, #22c55e)'; }
         else { varName = '--lwt-sparkline-down-color'; fallback = 'var(--lwt-color-danger, #ef4444)'; }
         strokeStyle = 'stroke: var(' + varName + ', ' + fallback + ');';

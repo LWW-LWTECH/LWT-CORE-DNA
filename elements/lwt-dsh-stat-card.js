@@ -70,24 +70,62 @@
     '  <div class="chart-slot" part="chart"><slot name="chart"></slot></div>' +
     '</div>';
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.card { display: flex; flex-direction: column; gap: 0.5rem; padding: 1.25rem; border-radius: 12px; box-sizing: border-box;' +
-    '  border: 1px solid var(--lwt-stat-border, var(--lwt-color-border, #e5e7eb)); background: var(--lwt-stat-bg, var(--lwt-color-surface, #fff)); }' +
-    '.header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }' +
-    '.label { font-size: 0.82rem; font-weight: 600; color: var(--lwt-stat-label-color, var(--lwt-color-text-muted, #6b7280)); }' +
-    '.icon-slot { flex-shrink: 0; width: 2.25rem; height: 2.25rem; border-radius: 8px; background: var(--lwt-stat-icon-bg, var(--lwt-color-surface-muted, #f3f4f6));' +
-    '  display: flex; align-items: center; justify-content: center; font-size: 1.1rem; line-height: 1; }' +
-    '.value-row { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }' +
-    '.value { font-size: 1.75rem; font-weight: 700; line-height: 1.1; color: var(--lwt-stat-value-color, var(--lwt-color-text-strong, #111827)); }' +
-    '.delta { font-size: 0.85rem; font-weight: 600; }' +
-    // Text colors that pass 4.5:1 on white (the line colors are often
-    // lighter, which is fine for a graphic but not for small text).
-    '.delta-up { color: var(--lwt-stat-delta-up-color, #15803d); }' +
-    '.delta-down { color: var(--lwt-stat-delta-down-color, #b91c1c); }' +
-    '.delta-neutral { color: var(--lwt-sparkline-flat-color, var(--lwt-color-text-subtle, #6b7280)); }' +
-    '.chart-slot { margin-top: 0.25rem; }' +
-    '::slotted([slot="chart"]) { display: block; width: 100%; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--lwt-stat-gap, var(--lwt-gap, 0.5rem));
+      padding: var(--lwt-stat-padding, var(--lwt-padding, 1.25rem));
+      border-radius: var(--lwt-stat-radius, var(--lwt-border-radius, 12px));
+      box-sizing: border-box;
+      border: var(--lwt-stat-border, var(--lwt-border, 1px solid #e5e7eb));
+      background: var(--lwt-stat-bg, var(--lwt-color-surface, #fff));
+    }
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--lwt-stat-label-color, var(--lwt-color-text-muted, #6b7280));
+    }
+    .icon-slot {
+      flex-shrink: 0;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: var(--lwt-stat-icon-radius, var(--lwt-border-radius, 8px));
+      background: var(--lwt-stat-icon-bg, var(--lwt-color-surface-muted, #f3f4f6));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+    .value-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--lwt-stat-value-color, var(--lwt-color-text-strong, #111827));
+    }
+    .delta { font-size: 0.85rem; font-weight: 600; }
+    /* Text colors that pass 4.5:1 on white (the line colors are often
+       lighter, which is fine for a graphic but not for small text). */
+    .delta-up { color: var(--lwt-stat-delta-up-color, #15803d); }
+    .delta-down { color: var(--lwt-stat-delta-down-color, #b91c1c); }
+    .delta-neutral { color: var(--lwt-sparkline-flat-color, var(--lwt-color-text-muted, #6b7280)); }
+    .chart-slot { margin-top: 0.25rem; }
+    ::slotted([slot="chart"]) { display: block; width: 100%; }
+  `;
 
   class LWTStatCard extends window.LWT.Element {
     static get observedAttributes() {

@@ -24,9 +24,10 @@
     throw new Error('lwt-gen-tab-panel.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    ':host([hidden]) { display: none; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    :host([hidden]) { display: none; }
+  `;
 
   class LWTTabPanel extends window.LWT.Element {
     render() {

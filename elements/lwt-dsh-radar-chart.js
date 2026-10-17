@@ -126,15 +126,26 @@
     return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
   }
 
-  var CSS =
-    ':host { display: block; width: 100%; aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5); font-family: inherit; background: var(--lwt-chart-bg, transparent); }' +
-    '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
-    '.grid-line { stroke: var(--lwt-chart-grid, var(--lwt-color-border, #e5e7eb)); stroke-width: 1; fill: none; }' +
-    '.axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }' +
-    '.axis-label { fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151)); font-size: 11px; }' +
-    '.chart-title { fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }' +
-    '.legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }' +
-    '.radar-shape { stroke-linejoin: round; }';
+  var CSS = `
+    :host {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5);
+      font-family: inherit;
+      background: var(--lwt-chart-bg, transparent);
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .grid-line { stroke: var(--lwt-chart-grid, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; fill: none; }
+    .axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }
+    .axis-label { fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+    .chart-title {
+      fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937));
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+    .radar-shape { stroke-linejoin: round; }
+  `;
 
   class LWTRadarChart extends window.LWT.Element {
     static get observedAttributes() {

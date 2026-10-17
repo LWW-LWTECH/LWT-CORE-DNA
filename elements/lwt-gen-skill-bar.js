@@ -11,19 +11,37 @@
     });
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.row { display: grid;' +
-    '  grid-template-columns: var(--lwt-skill-bar-label-width, 220px) var(--lwt-skill-bar-value-width, 44px) 1fr;' +
-    '  align-items: center; column-gap: 0.9rem; padding: 0.55rem 0; }' +
-    '.row.hide-value { grid-template-columns: var(--lwt-skill-bar-label-width, 220px) 1fr; }' +
-    '.label { font-size: 0.92rem; color: var(--lwt-skill-bar-label-color, var(--lwt-color-text, #2f4a6b)); overflow-wrap: anywhere; }' +
-    '.value { font-size: 0.85rem; color: var(--lwt-skill-bar-value-color, var(--lwt-color-text, #374151)); }' +
-    '.track { height: var(--lwt-skill-bar-height, 10px); border-radius: 999px;' +
-    '  background: var(--lwt-skill-bar-track-color, var(--lwt-color-border, #e5e7eb)); overflow: hidden; }' +
-    '.fill { height: 100%; border-radius: 999px; background: var(--lwt-skill-bar-fill-color, var(--lwt-color-success, #8bc34a));' +
-    '  width: 0%; transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1); }' +
-    '@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .row {
+      display: grid;
+      grid-template-columns: var(--lwt-skill-bar-label-width, 220px) var(--lwt-skill-bar-value-width, 44px) 1fr;
+      align-items: center;
+      column-gap: var(--lwt-skill-bar-gap, var(--lwt-gap, 0.9rem));
+      padding: var(--lwt-skill-bar-padding, 0.55rem 0);
+    }
+    .row.hide-value { grid-template-columns: var(--lwt-skill-bar-label-width, 220px) 1fr; }
+    .label {
+      font-size: 0.92rem;
+      color: var(--lwt-skill-bar-label-color, var(--lwt-color-text, #2f4a6b));
+      overflow-wrap: anywhere;
+    }
+    .value { font-size: 0.85rem; color: var(--lwt-skill-bar-value-color, var(--lwt-color-text, #374151)); }
+    .track {
+      height: var(--lwt-skill-bar-height, 10px);
+      border-radius: var(--lwt-skill-bar-radius, 999px);
+      background: var(--lwt-skill-bar-track-color, var(--lwt-border-color, #e5e7eb));
+      overflow: hidden;
+    }
+    .fill {
+      height: 100%;
+      border-radius: var(--lwt-skill-bar-radius, 999px);
+      background: var(--lwt-skill-bar-fill-color, var(--lwt-color-success, #8bc34a));
+      width: 0%;
+      transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+  `;
 
   class LWTSkillBar extends window.LWT.Element {
     static get observedAttributes() {

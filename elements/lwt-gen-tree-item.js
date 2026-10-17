@@ -38,23 +38,57 @@
     return item;
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.row { display: flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.5rem; border-radius: 6px; cursor: pointer; }' +
-    ':host([disabled]) .row { opacity: 0.45; cursor: not-allowed; pointer-events: none; }' +
-    ':host(:focus-visible) { outline: none; }' +
-    ':host(:focus-visible) .row { box-shadow: 0 0 0 2px var(--lwt-tree-focus-color, var(--lwt-focus-ring, #2563eb)); }' +
-    '.toggle { width: 16px; height: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;' +
-    '  color: var(--lwt-tree-chevron-color, var(--lwt-color-text-muted, #6b7280)); }' +
-    '.toggle svg { width: 14px; height: 14px; transition: transform 150ms ease; }' +
-    ':host([expanded]) .toggle svg { transform: rotate(90deg); }' +
-    '.toggle.no-children { visibility: hidden; cursor: default; }' +
-    '.check { flex-shrink: 0; width: 15px; height: 15px; margin: 0; cursor: pointer; accent-color: var(--lwt-tree-check-color, var(--lwt-color-primary, #2563eb)); }' +
-    '.label { flex: 1; min-width: 0; font-size: 0.9rem; color: var(--lwt-tree-label-color, var(--lwt-color-text, #1f2937)); }' +
-    ':host([selected]) .row { background: var(--lwt-tree-selected-bg, var(--lwt-color-primary-soft, #eff6ff));' +
-    '  border-left: 3px solid var(--lwt-tree-selected-border, var(--lwt-color-primary, #2563eb)); padding-left: calc(0.5rem - 3px); }' +
-    '.children { padding-left: var(--lwt-tree-indent, 1.25rem); margin-left: 0.55rem; border-left: 1px solid var(--lwt-tree-guide-color, var(--lwt-color-border, #e5e7eb)); }' +
-    '.children[hidden] { display: none; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: var(--lwt-tree-gap, 0.35rem);
+      padding: 0.35rem 0.5rem;
+      border-radius: var(--lwt-tree-radius, var(--lwt-border-radius, 6px));
+      cursor: pointer;
+    }
+    :host([disabled]) .row { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+    :host(:focus-visible) { outline: none; }
+    :host(:focus-visible) .row { box-shadow: 0 0 0 2px var(--lwt-tree-focus-color, var(--lwt-focus-color, #2563eb)); }
+    .toggle {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--lwt-tree-chevron-color, var(--lwt-color-text-muted, #6b7280));
+    }
+    .toggle svg { width: 14px; height: 14px; transition: transform 150ms ease; }
+    :host([expanded]) .toggle svg { transform: rotate(90deg); }
+    .toggle.no-children { visibility: hidden; cursor: default; }
+    .check {
+      flex-shrink: 0;
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      cursor: pointer;
+      accent-color: var(--lwt-tree-check-color, var(--lwt-color-primary, #2563eb));
+    }
+    .label {
+      flex: 1;
+      min-width: 0;
+      font-size: 0.9rem;
+      color: var(--lwt-tree-label-color, var(--lwt-color-text, #1f2937));
+    }
+    :host([selected]) .row {
+      background: var(--lwt-tree-selected-bg, var(--lwt-color-primary-soft, #eff6ff));
+      border-left: 3px solid var(--lwt-tree-selected-border, var(--lwt-color-primary, #2563eb));
+      padding-left: calc(0.5rem - 3px);
+    }
+    .children {
+      padding-left: var(--lwt-tree-indent, 1.25rem);
+      margin-left: 0.55rem;
+      border-left: 1px solid var(--lwt-tree-guide-color, var(--lwt-border-color, #e5e7eb));
+    }
+    .children[hidden] { display: none; }
+  `;
 
   // Uppercase tag names for .tagName comparisons. Keep in sync with the
   // LWT.define() calls — these were left as 'LWT-TREE*' after the rename

@@ -112,22 +112,33 @@
     throw new Error('lwt-frm-choices.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; color: var(--lwt-choices-color, var(--lwt-color-text, #1f2937)); }' +
-    ':host([hidden]) { display: none; }' +
-
-    '.group-label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.5rem;' +
-    '  color: var(--lwt-choices-label-color, var(--lwt-color-text, #374151)); }' +
-    '.required-mark { color: var(--lwt-choices-required-color, var(--lwt-color-danger, #ef4444)); margin-left: 0.15rem; }' +
-
-    '.wrap { display: flex; flex-direction: column; gap: 0.65rem; }' +
-    ':host([direction="horizontal"]) .wrap { flex-direction: row; flex-wrap: wrap; gap: 0.5rem 1.5rem; }' +
-    ':host([layout="grid"]) .wrap { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--lwt-choices-tile-size, 140px), 1fr)); gap: 1rem; }' +
-    ':host([disabled]) .wrap { opacity: 0.6; }' +
-
-    '.below { margin-top: 0.45rem; font-size: 0.78rem; min-height: 1rem; }' +
-    '.helper { color: var(--lwt-choices-helper-color, var(--lwt-color-text-muted, #6b7280)); }' +
-    '.helper.error { color: var(--lwt-choices-error-color, var(--lwt-color-danger, #ef4444)); }';
+  var CSS = `
+    :host { display: block; font-family: inherit; color: var(--lwt-choices-color, var(--lwt-color-text, #1f2937)); }
+    :host([hidden]) { display: none; }
+    .group-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--lwt-choices-label-color, var(--lwt-color-text, #374151));
+    }
+    .required-mark { color: var(--lwt-choices-required-color, var(--lwt-color-danger, #ef4444)); margin-left: 0.15rem; }
+    .wrap { display: flex; flex-direction: column; gap: var(--lwt-choices-gap, var(--lwt-gap, 0.65rem)); }
+    :host([direction="horizontal"]) .wrap {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: var(--lwt-choices-gap, 0.5rem 1.5rem);
+    }
+    :host([layout="grid"]) .wrap {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--lwt-choices-tile-size, 140px), 1fr));
+      gap: var(--lwt-choices-grid-gap, var(--lwt-gap, 1rem));
+    }
+    :host([disabled]) .wrap { opacity: 0.6; }
+    .below { margin-top: 0.45rem; font-size: 0.78rem; min-height: 1rem; }
+    .helper { color: var(--lwt-choices-helper-color, var(--lwt-color-text-muted, #6b7280)); }
+    .helper.error { color: var(--lwt-choices-error-color, var(--lwt-color-danger, #ef4444)); }
+  `;
 
   var TEMPLATE =
     '<label class="group-label" part="label"><span class="label-text"></span><span class="required-mark" hidden>*</span></label>' +

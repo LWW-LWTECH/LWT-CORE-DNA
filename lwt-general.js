@@ -1,7 +1,7 @@
 /*!
  * LWT General Elements
  * Developer: Lee W Winter
- * Last Generated: 2026-10-17T16:20:23.265Z
+ * Last Generated: 2026-10-17T16:40:25.860Z
  * Requires lwt-core.js to be loaded first.
  */
 
@@ -266,45 +266,45 @@
     :host([variant="warning"]) { color: var(--lwt-alert-warning-color, var(--lwt-color-warning, #f59e0b)); }
     :host([variant="info"]), :host(:not([variant])) { color: var(--lwt-alert-info-color, var(--lwt-color-info, #3b82f6)); }
     :host([variant="error"]) { color: var(--lwt-alert-error-color, var(--lwt-color-danger, #ef4444)); }
-    .alert { 
-      display: flex; 
-      align-items: flex-start; 
-      gap: var(--lwt-accordion-gap, var(--lwt-gap, 0.75rem));
-      padding: var(--lwt-accordion-padding, var(--lwt-padding, 0.75rem)); 
-      border-radius: var(--lwt-accordion-border-radius, var(--lwt-border-radius, 10px)); 
-      border: 1px solid currentColor; 
-      background: var(--lwt-alert-bg, color-mix(in srgb, currentColor 8%, var(--lwt-color-surface, white))); 
+    .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));
+      padding: var(--lwt-alert-padding, var(--lwt-padding, 0.85rem 1rem));
+      border-radius: var(--lwt-alert-radius, var(--lwt-border-radius, 10px));
+      border: 1px solid currentColor;
+      background: var(--lwt-alert-bg, color-mix(in srgb, currentColor 8%, var(--lwt-color-surface, white)));
     }
     .icon { flex-shrink: 0; width: 20px; height: 20px; margin-top: 0.1rem; }
     .icon-bg { fill: currentColor; }
     .content { flex: 1; min-width: 0; }
-    .title { 
-      font-weight: 700; 
-      font-size: 0.92rem; 
-      color: var(--lwt-alert-title-color, var(--lwt-color-text-strong, #111827)); 
-      margin-bottom: 0.15rem; 
+    .title {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--lwt-alert-title-color, var(--lwt-color-text-strong, #111827));
+      margin-bottom: 0.15rem;
     }
-    .message { 
-      font-size: 0.88rem; 
-      color: var(--lwt-alert-text-color, var(--lwt-color-text, #374151)); 
-    }
+    .message { font-size: 0.88rem; color: var(--lwt-alert-text-color, var(--lwt-color-text, #374151)); }
     ::slotted(*:first-child) { margin-top: 0; }
     ::slotted(*:last-child) { margin-bottom: 0; }
-    .close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; color: inherit; opacity: 0.6; padding: 0;
-      min-width: 24px; min-height: 24px; margin: -0.2rem -0.3rem -0.2rem 0; border-radius: 4px; }
+    .close {
+      flex-shrink: 0;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      line-height: 1;
+      color: inherit;
+      opacity: 0.6;
+      padding: 0;
+      min-width: 24px;
+      min-height: 24px;
+      margin: -0.2rem -0.3rem -0.2rem 0;
+      border-radius: 4px;
+    }
     .close:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; opacity: 1; }
-    .close:hover { opacity: 1; };
-    '.icon { flex-shrink: 0; width: 20px; height: 20px; margin-top: 0.1rem; }
-    '.icon-bg { fill: currentColor; }
-    '.content { flex: 1; min-width: 0; }
-    '.title { font-weight: 700; font-size: 0.92rem; color: var(--lwt-alert-title-color, var(--lwt-color-text-strong, #111827)); margin-bottom: 0.15rem; }
-    '.message { font-size: 0.88rem; color: var(--lwt-alert-text-color, var(--lwt-color-text, #374151)); }
-    '::slotted(*:first-child) { margin-top: 0; }
-    '::slotted(*:last-child) { margin-bottom: 0; }
-    '.close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.2rem; line-height: 1; color: inherit; opacity: 0.6; padding: 0;
-    '  min-width: 24px; min-height: 24px; margin: -0.2rem -0.3rem -0.2rem 0; border-radius: 4px; }
-    '.close:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; opacity: 1; }
-    '.close:hover { opacity: 1; }`;
+    .close:hover { opacity: 1; }
+  `;
 
   var TEMPLATE =
     '<div class="alert" part="alert">' +
@@ -375,7 +375,6 @@
   var CSS = `
     :host {
       display: inline-block;
-      --lwt-btn-radius: 6px;
       font-family: inherit;
     }
     :host([hidden]) { display: none; }
@@ -397,7 +396,7 @@
     }
 
     button:focus-visible {
-      outline: var(--lwt-button-focus-ring, var(--lwt-focus-color, #2563eb));
+      outline: var(--lwt-button-focus-ring, var(--lwt-focus-ring, 2px solid #2563eb));
       outline-offset: 2px;
     }
     :where(:host([size="sm"]) button) { padding: var(--lwt-button-padding, var(--lwt-padding, 0.3em 0.75em)); font-size: 0.82em; }
@@ -528,24 +527,39 @@
     });
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; height: 100%; }' +
-    '.card { display: flex; flex-direction: column; height: 100%; box-sizing: border-box;' +
-    '  background: var(--lwt-card-bg, var(--lwt-color-surface, #fff)); border: 1px solid var(--lwt-card-border, var(--lwt-color-border, #e5e7eb));' +
-    '  border-radius: var(--lwt-card-radius, 12px); box-shadow: var(--lwt-card-shadow, none); overflow: hidden; }' +
-    '.image-wrap { order: 0; flex-shrink: 0; }' +
-    '.image { display: block; width: 100%; height: var(--lwt-card-image-height, 180px); object-fit: cover; }' +
+  var CSS = `
+    :host { display: block; font-family: inherit; height: 100%; }
+    .card { 
+      display: flex; 
+      flex-direction: column; 
+      box-sizing: border-box;
+      height:        var(--lwt-card-height, 100%); 
+      background:    var(--lwt-card-bg, var(--lwt-color-surface, #fff)); 
+      border:        var(--lwt-card-border, var(--lwt-border, 1px solid #e5e7eb));
+      border-radius: var(--lwt-card-radius, var(--lwt-border-radius, 12px)); 
+      box-shadow:    var(--lwt-card-shadow, none); 
+      overflow: hidden; 
+    }
+    .image-wrap { order: 0; flex-shrink: 0; }
+    .image { display: block; width: 100%; height: var(--lwt-card-image-height, 180px); object-fit: cover; }
+    :where(:host([image-position="bottom"]) .image-wrap) { order: 2; } 
+    :where(:host([image-position="bottom"]) .content) { order: 1; }
+    .content { 
+      order: 1; 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column;
+      padding: var(--lwt-card-padding, var(--lwt-padding, 1.25rem)); 
+      gap: var(--lwt-card-gap, var(--lwt-gap, 0.5rem)); 
+    }
+    .label { font-weight: 600; font-size: 1.05rem; color: var(--lwt-card-label-color, var(--lwt-color-text-strong, #111827)); }
+    .body { flex: 1; font-size: 0.9rem; line-height: 1.55; color: var(--lwt-card-body-color, var(--lwt-color-text, #4b5563)); }
+    .body ::slotted(*:first-child) { margin-top: 0; }
+    .body ::slotted(*:last-child) { margin-bottom: 0; }
+    .cta { display: flex; }`;
+
     // image-position wrapped in :where() so a media query can flip
     // image top/bottom responsively without !important.
-    ':where(:host([image-position="bottom"]) .image-wrap) { order: 2; }' +
-    ':where(:host([image-position="bottom"]) .content) { order: 1; }' +
-    '.content { order: 1; flex: 1; display: flex; flex-direction: column;' +
-    '  padding: var(--lwt-card-padding, 1.25rem); gap: var(--lwt-card-gap, 0.5rem); }' +
-    '.label { font-weight: 600; font-size: 1.05rem; color: var(--lwt-card-label-color, var(--lwt-color-text-strong, #111827)); }' +
-    '.body { flex: 1; font-size: 0.9rem; line-height: 1.55; color: var(--lwt-card-body-color, var(--lwt-color-text, #4b5563)); }' +
-    '.body ::slotted(*:first-child) { margin-top: 0; }' +
-    '.body ::slotted(*:last-child) { margin-bottom: 0; }' +
-    '.cta { display: flex; }';
 
   class LWTCard extends window.LWT.Element {
     static get observedAttributes() {
@@ -613,24 +627,74 @@
     throw new Error('lwt-gen-carousel.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.track { display: flex; gap: var(--lwt-carousel-gap, 1rem); overflow-x: auto;' +
-    '  scroll-snap-type: x mandatory; scroll-behavior: smooth; padding-bottom: 0.25rem; scrollbar-width: thin; }' +
-    '::slotted(lwtg-card) { scroll-snap-align: start; flex: 0 0 auto; width: var(--lwt-carousel-card-width, 260px); }' +
-    '.dots { display: flex; justify-content: center; align-items: center; gap: 0.1rem; margin-top: 0.6rem; }' +
-    // Each dot is a 24x24 tap target (WCAG 2.5.8) drawing a small circle.
-    '.dot { width: 24px; height: 24px; padding: 0; margin: 0; border: none; border-radius: 50%; background: none;' +
-    '  display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }' +
-    '.dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%;' +
-    '  background: var(--lwt-carousel-dot-color, var(--lwt-color-border-strong, #9ca3af)); }' +
-    '.dot[aria-current="true"]::before { background: var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151)); }' +
-    ':host([dot-as-image]) .dot::before { content: none; }' +
-    '.dot:focus-visible { outline: 2px solid var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151)); outline-offset: 2px; }' +
-    ':host([dot-as-image]) .dot { width: var(--lwt-carousel-dot-size, 32px); height: var(--lwt-carousel-dot-size, 32px);' +
-    '  border-radius: 6px; overflow: hidden; background: var(--lwt-carousel-dot-color, var(--lwt-color-border, #e5e7eb)); }' +
-    ':host([dot-as-image]) .dot img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1 / 1; display: block; }' +
-    ':host([dot-as-image]) .dot[aria-current="true"] { outline: 2px solid var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151)); outline-offset: 2px; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .track {
+      display: flex;
+      gap: var(--lwt-carousel-gap, var(--lwt-gap, 1rem));
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      padding-bottom: 0.25rem;
+      scrollbar-width: thin;
+    }
+    ::slotted(lwtg-card) { scroll-snap-align: start; flex: 0 0 auto; width: var(--lwt-carousel-card-width, 260px); }
+    .dots {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.1rem;
+      margin-top: 0.6rem;
+    }
+    /* Each dot is a 24x24 tap target (WCAG 2.5.8) drawing a small circle. */
+    .dot {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      margin: 0;
+      border: none;
+      border-radius: 50%;
+      background: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .dot::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--lwt-carousel-dot-color, var(--lwt-color-border-strong, #9ca3af));
+    }
+    .dot[aria-current="true"]::before {
+      background: var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151));
+    }
+    :host([dot-as-image]) .dot::before { content: none; }
+    .dot:focus-visible {
+      outline: 2px solid var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151));
+      outline-offset: 2px;
+    }
+    :host([dot-as-image]) .dot {
+      width: var(--lwt-carousel-dot-size, 32px);
+      height: var(--lwt-carousel-dot-size, 32px);
+      border-radius: var(--lwt-carousel-dot-radius, var(--lwt-border-radius, 6px));
+      overflow: hidden;
+      background: var(--lwt-carousel-dot-color, var(--lwt-border-color, #e5e7eb));
+    }
+    :host([dot-as-image]) .dot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      aspect-ratio: 1 / 1;
+      display: block;
+    }
+    :host([dot-as-image]) .dot[aria-current="true"] {
+      outline: 2px solid var(--lwt-carousel-dot-active-color, var(--lwt-color-text, #374151));
+      outline-offset: 2px;
+    }
+  `;
 
   var TEMPLATE =
     '<div class="wrap" part="wrap">' +
@@ -843,51 +907,106 @@
     '<path d="M45 24 27 14v20" fill="#fff"></path>' +
     '</svg>';
 
-  var CSS =
-    ':host { display: block; position: relative; box-sizing: border-box; font-family: inherit; cursor: pointer;' +
-    '  border-radius: var(--lwt-grid-item-radius, 10px); overflow: hidden;' +
-    '  background: var(--lwt-grid-item-bg, var(--lwt-color-border, #e5e7eb)); outline: none; }' +
+  var CSS = `
+    :host {
+      display: block;
+      position: relative;
+      box-sizing: border-box;
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: var(--lwt-grid-item-radius, var(--lwt-border-radius, 10px));
+      overflow: hidden;
+      background: var(--lwt-grid-item-bg, var(--lwt-border-color, #e5e7eb));
+      outline: none;
+    }
+    /* Cell spanning defaults — wrapped in :where() so their specificity
+       is (0,0,0). ANY external selector ("lwtg-grid-item.hero", a media
+       query, an id, etc.) wins with no !important, so users can override
+       the span responsively:
 
-    // Cell spanning defaults — wrapped in :where() so their specificity
-    // is (0,0,0). ANY external selector (`lwtg-grid-item.hero`, a media
-    // query, an id, etc.) wins with no !important, so users can override
-    // the span responsively:
-    //
-    //   @media (max-width: 600px) {
-    //     lwtg-grid-item.hero { grid-column: auto; grid-row: auto; }
-    //   }
-    //
-    // Anything outside the 2-8 col / 2-6 row range still works — just set
-    // `style="grid-column: span 12"` directly on the item; inline styles
-    // beat these defaults automatically.
-    ':where(:host([col-span="2"])) { grid-column: span 2; }' +
-    ':where(:host([col-span="3"])) { grid-column: span 3; }' +
-    ':where(:host([col-span="4"])) { grid-column: span 4; }' +
-    ':where(:host([col-span="5"])) { grid-column: span 5; }' +
-    ':where(:host([col-span="6"])) { grid-column: span 6; }' +
-    ':where(:host([col-span="7"])) { grid-column: span 7; }' +
-    ':where(:host([col-span="8"])) { grid-column: span 8; }' +
-    ':where(:host([col-span="full"])) { grid-column: 1 / -1; }' +
-    ':where(:host([row-span="2"])) { grid-row: span 2; }' +
-    ':where(:host([row-span="3"])) { grid-row: span 3; }' +
-    ':where(:host([row-span="4"])) { grid-row: span 4; }' +
-    ':where(:host([row-span="5"])) { grid-row: span 5; }' +
-    ':where(:host([row-span="6"])) { grid-row: span 6; }' +
-    ':host(:focus-visible) { outline: 2px solid var(--lwt-grid-item-focus-color, var(--lwt-focus-ring, #3b82f6)); outline-offset: 2px; }' +
-    '.media { position: absolute; inset: 0; width: 100%; height: 100%; }' +
-    '.media img { width: 100%; height: 100%; object-fit: cover; display: block; }' +
-    '.media a { display: block; width: 100%; height: 100%; }' +
-    '.media ::slotted(*) { width: 100%; height: 100%; }' +
-    '.yt-facade { position: relative; width: 100%; height: 100%; }' +
-    '.yt-facade img { width: 100%; height: 100%; object-fit: cover; display: block; }' +
-    '.yt-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }' +
-    '.yt-play svg { width: 25%; min-width: 40px; max-width: 68px; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }' +
-    '.yt-embed { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }' +
-    '.label-overlay { position: absolute; left: 0; right: 0; bottom: 0; padding: 0.55rem 0.7rem 0.5rem;' +
-    '  background: var(--lwt-grid-item-label-bg, linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0)));' +
-    '  color: var(--lwt-grid-item-label-color, #fff); font-size: 0.85rem; font-weight: 600; line-height: 1.3;' +
-    '  opacity: 0; transform: translateY(4px); transition: opacity 160ms ease, transform 160ms ease; pointer-events: none; }' +
-    ':host(:hover) .label-overlay, :host(:focus-visible) .label-overlay { opacity: 1; transform: translateY(0); }';
+       @media (max-width: 600px) {
+         lwtg-grid-item.hero { grid-column: auto; grid-row: auto; }
+       }
+
+       Anything outside the 2-8 col / 2-6 row range still works — just set
+       style="grid-column: span 12" directly on the item; inline styles
+       beat these defaults automatically. */
+    :where(:host([col-span="2"])) { grid-column: span 2; }
+    :where(:host([col-span="3"])) { grid-column: span 3; }
+    :where(:host([col-span="4"])) { grid-column: span 4; }
+    :where(:host([col-span="5"])) { grid-column: span 5; }
+    :where(:host([col-span="6"])) { grid-column: span 6; }
+    :where(:host([col-span="7"])) { grid-column: span 7; }
+    :where(:host([col-span="8"])) { grid-column: span 8; }
+    :where(:host([col-span="full"])) { grid-column: 1 / -1; }
+    :where(:host([row-span="2"])) { grid-row: span 2; }
+    :where(:host([row-span="3"])) { grid-row: span 3; }
+    :where(:host([row-span="4"])) { grid-row: span 4; }
+    :where(:host([row-span="5"])) { grid-row: span 5; }
+    :where(:host([row-span="6"])) { grid-row: span 6; }
+    :host(:focus-visible) {
+      outline: 2px solid var(--lwt-grid-item-focus-color, var(--lwt-focus-color, #3b82f6));
+      outline-offset: 2px;
+    }
+    .media {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .media a { display: block; width: 100%; height: 100%; }
+    .media ::slotted(*) { width: 100%; height: 100%; }
+    .yt-facade { position: relative; width: 100%; height: 100%; }
+    .yt-facade img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .yt-play {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .yt-play svg {
+      width: 25%;
+      min-width: 40px;
+      max-width: 68px;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+    }
+    .yt-embed {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .label-overlay {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: var(--lwt-grid-item-label-padding, 0.55rem 0.7rem 0.5rem);
+      background: var(--lwt-grid-item-label-bg, linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0)));
+      color: var(--lwt-grid-item-label-color, #fff);
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1.3;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 160ms ease, transform 160ms ease;
+      pointer-events: none;
+    }
+    :host(:hover) .label-overlay, :host(:focus-visible) .label-overlay { opacity: 1; transform: translateY(0); }
+  `;
 
   class LWTGridItem extends window.LWT.Element {
     static get observedAttributes() {
@@ -1080,44 +1199,28 @@
     throw new Error('lwt-gen-grid.js requires lwt-core.js to be loaded first.');
   }
 
+  // Attributes (gap, columns, rows, ...) are copied onto the host as
+  // --lwt-grid-* variables by _syncVars(), so the CSS itself stays static
+  // and the same variables can also be set from a stylesheet.
+  var CSS = `
+    :host { display: block; font-family: inherit; width: 100%; }
+    :host([hidden]) { display: none; }
+    .grid {
+      display: grid;
+      width: 100%;
+      gap: var(--lwt-grid-gap, var(--lwt-gap, 1rem));
+      grid-template-rows: repeat(var(--lwt-grid-rows, 1), var(--lwt-grid-row-height, 1fr));
+      grid-template-columns: repeat(var(--lwt-grid-columns, 1), var(--lwt-grid-min-col-width, 1fr));
+    }
+    :where(:host([dense]) .grid) { grid-auto-flow: dense; }
+  `;
+
   class LWTGrid extends window.LWT.Element {
     static get observedAttributes() {
       return ['columns', 'rows', 'gap', 'min-col-width', 'row-height', 'dense'];
     }
 
     render() {
-      var CSS = `
-        :host { 
-          display: block; 
-          font-family: inherit; 
-          width:100%;
-        }
-        :host([hidden]) { display: none; }
-        .grid { 
-          --lwt-grid-gap: ${this._strAttr('gap') || '1rem'};
-          --lwt-grid-row-height: ${this._strAttr('row-height') || '1fr'};
-          --lwt-grid-min-col-width: ${this._strAttr('min-col-width') || '1fr'};
-          --lwt-grid-columns: ${this._strAttr('columns') || '1'};
-          --lwt-grid-rows: ${this._strAttr('rows') || '1'};
-
-          display: grid;
-          width: 100%;
-          gap: var(--lwt-grid-gap);
-          grid-template-rows: repeat(var(--lwt-grid-rows, 1), var(--lwt-grid-row-height));
-          grid-template-columns: repeat(var(--lwt-grid-columns, 1), var(--lwt-grid-min-col-width)); 
-        }
-
-        :where(:host([columns]) .grid) { 
-          grid-template-columns: repeat(var(--lwt-grid-columns, 1), var(--lwt-grid-min-col-width, 1fr));  
-        }
-        :where(:host([rows]) .grid) { 
-          grid-template-rows: repeat(var(--lwt-grid-rows, 1), var(--lwt-grid-row-height, 1fr));
-        }
-        :where(:host([dense]) .grid) { 
-          grid-auto-flow: dense; 
-        }
-      `;
-
       this._syncVars();
       this._renderShadow('<div class="grid" part="grid"><slot></slot></div>', CSS);
     }
@@ -1151,7 +1254,9 @@
     throw new Error('lwt-icon requires lwt-core.js to be loaded first.');
   }
 
-  let CSS = '.lwti{ display: inline-block; font-family: inherit; }';
+  let CSS = `
+    .lwti { display: inline-block; font-family: inherit; }
+  `;
   let TEMPLATE = '';
 
   class LWTIcon extends window.LWT.Element {
@@ -1254,28 +1359,33 @@
     throw new Error('lwt-gen-image-grid.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.grid { display: grid; gap: var(--lwt-image-grid-gap, 1rem);' +
-    '  grid-auto-rows: var(--lwt-image-grid-row-height, 160px);' +
-    '  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--lwt-image-grid-min-width, 200px)), 1fr)); }' +
-    // With `columns` set: cap the count, but let it collapse on small
-    // screens once each column would fall below --lwt-image-grid-min-width.
-    // The columns/dense structural rules are wrapped in :where() so
-    // external CSS via ::part(grid) or a responsive override wins with
-    // no !important. Same pattern applied to <lwtg-grid-item> and friends.
-    ':where(:host([columns]) .grid) { grid-template-columns: repeat(auto-fit, minmax(' +
-    '  max(var(--lwt-image-grid-min-width, 200px),' +
-    '      calc((100% - (var(--lwt-image-grid-columns, 4) - 1) * var(--lwt-image-grid-gap, 1rem)) / var(--lwt-image-grid-columns, 4))),' +
-    '  1fr)); }' +
-    // `rows` alone: fixed row count, columns still responsive.
-    ':where(:host([rows]) .grid) { grid-template-rows: repeat(var(--lwt-image-grid-rows, 1), var(--lwt-image-grid-row-height, 160px)); }' +
-    // Both `columns` AND `rows` set: user has committed to a fixed grid,
-    // so drop the responsive auto-fit magic and hard-cap the column count
-    // at exactly N. Comes AFTER the `[columns]` rule so it wins the
-    // cascade (same zero specificity, order matters).
-    ':where(:host([columns][rows]) .grid) { grid-template-columns: repeat(var(--lwt-image-grid-columns, 4), 1fr); }' +
-    ':where(:host([dense]) .grid) { grid-auto-flow: dense; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .grid {
+      display: grid;
+      gap: var(--lwt-image-grid-gap, var(--lwt-gap, 1rem));
+      grid-auto-rows: var(--lwt-image-grid-row-height, 160px);
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--lwt-image-grid-min-width, 200px)), 1fr));
+    }
+    /* With "columns" set: cap the count, but let it collapse on small
+       screens once each column would fall below --lwt-image-grid-min-width.
+       The columns/dense structural rules are wrapped in :where() so
+       external CSS via ::part(grid) or a responsive override wins with
+       no !important. Same pattern applied to <lwtg-grid-item> and friends. */
+    :where(:host([columns]) .grid) {
+      grid-template-columns: repeat(auto-fit, minmax( max(var(--lwt-image-grid-min-width, 200px), calc((100% - (var(--lwt-image-grid-columns, 4) - 1) * var(--lwt-image-grid-gap, var(--lwt-gap, 1rem))) / var(--lwt-image-grid-columns, 4))), 1fr));
+    }
+    /* "rows" alone: fixed row count, columns still responsive. */
+    :where(:host([rows]) .grid) {
+      grid-template-rows: repeat(var(--lwt-image-grid-rows, 1), var(--lwt-image-grid-row-height, 160px));
+    }
+    /* Both "columns" AND "rows" set: user has committed to a fixed grid,
+       so drop the responsive auto-fit magic and hard-cap the column count
+       at exactly N. Comes AFTER the "[columns]" rule so it wins the
+       cascade (same zero specificity, order matters). */
+    :where(:host([columns][rows]) .grid) { grid-template-columns: repeat(var(--lwt-image-grid-columns, 4), 1fr); }
+    :where(:host([dense]) .grid) { grid-auto-flow: dense; }
+  `;
 
   class LWTImageGrid extends window.LWT.Element {
     static get observedAttributes() {
@@ -1325,24 +1435,23 @@
     throw new Error('lwt-gen-modal.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    'dialog {' +
-    '  border: none;' +
-    '  border-radius: 10px;' +
-    '  padding: 1.5rem;' +
-    '  max-width: min(90vw, 32rem);' +
-    '  max-height: 85vh;' +
-    '  overflow: auto;' +
-    '  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1);' +
-    '  background: var(--lwt-modal-bg, var(--lwt-color-surface, #fff));' +
-    '  color: var(--lwt-modal-color, var(--lwt-color-text, inherit));' +
-    '  font-family: inherit;' +
-    '}' +
-    'dialog::backdrop {' +
-    '  background: var(--lwt-modal-backdrop, var(--lwt-color-overlay, rgba(15, 23, 42, 0.55)));' +
-    '}' +
-    '::slotted(*:first-child) { margin-top: 0; }' +
-    '::slotted(*:last-child) { margin-bottom: 0; }';
+  var CSS = `
+    dialog {
+      border: var(--lwt-modal-border, none);
+      border-radius: var(--lwt-modal-radius, var(--lwt-border-radius, 10px));
+      padding: var(--lwt-modal-padding, var(--lwt-padding, 1.5rem));
+      max-width: var(--lwt-modal-max-width, min(90vw, 32rem));
+      max-height: 85vh;
+      overflow: auto;
+      box-shadow: var(--lwt-modal-shadow, 0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1));
+      background: var(--lwt-modal-bg, var(--lwt-color-surface, #fff));
+      color: var(--lwt-modal-color, var(--lwt-color-text, inherit));
+      font-family: inherit;
+    }
+    dialog::backdrop { background: var(--lwt-modal-backdrop, var(--lwt-color-overlay, rgba(15, 23, 42, 0.55))); }
+    ::slotted(*:first-child) { margin-top: 0; }
+    ::slotted(*:last-child) { margin-bottom: 0; }
+  `;
 
   class LWTModal extends window.LWT.Element {
     static get observedAttributes() {
@@ -1492,49 +1601,114 @@
   var CHEVRON_SVG =
     '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7l5 5l5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
 
-  var CSS =
-    ':host { display: block; position: relative; font-family: inherit; }' +
-    ':host([disabled]) { pointer-events: none; }' +
-
-    '.trigger { display: flex; align-items: center; width: 100%; box-sizing: border-box; gap: 0.4rem;' +
-    '  padding: var(--lwt-nav-item-padding-y, 0.55rem) var(--lwt-nav-item-padding-x, 0.9rem);' +
-    '  border: none; background: none; cursor: pointer; font: inherit; font-size: 0.92rem; text-align: left;' +
-    '  color: var(--lwt-nav-item-color, var(--lwt-color-text, #1f2937)); text-decoration: none;' +
-    '  border-radius: var(--lwt-nav-item-radius, 6px); white-space: nowrap; }' +
-    ':where(:host([mobile]) .trigger) { white-space: normal;' +
-    '  padding-left: calc(var(--lwt-nav-menu-indent, 1rem) * var(--lwt-nav-item-depth, 0) + var(--lwt-nav-item-padding-x, 0.9rem)); }' +
-    '.trigger:hover { color: var(--lwt-nav-item-hover-color, var(--lwt-color-primary, #2563eb));' +
-    '  background: var(--lwt-nav-item-hover-bg, var(--lwt-color-surface-alt, rgba(0,0,0,0.05))); }' +
-    '.trigger:focus-visible { outline: 2px solid var(--lwt-nav-focus-color, var(--lwt-focus-ring, #2563eb)); outline-offset: -2px; }' +
-    ':host([disabled]) .trigger { opacity: 0.5; cursor: not-allowed; }' +
-    ':host([active]) .trigger { color: var(--lwt-nav-item-active-color, var(--lwt-color-primary, #2563eb)); font-weight: 600;' +
-    '  background: var(--lwt-nav-item-active-bg, transparent); }' +
-
-    '.content { flex: 1; min-width: 0; display: flex; align-items: center; gap: 0.4rem; overflow: hidden; }' +
-    '.content ::slotted(img), .content ::slotted(svg) { width: 1.05em; height: 1.05em; flex-shrink: 0; vertical-align: middle; }' +
-
-    '.chevron { flex-shrink: 0; display: flex; align-items: center; margin-left: 0.15rem; }' +
-    '.chevron svg { width: 11px; height: 11px; transition: transform 150ms ease; }' +
-    ':host([data-top-level]:not([orientation="vertical"]):not([mobile])) .chevron svg { transform: rotate(0deg); }' +
-    ':host([data-top-level]:not([orientation="vertical"]):not([mobile])[data-open]) .chevron svg { transform: rotate(180deg); }' +
-    ':host([data-top-level][orientation="vertical"]:not([mobile])) .chevron svg,' +
-    ' :host(:not([data-top-level]):not([mobile])) .chevron svg { transform: rotate(-90deg); }' +
-    ':host([data-top-level][orientation="vertical"]:not([mobile])[data-open]) .chevron svg,' +
-    ' :host(:not([data-top-level]):not([mobile])[data-open]) .chevron svg { transform: rotate(0deg); }' +
-    ':host([mobile]) .chevron svg { transform: rotate(0deg); }' +
-    ':host([mobile][data-open]) .chevron svg { transform: rotate(180deg); }' +
-
-    '.submenu { list-style: none; margin: 0; padding: 0.35rem; min-width: var(--lwt-nav-dropdown-min-width, 180px);' +
-    '  background: var(--lwt-nav-dropdown-bg, var(--lwt-color-surface, #fff));' +
-    '  border: 1px solid var(--lwt-nav-dropdown-border, var(--lwt-color-border, #e5e7eb));' +
-    '  border-radius: var(--lwt-nav-dropdown-radius, 8px);' +
-    '  box-shadow: 0 10px 25px var(--lwt-nav-dropdown-shadow, var(--lwt-color-shadow, rgba(0,0,0,0.15))); }' +
-    ':host([data-top-level]:not([orientation="vertical"]):not([mobile])) .submenu {' +
-    '  position: absolute; top: 100%; left: 0; margin-top: 0.3rem; z-index: var(--lwt-nav-menu-z, 100); }' +
-    ':host([data-top-level][orientation="vertical"]:not([mobile])) .submenu,' +
-    ' :host(:not([data-top-level]):not([mobile])) .submenu {' +
-    '  position: absolute; top: 0; left: 100%; margin-left: 0.3rem; z-index: var(--lwt-nav-menu-z, 100); }' +
-    ':host([mobile]) .submenu { position: static; margin: 0.15rem 0; padding: 0; background: none; border: none; box-shadow: none; }';
+  var CSS = `
+    :host { display: block; position: relative; font-family: inherit; }
+    :host([disabled]) { pointer-events: none; }
+    .trigger {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
+      gap: var(--lwt-nav-item-gap, var(--lwt-gap, 0.4rem));
+      padding: var(--lwt-nav-item-padding-y, 0.55rem) var(--lwt-nav-item-padding-x, 0.9rem);
+      border: none;
+      background: none;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.92rem;
+      text-align: left;
+      color: var(--lwt-nav-item-color, var(--lwt-color-text, #1f2937));
+      text-decoration: none;
+      border-radius: var(--lwt-nav-item-radius, var(--lwt-border-radius, 6px));
+      white-space: nowrap;
+    }
+    :where(:host([mobile]) .trigger) {
+      white-space: normal;
+      padding-left: calc(var(--lwt-nav-menu-indent, 1rem) * var(--lwt-nav-item-depth, 0) + var(--lwt-nav-item-padding-x, 0.9rem));
+    }
+    .trigger:hover {
+      color: var(--lwt-nav-item-hover-color, var(--lwt-color-primary, #2563eb));
+      background: var(--lwt-nav-item-hover-bg, var(--lwt-color-surface-alt, rgba(0,0,0,0.05)));
+    }
+    .trigger:focus-visible {
+      outline: 2px solid var(--lwt-nav-focus-color, var(--lwt-focus-color, #2563eb));
+      outline-offset: -2px;
+    }
+    :host([disabled]) .trigger { opacity: 0.5; cursor: not-allowed; }
+    :host([active]) .trigger {
+      color: var(--lwt-nav-item-active-color, var(--lwt-color-primary, #2563eb));
+      font-weight: 600;
+      background: var(--lwt-nav-item-active-bg, transparent);
+    }
+    .content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      overflow: hidden;
+    }
+    .content ::slotted(img), .content ::slotted(svg) {
+      width: 1.05em;
+      height: 1.05em;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+    .chevron {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      margin-left: 0.15rem;
+    }
+    .chevron svg { width: 11px; height: 11px; transition: transform 150ms ease; }
+    :host([data-top-level]:not([orientation="vertical"]):not([mobile])) .chevron svg { transform: rotate(0deg); }
+    :host([data-top-level]:not([orientation="vertical"]):not([mobile])[data-open]) .chevron svg {
+      transform: rotate(180deg);
+    }
+    :host([data-top-level][orientation="vertical"]:not([mobile])) .chevron svg,
+    :host(:not([data-top-level]):not([mobile])) .chevron svg {
+      transform: rotate(-90deg);
+    }
+    :host([data-top-level][orientation="vertical"]:not([mobile])[data-open]) .chevron svg,
+    :host(:not([data-top-level]):not([mobile])[data-open]) .chevron svg {
+      transform: rotate(0deg);
+    }
+    :host([mobile]) .chevron svg { transform: rotate(0deg); }
+    :host([mobile][data-open]) .chevron svg { transform: rotate(180deg); }
+    .submenu {
+      list-style: none;
+      margin: 0;
+      padding: var(--lwt-nav-dropdown-padding, var(--lwt-padding, 0.35rem));
+      min-width: var(--lwt-nav-dropdown-min-width, 180px);
+      background: var(--lwt-nav-dropdown-bg, var(--lwt-color-surface, #fff));
+      border: var(--lwt-nav-dropdown-border, var(--lwt-border, 1px solid #e5e7eb));
+      border-radius: var(--lwt-nav-dropdown-radius, var(--lwt-border-radius, 8px));
+      box-shadow: 0 10px 25px var(--lwt-nav-dropdown-shadow, var(--lwt-color-shadow, rgba(0,0,0,0.15)));
+    }
+    :host([data-top-level]:not([orientation="vertical"]):not([mobile])) .submenu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 0.3rem;
+      z-index: var(--lwt-nav-menu-z, 100);
+    }
+    :host([data-top-level][orientation="vertical"]:not([mobile])) .submenu,
+    :host(:not([data-top-level]):not([mobile])) .submenu {
+      position: absolute;
+      top: 0;
+      left: 100%;
+      margin-left: 0.3rem;
+      z-index: var(--lwt-nav-menu-z, 100);
+    }
+    :host([mobile]) .submenu {
+      position: static;
+      margin: 0.15rem 0;
+      padding: 0;
+      background: none;
+      border: none;
+      box-shadow: none;
+    }
+  `;
 
   class LWTNavItem extends window.LWT.Element {
     static get observedAttributes() {
@@ -1878,41 +2052,78 @@
     '  </div>' +
     '</div>';
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    ':host([hidden]) { display: none; }' +
-
-    '.bar { display: flex; align-items: center; justify-content: space-between; background: transparent; position: relative; }' +
-    ':where(:host([sticky]) .bar) { position: sticky; top: 0; z-index: var(--lwt-nav-menu-z, 100); }' +
-
-    '.list { display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; list-style: none;' +
-    '  margin: 0; padding: 0; gap: var(--lwt-nav-menu-gap, 0.15rem); background: transparent; width: 100%; }' +
-    ':where(:host([orientation="vertical"]) .list) { flex-direction: column; align-items: stretch; }' +
-
-    '.panel { flex: 1; min-width: 0; overflow: visible; }' +
-
-    '.hamburger { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 5px;' +
-    '  width: 2.25rem; height: 2.25rem; flex-shrink: 0; border: none; background: none; cursor: pointer;' +
-    '  padding: 0; border-radius: 6px; }' +
-    '.hamburger:hover { background: var(--lwt-nav-item-hover-bg, var(--lwt-color-surface-alt, rgba(0,0,0,0.05))); }' +
-    '.hamburger:focus-visible { outline: 2px solid var(--lwt-nav-focus-color, var(--lwt-focus-ring, #2563eb)); outline-offset: 2px; }' +
-    '.hb-line { display: block; width: 20px; height: 2px; border-radius: 2px;' +
-    '  background: var(--lwt-nav-hamburger-color, var(--lwt-color-text, currentColor));' +
-    '  transition: transform 160ms ease, opacity 160ms ease; }' +
-    ':host([mobile]) .hamburger { display: inline-flex; }' +
-    ':host([data-mobile-open]) .hb-line:nth-child(1) { transform: translateY(7px) rotate(45deg); }' +
-    ':host([data-mobile-open]) .hb-line:nth-child(2) { opacity: 0; }' +
-    ':host([data-mobile-open]) .hb-line:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }' +
-
-    ':host([mobile]) .bar { flex-wrap: wrap; }' +
-    ':host([mobile]) .panel { flex-basis: 100%; order: 2; }' +
-    ':host([mobile]) .list { display: none; flex-direction: column; align-items: stretch;' +
-    '  background: var(--lwt-nav-dropdown-bg, var(--lwt-color-surface, #fff));' +
-    '  border: 1px solid var(--lwt-nav-dropdown-border, var(--lwt-color-border, #e5e7eb));' +
-    '  border-radius: var(--lwt-nav-dropdown-radius, 8px);' +
-    '  box-shadow: 0 10px 25px var(--lwt-nav-dropdown-shadow, var(--lwt-color-shadow, rgba(0,0,0,0.15)));' +
-    '  padding: 0.5rem; margin-top: 0.5rem; }' +
-    ':host([mobile][data-mobile-open]) .list { display: flex; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    :host([hidden]) { display: none; }
+    .bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: transparent;
+      position: relative;
+    }
+    :where(:host([sticky]) .bar) { position: sticky; top: 0; z-index: var(--lwt-nav-menu-z, 100); }
+    .list {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: var(--lwt-nav-menu-gap, var(--lwt-gap, 0.15rem));
+      background: transparent;
+      width: 100%;
+    }
+    :where(:host([orientation="vertical"]) .list) { flex-direction: column; align-items: stretch; }
+    .panel { flex: 1; min-width: 0; overflow: visible; }
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      width: 2.25rem;
+      height: 2.25rem;
+      flex-shrink: 0;
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 0;
+      border-radius: var(--lwt-nav-item-radius, var(--lwt-border-radius, 6px));
+    }
+    .hamburger:hover { background: var(--lwt-nav-item-hover-bg, var(--lwt-color-surface-alt, rgba(0,0,0,0.05))); }
+    .hamburger:focus-visible {
+      outline: 2px solid var(--lwt-nav-focus-color, var(--lwt-focus-color, #2563eb));
+      outline-offset: 2px;
+    }
+    .hb-line {
+      display: block;
+      width: 20px;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--lwt-nav-hamburger-color, var(--lwt-color-text, currentColor));
+      transition: transform 160ms ease, opacity 160ms ease;
+    }
+    :host([mobile]) .hamburger { display: inline-flex; }
+    :host([data-mobile-open]) .hb-line:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    :host([data-mobile-open]) .hb-line:nth-child(2) { opacity: 0; }
+    :host([data-mobile-open]) .hb-line:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    :host([mobile]) .bar { flex-wrap: wrap; }
+    :host([mobile]) .panel { flex-basis: 100%; order: 2; }
+    :host([mobile]) .list {
+      display: none;
+      flex-direction: column;
+      align-items: stretch;
+      background: var(--lwt-nav-dropdown-bg, var(--lwt-color-surface, #fff));
+      border: var(--lwt-nav-dropdown-border, var(--lwt-border, 1px solid #e5e7eb));
+      border-radius: var(--lwt-nav-dropdown-radius, var(--lwt-border-radius, 8px));
+      box-shadow: 0 10px 25px var(--lwt-nav-dropdown-shadow, var(--lwt-color-shadow, rgba(0,0,0,0.15)));
+      padding: var(--lwt-nav-dropdown-padding, var(--lwt-padding, 0.5rem));
+      margin-top: 0.5rem;
+    }
+    :host([mobile][data-mobile-open]) .list { display: flex; }
+  `;
 
   class LWTNavMenu extends window.LWT.Element {
     static get observedAttributes() {
@@ -2150,13 +2361,14 @@
     throw new Error('lwt-gen-pricing-table.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host {' +
-    '  display: grid;' +
-    '  grid-template-columns: repeat(auto-fit, minmax(var(--lwt-pricing-col-min, 240px), 1fr));' +
-    '  align-items: stretch;' +
-    '  gap: var(--lwt-pricing-gap, 1rem);' +
-    '}';
+  var CSS = `
+    :host {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(var(--lwt-pricing-col-min, 240px), 1fr));
+      align-items: stretch;
+      gap: var(--lwt-pricing-gap, var(--lwt-gap, 1rem));
+    }
+  `;
 
   class LWTPricingTable extends window.LWT.Element {
     render() {
@@ -2175,79 +2387,77 @@
     throw new Error('lwt-gen-pricing-tier.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host {' +
-    '  display: flex;' +
-    '  flex-direction: column;' +
-    '  box-sizing: border-box;' +
-    '  border: 1px solid var(--lwt-pricing-border, var(--lwt-color-border, #e5e7eb));' +
-    '  border-radius: 12px;' +
-    '  background: var(--lwt-pricing-bg, var(--lwt-color-surface, #fff));' +
-    '  overflow: hidden;' +
-    '  font-family: inherit;' +
-    '}' +
-    ':host([featured]) {' +
-    '  border-color: var(--lwt-pricing-featured-border, var(--lwt-color-text-strong, #111827));' +
-    '  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15);' +
-    '}' +
-    '.badge {' +
-    '  display: none;' +
-    '  background: var(--lwt-pricing-featured-bg, var(--lwt-color-text-strong, #111827));' +
-    '  color: var(--lwt-pricing-featured-color, var(--lwt-color-bg, #fff));' +
-    '  font-size: 0.72rem;' +
-    '  font-weight: 700;' +
-    '  letter-spacing: 0.06em;' +
-    '  text-transform: uppercase;' +
-    '  text-align: center;' +
-    '  padding: 0.4rem 0;' +
-    '}' +
-    ':host([featured]) .badge { display: block; }' +
-    '.header { padding: 1.5rem; }' +
-    '.header ::slotted(h1), .header ::slotted(h2), .header ::slotted(h3) {' +
-    '  margin: 0 0 0.4rem;' +
-    '  font-size: 1.15rem;' +
-    '}' +
-    '.header ::slotted(p) {' +
-    '  margin: 0 0 1.25rem;' +
-    '  font-size: 0.88rem;' +
-    '  color: var(--lwt-pricing-muted, var(--lwt-color-text-muted, #6b7280));' +
-    '}' +
-    '.price {' +
-    '  margin: 0 0 1.25rem;' +
-    '  font-size: 2rem;' +
-    '  font-weight: 700;' +
-    '  color: var(--lwt-pricing-price-color, var(--lwt-color-text-strong, #111827));' +
-    '}' +
-    '.period {' +
-    '  display: block;' +
-    '  font-size: 0.82rem;' +
-    '  font-weight: 400;' +
-    '  color: var(--lwt-pricing-muted, var(--lwt-color-text-muted, #6b7280));' +
-    '  margin-top: 0.15rem;' +
-    '}' +
-    '.divider { border-top: 1px solid var(--lwt-pricing-border, var(--lwt-color-border, #e5e7eb)); }' +
-    '.features {' +
-    '  list-style: none;' +
-    '  margin: 0;' +
-    '  padding: 1.25rem 1.5rem;' +
-    '  flex: 1;' +
-    '  display: flex;' +
-    '  flex-direction: column;' +
-    '  gap: 0.6rem;' +
-    '}' +
-    '::slotted([slot="features"]) {' +
-    '  display: flex;' +
-    '  align-items: flex-start;' +
-    '  gap: 0.5rem;' +
-    '  font-size: 0.92rem;' +
-    '  line-height: 1.4;' +
-    '}' +
-    '::slotted([slot="features"])::before {' +
-    '  content: "\\203A";' +
-    '  color: var(--lwt-pricing-accent, var(--lwt-color-text-muted, #6b7280));' +
-    '  font-weight: 700;' +
-    '  flex-shrink: 0;' +
-    '}';
+  var CSS = `
+    :host {
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      border: var(--lwt-pricing-border, var(--lwt-border, 1px solid #e5e7eb));
+      border-radius: var(--lwt-pricing-radius, var(--lwt-border-radius, 12px));
+      background: var(--lwt-pricing-bg, var(--lwt-color-surface, #fff));
+      overflow: hidden;
+      font-family: inherit;
+    }
+    :host([featured]) {
+      border-color: var(--lwt-pricing-featured-border, var(--lwt-color-text-strong, #111827));
+      box-shadow: var(--lwt-pricing-featured-shadow, 0 10px 25px -5px rgba(0,0,0,0.15));
+    }
+    .badge {
+      display: none;
+      background: var(--lwt-pricing-featured-bg, var(--lwt-color-text-strong, #111827));
+      color: var(--lwt-pricing-featured-color, var(--lwt-color-surface, #fff));
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 0.4rem 0;
+    }
+    :host([featured]) .badge { display: block; }
+    .header { padding: var(--lwt-pricing-padding, var(--lwt-padding, 1.5rem)); }
+    .header ::slotted(h1), .header ::slotted(h2), .header ::slotted(h3) { margin: 0 0 0.4rem; font-size: 1.15rem; }
+    .header ::slotted(p) {
+      margin: 0 0 1.25rem;
+      font-size: 0.88rem;
+      color: var(--lwt-pricing-muted, var(--lwt-color-text-muted, #6b7280));
+    }
+    .price {
+      margin: 0 0 1.25rem;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--lwt-pricing-price-color, var(--lwt-color-text-strong, #111827));
+    }
+    .period {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 400;
+      color: var(--lwt-pricing-muted, var(--lwt-color-text-muted, #6b7280));
+      margin-top: 0.15rem;
+    }
+    .divider { border-top: var(--lwt-pricing-border, var(--lwt-border, 1px solid #e5e7eb)); }
+    .features {
+      list-style: none;
+      margin: 0;
+      padding: var(--lwt-pricing-features-padding, 1.25rem 1.5rem);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--lwt-pricing-features-gap, var(--lwt-gap, 0.6rem));
+    }
+    ::slotted([slot="features"]) {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+    ::slotted([slot="features"])::before {
+      content: "\\203A";
+      color: var(--lwt-pricing-accent, var(--lwt-color-text-muted, #6b7280));
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+  `;
 
   class LWTPricingTier extends window.LWT.Element {
     static get observedAttributes() {
@@ -2687,8 +2897,10 @@
     });
   }
 
-  var CSS = ':host { display: inline-block; line-height: 0; }' +
-    'svg { display: block; }';
+  var CSS = `
+    :host { display: inline-block; line-height: 0; }
+    svg { display: block; }
+  `;
 
   class LWTQr extends window.LWT.Element {
     static get observedAttributes() {
@@ -2795,9 +3007,10 @@
       : [value];
   }
 
-  var CSS =
-    ':host { display: block; position: relative; line-height: 0; }' +
-    'canvas { display: block; width: 100%; height: 100%; }';
+  var CSS = `
+    :host { display: block; position: relative; line-height: 0; }
+    canvas { display: block; width: 100%; height: 100%; }
+  `;
 
   var TEMPLATE = '<canvas part="canvas"></canvas>';
 
@@ -3072,19 +3285,37 @@
     });
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.row { display: grid;' +
-    '  grid-template-columns: var(--lwt-skill-bar-label-width, 220px) var(--lwt-skill-bar-value-width, 44px) 1fr;' +
-    '  align-items: center; column-gap: 0.9rem; padding: 0.55rem 0; }' +
-    '.row.hide-value { grid-template-columns: var(--lwt-skill-bar-label-width, 220px) 1fr; }' +
-    '.label { font-size: 0.92rem; color: var(--lwt-skill-bar-label-color, var(--lwt-color-text, #2f4a6b)); overflow-wrap: anywhere; }' +
-    '.value { font-size: 0.85rem; color: var(--lwt-skill-bar-value-color, var(--lwt-color-text, #374151)); }' +
-    '.track { height: var(--lwt-skill-bar-height, 10px); border-radius: 999px;' +
-    '  background: var(--lwt-skill-bar-track-color, var(--lwt-color-border, #e5e7eb)); overflow: hidden; }' +
-    '.fill { height: 100%; border-radius: 999px; background: var(--lwt-skill-bar-fill-color, var(--lwt-color-success, #8bc34a));' +
-    '  width: 0%; transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1); }' +
-    '@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .row {
+      display: grid;
+      grid-template-columns: var(--lwt-skill-bar-label-width, 220px) var(--lwt-skill-bar-value-width, 44px) 1fr;
+      align-items: center;
+      column-gap: var(--lwt-skill-bar-gap, var(--lwt-gap, 0.9rem));
+      padding: var(--lwt-skill-bar-padding, 0.55rem 0);
+    }
+    .row.hide-value { grid-template-columns: var(--lwt-skill-bar-label-width, 220px) 1fr; }
+    .label {
+      font-size: 0.92rem;
+      color: var(--lwt-skill-bar-label-color, var(--lwt-color-text, #2f4a6b));
+      overflow-wrap: anywhere;
+    }
+    .value { font-size: 0.85rem; color: var(--lwt-skill-bar-value-color, var(--lwt-color-text, #374151)); }
+    .track {
+      height: var(--lwt-skill-bar-height, 10px);
+      border-radius: var(--lwt-skill-bar-radius, 999px);
+      background: var(--lwt-skill-bar-track-color, var(--lwt-border-color, #e5e7eb));
+      overflow: hidden;
+    }
+    .fill {
+      height: 100%;
+      border-radius: var(--lwt-skill-bar-radius, 999px);
+      background: var(--lwt-skill-bar-fill-color, var(--lwt-color-success, #8bc34a));
+      width: 0%;
+      transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+  `;
 
   class LWTSkillBar extends window.LWT.Element {
     static get observedAttributes() {
@@ -3222,9 +3453,10 @@
     throw new Error('lwt-gen-tab-panel.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    ':host([hidden]) { display: none; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    :host([hidden]) { display: none; }
+  `;
 
   class LWTTabPanel extends window.LWT.Element {
     render() {
@@ -3247,24 +3479,51 @@
     throw new Error('lwt-gen-tab.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host { display: flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1rem; cursor: pointer;' +
-    '  font: inherit; font-size: 0.9rem; color: var(--lwt-tabs-tab-color, var(--lwt-color-text-muted, #6b7280)); white-space: nowrap;' +
-    '  flex-shrink: 0; user-select: none; box-sizing: border-box; }' +
-    // Position-driven border/margin wrapped in :where() so external
-    // styling on the host (e.g. a responsive vertical→horizontal flip)
-    // wins without !important.
-    ':where(:host([position="top"]), :host(:not([position]))) { border-bottom: 2px solid transparent; margin-bottom: -1px; }' +
-    ':where(:host([position="bottom"])) { border-top: 2px solid transparent; margin-top: -1px; }' +
-    ':where(:host([position="left"])) { border-right: 2px solid transparent; margin-right: -1px; }' +
-    ':where(:host([position="right"])) { border-left: 2px solid transparent; margin-left: -1px; }' +
-    ':host([active]) { color: var(--lwt-tabs-active-color, var(--lwt-color-primary, #2563eb)); font-weight: 600; }' +
-    ':host([active][position="top"]), :host([active]:not([position])) { border-bottom-color: var(--lwt-tabs-active-color, var(--lwt-color-primary, #2563eb)); }' +
-    ':host([active][position="bottom"]) { border-top-color: var(--lwt-tabs-active-color, var(--lwt-color-primary, #2563eb)); }' +
-    ':host([active][position="left"]) { border-right-color: var(--lwt-tabs-active-color, var(--lwt-color-primary, #2563eb)); }' +
-    ':host([active][position="right"]) { border-left-color: var(--lwt-tabs-active-color, var(--lwt-color-primary, #2563eb)); }' +
-    ':host([disabled]) { opacity: 0.45; cursor: not-allowed; pointer-events: none; }' +
-    ':host(:focus-visible) { outline: 2px solid var(--lwt-tabs-focus-color, var(--lwt-focus-ring, #2563eb)); outline-offset: -2px; border-radius: 2px; }';
+  var CSS = `
+    :host {
+      display: flex;
+      align-items: center;
+      gap: var(--lwt-tabs-tab-gap, 0.4rem);
+      padding: var(--lwt-tabs-tab-padding, var(--lwt-padding, 0.6rem 1rem));
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.9rem;
+      color: var(--lwt-tabs-tab-color, var(--lwt-color-text-muted, #6b7280));
+      white-space: nowrap;
+      flex-shrink: 0;
+      user-select: none;
+      box-sizing: border-box;
+    }
+    /* Position-driven border/margin wrapped in :where() so external
+       styling on the host (e.g. a responsive vertical→horizontal flip)
+       wins without !important. */
+    :where(:host([position="top"]), :host(:not([position]))) {
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    :where(:host([position="bottom"])) { border-top: 2px solid transparent; margin-top: -1px; }
+    :where(:host([position="left"])) { border-right: 2px solid transparent; margin-right: -1px; }
+    :where(:host([position="right"])) { border-left: 2px solid transparent; margin-left: -1px; }
+    :host([active]) { color: var(--lwt-tabs-active-color, var(--lwt-color-primary, #2563eb)); font-weight: 600; }
+    :host([active][position="top"]), :host([active]:not([position])) {
+      border-bottom-color: var(--lwt-tabs-active-color, var(--lwt-color-primary, #2563eb));
+    }
+    :host([active][position="bottom"]) {
+      border-top-color: var(--lwt-tabs-active-color, var(--lwt-color-primary, #2563eb));
+    }
+    :host([active][position="left"]) {
+      border-right-color: var(--lwt-tabs-active-color, var(--lwt-color-primary, #2563eb));
+    }
+    :host([active][position="right"]) {
+      border-left-color: var(--lwt-tabs-active-color, var(--lwt-color-primary, #2563eb));
+    }
+    :host([disabled]) { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+    :host(:focus-visible) {
+      outline: 2px solid var(--lwt-tabs-focus-color, var(--lwt-focus-color, #2563eb));
+      outline-offset: -2px;
+      border-radius: 2px;
+    }
+  `;
 
   class LWTTab extends window.LWT.Element {
     static get observedAttributes() {
@@ -3364,40 +3623,68 @@
     throw new Error('lwt-gen-tabs.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.wrap { display: flex; height: 100%; }' +
-    '.tab-bar { display: flex; gap: 0.15rem; flex-shrink: 0; scrollbar-width: thin; }' +
-    '.panel-area { flex: 1; min-width: 0; min-height: 0; padding: 1rem 0.25rem; overflow: auto; }' +
-
-    // Position-driven layout wrapped in :where() so any external CSS
-    // targeting the same parts (e.g. ::part(tab-bar) at a breakpoint)
-    // wins with no !important. See lwt-gen-grid-item.js for the pattern.
-    ':where(:host([position="top"]) .wrap, :host(:not([position])) .wrap) { flex-direction: column; }' +
-    ':where(:host([position="top"]) .tab-bar, :host(:not([position])) .tab-bar) {' +
-    '  order: 0; flex-direction: row; overflow-x: auto; overflow-y: hidden;' +
-    '  border-bottom: 1px solid var(--lwt-tabs-border, var(--lwt-color-border, #e5e7eb)); max-width: 100%; }' +
-    ':where(:host([position="top"]) .panel-area, :host(:not([position])) .panel-area) { order: 1; }' +
-
-    ':where(:host([position="bottom"]) .wrap) { flex-direction: column; }' +
-    ':where(:host([position="bottom"]) .tab-bar) {' +
-    '  order: 1; flex-direction: row; overflow-x: auto; overflow-y: hidden;' +
-    '  border-top: 1px solid var(--lwt-tabs-border, var(--lwt-color-border, #e5e7eb)); max-width: 100%; }' +
-    ':where(:host([position="bottom"]) .panel-area) { order: 0; }' +
-
-    ':where(:host([position="left"]) .wrap) { flex-direction: row; }' +
-    ':where(:host([position="left"]) .tab-bar) {' +
-    '  order: 0; flex-direction: column; overflow-y: auto; overflow-x: hidden;' +
-    '  border-right: 1px solid var(--lwt-tabs-border, var(--lwt-color-border, #e5e7eb));' +
-    '  flex-basis: var(--lwt-tabs-bar-size, 180px); max-height: 100%; }' +
-    ':where(:host([position="left"]) .panel-area) { order: 1; }' +
-
-    ':where(:host([position="right"]) .wrap) { flex-direction: row; }' +
-    ':where(:host([position="right"]) .tab-bar) {' +
-    '  order: 1; flex-direction: column; overflow-y: auto; overflow-x: hidden;' +
-    '  border-left: 1px solid var(--lwt-tabs-border, var(--lwt-color-border, #e5e7eb));' +
-    '  flex-basis: var(--lwt-tabs-bar-size, 180px); max-height: 100%; }' +
-    ':where(:host([position="right"]) .panel-area) { order: 0; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .wrap { display: flex; height: 100%; }
+    .tab-bar {
+      display: flex;
+      gap: var(--lwt-tabs-gap, 0.15rem);
+      flex-shrink: 0;
+      scrollbar-width: thin;
+    }
+    .panel-area {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      padding: var(--lwt-tabs-panel-padding, var(--lwt-padding, 1rem 0.25rem));
+      overflow: auto;
+    }
+    /* Position-driven layout wrapped in :where() so any external CSS
+       targeting the same parts (e.g. ::part(tab-bar) at a breakpoint)
+       wins with no !important. See lwt-gen-grid-item.js for the pattern. */
+    :where(:host([position="top"]) .wrap, :host(:not([position])) .wrap) { flex-direction: column; }
+    :where(:host([position="top"]) .tab-bar, :host(:not([position])) .tab-bar) {
+      order: 0;
+      flex-direction: row;
+      overflow-x: auto;
+      overflow-y: hidden;
+      border-bottom: var(--lwt-tabs-border, var(--lwt-border, 1px solid #e5e7eb));
+      max-width: 100%;
+    }
+    :where(:host([position="top"]) .panel-area, :host(:not([position])) .panel-area) { order: 1; }
+    :where(:host([position="bottom"]) .wrap) { flex-direction: column; }
+    :where(:host([position="bottom"]) .tab-bar) {
+      order: 1;
+      flex-direction: row;
+      overflow-x: auto;
+      overflow-y: hidden;
+      border-top: var(--lwt-tabs-border, var(--lwt-border, 1px solid #e5e7eb));
+      max-width: 100%;
+    }
+    :where(:host([position="bottom"]) .panel-area) { order: 0; }
+    :where(:host([position="left"]) .wrap) { flex-direction: row; }
+    :where(:host([position="left"]) .tab-bar) {
+      order: 0;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border-right: var(--lwt-tabs-border, var(--lwt-border, 1px solid #e5e7eb));
+      flex-basis: var(--lwt-tabs-bar-size, 180px);
+      max-height: 100%;
+    }
+    :where(:host([position="left"]) .panel-area) { order: 1; }
+    :where(:host([position="right"]) .wrap) { flex-direction: row; }
+    :where(:host([position="right"]) .tab-bar) {
+      order: 1;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border-left: var(--lwt-tabs-border, var(--lwt-border, 1px solid #e5e7eb));
+      flex-basis: var(--lwt-tabs-bar-size, 180px);
+      max-height: 100%;
+    }
+    :where(:host([position="right"]) .panel-area) { order: 0; }
+  `;
 
   var TEMPLATE =
     '<div class="wrap" part="wrap">' +
@@ -3605,33 +3892,90 @@
     error: '<svg class="icon" viewBox="0 0 20 20"><circle class="icon-bg" cx="10" cy="10" r="10"></circle><line x1="7" y1="7" x2="13" y2="13" stroke="#fff" stroke-width="2" stroke-linecap="round"></line><line x1="13" y1="7" x2="7" y2="13" stroke="#fff" stroke-width="2" stroke-linecap="round"></line></svg>'
   };
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.toast-stack { position: fixed; z-index: 2147483000; display: flex; flex-direction: column; gap: var(--lwt-toast-gap, 0.5rem);' +
-    '  pointer-events: none; max-width: min(90vw, 360px); }' +
-    '.pos-top-right { top: var(--lwt-toast-offset, 1rem); right: var(--lwt-toast-offset, 1rem); }' +
-    '.pos-top-left { top: var(--lwt-toast-offset, 1rem); left: var(--lwt-toast-offset, 1rem); }' +
-    '.pos-bottom-right { bottom: var(--lwt-toast-offset, 1rem); right: var(--lwt-toast-offset, 1rem); flex-direction: column-reverse; }' +
-    '.pos-bottom-left { bottom: var(--lwt-toast-offset, 1rem); left: var(--lwt-toast-offset, 1rem); flex-direction: column-reverse; }' +
-    '.pos-top-center { top: var(--lwt-toast-offset, 1rem); left: 50%; transform: translateX(-50%); }' +
-    '.pos-bottom-center { bottom: var(--lwt-toast-offset, 1rem); left: 50%; transform: translateX(-50%); flex-direction: column-reverse; }' +
-    '.toast-card { pointer-events: auto; display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.8rem 0.9rem; border-radius: 10px;' +
-    '  background: var(--lwt-toast-bg, var(--lwt-color-surface, #fff)); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1);' +
-    '  border-left: 4px solid currentColor; animation: lwt-toast-in 180ms ease; }' +
-    '.toast-card.variant-success { color: var(--lwt-toast-success-color, var(--lwt-color-success, #22c55e)); }' +
-    '.toast-card.variant-warning { color: var(--lwt-toast-warning-color, var(--lwt-color-warning, #f59e0b)); }' +
-    '.toast-card.variant-info { color: var(--lwt-toast-info-color, var(--lwt-color-info, #3b82f6)); }' +
-    '.toast-card.variant-error { color: var(--lwt-toast-error-color, var(--lwt-color-danger, #ef4444)); }' +
-    '.toast-icon-wrap { flex-shrink: 0; width: 20px; height: 20px; margin-top: 0.1rem; }' +
-    '.icon-bg { fill: currentColor; }' +
-    '.toast-content { flex: 1; min-width: 0; }' +
-    '.toast-title { font-weight: 700; font-size: 0.9rem; color: var(--lwt-toast-title-color, var(--lwt-color-text-strong, #111827)); margin-bottom: 0.1rem; }' +
-    '.toast-message { font-size: 0.86rem; color: var(--lwt-toast-text-color, var(--lwt-color-text, #374151)); word-wrap: break-word; }' +
-    '.toast-close { flex-shrink: 0; border: none; background: none; cursor: pointer; font-size: 1.15rem; line-height: 1; color: inherit; opacity: 0.7; padding: 0;' +
-    '  min-width: 24px; min-height: 24px; margin: -0.25rem -0.3rem -0.25rem 0; border-radius: 4px; }' +
-    '.toast-close:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; opacity: 1; }' +
-    '.toast-close:hover { opacity: 1; }' +
-    '@keyframes lwt-toast-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .toast-stack {
+      position: fixed;
+      z-index: 2147483000;
+      display: flex;
+      flex-direction: column;
+      gap: var(--lwt-toast-gap, var(--lwt-gap, 0.5rem));
+      pointer-events: none;
+      max-width: min(90vw, 360px);
+    }
+    .pos-top-right { top: var(--lwt-toast-offset, 1rem); right: var(--lwt-toast-offset, 1rem); }
+    .pos-top-left { top: var(--lwt-toast-offset, 1rem); left: var(--lwt-toast-offset, 1rem); }
+    .pos-bottom-right {
+      bottom: var(--lwt-toast-offset, 1rem);
+      right: var(--lwt-toast-offset, 1rem);
+      flex-direction: column-reverse;
+    }
+    .pos-bottom-left {
+      bottom: var(--lwt-toast-offset, 1rem);
+      left: var(--lwt-toast-offset, 1rem);
+      flex-direction: column-reverse;
+    }
+    .pos-top-center { top: var(--lwt-toast-offset, 1rem); left: 50%; transform: translateX(-50%); }
+    .pos-bottom-center {
+      bottom: var(--lwt-toast-offset, 1rem);
+      left: 50%;
+      transform: translateX(-50%);
+      flex-direction: column-reverse;
+    }
+    .toast-card {
+      pointer-events: auto;
+      display: flex;
+      align-items: flex-start;
+      gap: var(--lwt-toast-card-gap, var(--lwt-gap, 0.6rem));
+      padding: var(--lwt-toast-padding, var(--lwt-padding, 0.8rem 0.9rem));
+      border-radius: var(--lwt-toast-radius, var(--lwt-border-radius, 10px));
+      background: var(--lwt-toast-bg, var(--lwt-color-surface, #fff));
+      box-shadow: var(--lwt-toast-shadow, 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1));
+      border-left: 4px solid currentColor;
+      animation: lwt-toast-in 180ms ease;
+    }
+    .toast-card.variant-success { color: var(--lwt-toast-success-color, var(--lwt-color-success, #22c55e)); }
+    .toast-card.variant-warning { color: var(--lwt-toast-warning-color, var(--lwt-color-warning, #f59e0b)); }
+    .toast-card.variant-info { color: var(--lwt-toast-info-color, var(--lwt-color-info, #3b82f6)); }
+    .toast-card.variant-error { color: var(--lwt-toast-error-color, var(--lwt-color-danger, #ef4444)); }
+    .toast-icon-wrap {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      margin-top: 0.1rem;
+    }
+    .icon-bg { fill: currentColor; }
+    .toast-content { flex: 1; min-width: 0; }
+    .toast-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--lwt-toast-title-color, var(--lwt-color-text-strong, #111827));
+      margin-bottom: 0.1rem;
+    }
+    .toast-message {
+      font-size: 0.86rem;
+      color: var(--lwt-toast-text-color, var(--lwt-color-text, #374151));
+      word-wrap: break-word;
+    }
+    .toast-close {
+      flex-shrink: 0;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 1.15rem;
+      line-height: 1;
+      color: inherit;
+      opacity: 0.7;
+      padding: 0;
+      min-width: 24px;
+      min-height: 24px;
+      margin: -0.25rem -0.3rem -0.25rem 0;
+      border-radius: 4px;
+    }
+    .toast-close:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; opacity: 1; }
+    .toast-close:hover { opacity: 1; }
+    @keyframes lwt-toast-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  `;
 
   class LWTToast extends window.LWT.Element {
     constructor() {
@@ -3810,23 +4154,57 @@
     return item;
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.row { display: flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.5rem; border-radius: 6px; cursor: pointer; }' +
-    ':host([disabled]) .row { opacity: 0.45; cursor: not-allowed; pointer-events: none; }' +
-    ':host(:focus-visible) { outline: none; }' +
-    ':host(:focus-visible) .row { box-shadow: 0 0 0 2px var(--lwt-tree-focus-color, var(--lwt-focus-ring, #2563eb)); }' +
-    '.toggle { width: 16px; height: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;' +
-    '  color: var(--lwt-tree-chevron-color, var(--lwt-color-text-muted, #6b7280)); }' +
-    '.toggle svg { width: 14px; height: 14px; transition: transform 150ms ease; }' +
-    ':host([expanded]) .toggle svg { transform: rotate(90deg); }' +
-    '.toggle.no-children { visibility: hidden; cursor: default; }' +
-    '.check { flex-shrink: 0; width: 15px; height: 15px; margin: 0; cursor: pointer; accent-color: var(--lwt-tree-check-color, var(--lwt-color-primary, #2563eb)); }' +
-    '.label { flex: 1; min-width: 0; font-size: 0.9rem; color: var(--lwt-tree-label-color, var(--lwt-color-text, #1f2937)); }' +
-    ':host([selected]) .row { background: var(--lwt-tree-selected-bg, var(--lwt-color-primary-soft, #eff6ff));' +
-    '  border-left: 3px solid var(--lwt-tree-selected-border, var(--lwt-color-primary, #2563eb)); padding-left: calc(0.5rem - 3px); }' +
-    '.children { padding-left: var(--lwt-tree-indent, 1.25rem); margin-left: 0.55rem; border-left: 1px solid var(--lwt-tree-guide-color, var(--lwt-color-border, #e5e7eb)); }' +
-    '.children[hidden] { display: none; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: var(--lwt-tree-gap, 0.35rem);
+      padding: 0.35rem 0.5rem;
+      border-radius: var(--lwt-tree-radius, var(--lwt-border-radius, 6px));
+      cursor: pointer;
+    }
+    :host([disabled]) .row { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+    :host(:focus-visible) { outline: none; }
+    :host(:focus-visible) .row { box-shadow: 0 0 0 2px var(--lwt-tree-focus-color, var(--lwt-focus-color, #2563eb)); }
+    .toggle {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--lwt-tree-chevron-color, var(--lwt-color-text-muted, #6b7280));
+    }
+    .toggle svg { width: 14px; height: 14px; transition: transform 150ms ease; }
+    :host([expanded]) .toggle svg { transform: rotate(90deg); }
+    .toggle.no-children { visibility: hidden; cursor: default; }
+    .check {
+      flex-shrink: 0;
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      cursor: pointer;
+      accent-color: var(--lwt-tree-check-color, var(--lwt-color-primary, #2563eb));
+    }
+    .label {
+      flex: 1;
+      min-width: 0;
+      font-size: 0.9rem;
+      color: var(--lwt-tree-label-color, var(--lwt-color-text, #1f2937));
+    }
+    :host([selected]) .row {
+      background: var(--lwt-tree-selected-bg, var(--lwt-color-primary-soft, #eff6ff));
+      border-left: 3px solid var(--lwt-tree-selected-border, var(--lwt-color-primary, #2563eb));
+      padding-left: calc(0.5rem - 3px);
+    }
+    .children {
+      padding-left: var(--lwt-tree-indent, 1.25rem);
+      margin-left: 0.55rem;
+      border-left: 1px solid var(--lwt-tree-guide-color, var(--lwt-border-color, #e5e7eb));
+    }
+    .children[hidden] { display: none; }
+  `;
 
   // Uppercase tag names for .tagName comparisons. Keep in sync with the
   // LWT.define() calls — these were left as 'LWT-TREE*' after the rename
@@ -4203,7 +4581,9 @@
     return item;
   }
 
-  var CSS = ':host { display: block; font-family: inherit; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+  `;
   var TEMPLATE = '<div class="tree" part="tree" role="tree"><slot></slot></div>';
 
   // Uppercase tag name for .tagName comparisons — keep in sync with define().

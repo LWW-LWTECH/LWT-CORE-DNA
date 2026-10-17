@@ -8,7 +8,6 @@
   var CSS = `
     :host {
       display: inline-block;
-      --lwt-btn-radius: 6px;
       font-family: inherit;
     }
     :host([hidden]) { display: none; }
@@ -30,7 +29,7 @@
     }
 
     button:focus-visible {
-      outline: var(--lwt-button-focus-ring, var(--lwt-focus-color, #2563eb));
+      outline: var(--lwt-button-focus-ring, var(--lwt-focus-ring, 2px solid #2563eb));
       outline-offset: 2px;
     }
     :where(:host([size="sm"]) button) { padding: var(--lwt-button-padding, var(--lwt-padding, 0.3em 0.75em)); font-size: 0.82em; }

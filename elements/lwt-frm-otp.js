@@ -97,36 +97,78 @@
     '  <span class="helper" part="helper"></span>' +
     '</div>';
 
-  var CSS =
-    ':host { display: inline-block; color: inherit; font-family: inherit; box-sizing: border-box; }' +
-    ':host([hidden]) { display: none; }' +
-    '* { box-sizing: border-box; }' +
-    '.field-label { display: flex; gap: 0.2rem; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;' +
-    '  color: var(--lwt-otp-label-color, var(--lwt-color-text, #111827)); }' +
-    '.field-label:empty, .label-text:empty { display: none; }' +
-    '.required-mark { color: var(--lwt-color-danger, #ef4444); display: none; }' +
-    ':host([required]) .required-mark { display: inline; }' +
-
-    '.boxes { display: flex; gap: 0.6rem; }' +
-    '.otp-box { width: 2.6rem; height: 2.9rem; text-align: center; font-size: 1.4rem; font-weight: 600;' +
-    '  border-radius: 8px; padding: 0; font: inherit; color: var(--lwt-color-text, #111827);' +
-    '  background: var(--lwt-otp-bg, var(--lwt-color-surface, #fff));' +
-    '  border: 1px solid var(--lwt-otp-border, var(--lwt-color-border-strong, #d1d5db));' +
-    '  transition: border-color 120ms ease, box-shadow 120ms ease; caret-color: transparent; }' +
-    '.otp-box:focus { outline: none; border-color: var(--lwt-otp-focus-color, var(--lwt-focus-ring, #2563eb));' +
-    '  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lwt-otp-focus-color, var(--lwt-focus-ring, #2563eb)) 22%, transparent); }' +
-    '.otp-box.filled { border-color: var(--lwt-otp-filled-border, var(--lwt-color-border-strong, #9ca3af)); }' +
-    ':host([disabled]) .otp-box { opacity: 0.6; cursor: not-allowed; background: var(--lwt-color-surface-muted, #f3f4f6); }' +
-    ':host([readonly]) .otp-box { cursor: default; }' +
-    ':host([data-invalid]) .otp-box { border-color: var(--lwt-otp-error-color, var(--lwt-color-danger, #ef4444)); }' +
-
-    '.autofill-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;' +
-    '  clip: rect(0,0,0,0); white-space: nowrap; border: 0; }' +
-
-    '.below { display: flex; align-items: flex-start; gap: 0.75rem; margin-top: 0.4rem; font-size: 0.78rem; min-height: 1rem; }' +
-    '.helper { flex: 1; color: var(--lwt-otp-helper-color, var(--lwt-color-text-muted, #6b7280)); }' +
-    '.helper.error { color: var(--lwt-otp-error-color, var(--lwt-color-danger, #ef4444)); }' +
-    '.helper:empty { display: none; }';
+  var CSS = `
+    :host {
+      display: inline-block;
+      color: inherit;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    :host([hidden]) { display: none; }
+    * { box-sizing: border-box; }
+    .field-label {
+      display: flex;
+      gap: 0.2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--lwt-otp-label-color, var(--lwt-color-text, #111827));
+    }
+    .field-label:empty, .label-text:empty { display: none; }
+    .required-mark { color: var(--lwt-color-danger, #ef4444); display: none; }
+    :host([required]) .required-mark { display: inline; }
+    .boxes { display: flex; gap: var(--lwt-otp-gap, var(--lwt-gap, 0.6rem)); }
+    .otp-box {
+      width: var(--lwt-otp-box-width, 2.6rem);
+      height: var(--lwt-otp-box-height, 2.9rem);
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 600;
+      border-radius: var(--lwt-otp-radius, var(--lwt-border-radius, 8px));
+      padding: 0;
+      font: inherit;
+      color: var(--lwt-otp-color, var(--lwt-color-text, #111827));
+      background: var(--lwt-otp-bg, var(--lwt-color-surface, #fff));
+      border: var(--lwt-otp-border, var(--lwt-border, 1px solid #d1d5db));
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+      caret-color: transparent;
+    }
+    .otp-box:focus {
+      outline: none;
+      border-color: var(--lwt-otp-focus-color, var(--lwt-focus-color, #2563eb));
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--lwt-otp-focus-color, var(--lwt-focus-color, #2563eb)) 22%, transparent);
+    }
+    .otp-box.filled { border-color: var(--lwt-otp-filled-border, var(--lwt-color-border-strong, #9ca3af)); }
+    :host([disabled]) .otp-box {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: var(--lwt-color-surface-muted, #f3f4f6);
+    }
+    :host([readonly]) .otp-box { cursor: default; }
+    :host([data-invalid]) .otp-box { border-color: var(--lwt-otp-error-color, var(--lwt-color-danger, #ef4444)); }
+    .autofill-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .below {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-top: 0.4rem;
+      font-size: 0.78rem;
+      min-height: 1rem;
+    }
+    .helper { flex: 1; color: var(--lwt-otp-helper-color, var(--lwt-color-text-muted, #6b7280)); }
+    .helper.error { color: var(--lwt-otp-error-color, var(--lwt-color-danger, #ef4444)); }
+    .helper:empty { display: none; }
+  `;
 
   class LWTOtp extends window.LWT.Element {
     static get observedAttributes() {

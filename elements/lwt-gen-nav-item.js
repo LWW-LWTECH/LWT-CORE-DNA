@@ -16,49 +16,114 @@
   var CHEVRON_SVG =
     '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7l5 5l5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
 
-  var CSS =
-    ':host { display: block; position: relative; font-family: inherit; }' +
-    ':host([disabled]) { pointer-events: none; }' +
-
-    '.trigger { display: flex; align-items: center; width: 100%; box-sizing: border-box; gap: 0.4rem;' +
-    '  padding: var(--lwt-nav-item-padding-y, 0.55rem) var(--lwt-nav-item-padding-x, 0.9rem);' +
-    '  border: none; background: none; cursor: pointer; font: inherit; font-size: 0.92rem; text-align: left;' +
-    '  color: var(--lwt-nav-item-color, var(--lwt-color-text, #1f2937)); text-decoration: none;' +
-    '  border-radius: var(--lwt-nav-item-radius, 6px); white-space: nowrap; }' +
-    ':where(:host([mobile]) .trigger) { white-space: normal;' +
-    '  padding-left: calc(var(--lwt-nav-menu-indent, 1rem) * var(--lwt-nav-item-depth, 0) + var(--lwt-nav-item-padding-x, 0.9rem)); }' +
-    '.trigger:hover { color: var(--lwt-nav-item-hover-color, var(--lwt-color-primary, #2563eb));' +
-    '  background: var(--lwt-nav-item-hover-bg, var(--lwt-color-surface-alt, rgba(0,0,0,0.05))); }' +
-    '.trigger:focus-visible { outline: 2px solid var(--lwt-nav-focus-color, var(--lwt-focus-ring, #2563eb)); outline-offset: -2px; }' +
-    ':host([disabled]) .trigger { opacity: 0.5; cursor: not-allowed; }' +
-    ':host([active]) .trigger { color: var(--lwt-nav-item-active-color, var(--lwt-color-primary, #2563eb)); font-weight: 600;' +
-    '  background: var(--lwt-nav-item-active-bg, transparent); }' +
-
-    '.content { flex: 1; min-width: 0; display: flex; align-items: center; gap: 0.4rem; overflow: hidden; }' +
-    '.content ::slotted(img), .content ::slotted(svg) { width: 1.05em; height: 1.05em; flex-shrink: 0; vertical-align: middle; }' +
-
-    '.chevron { flex-shrink: 0; display: flex; align-items: center; margin-left: 0.15rem; }' +
-    '.chevron svg { width: 11px; height: 11px; transition: transform 150ms ease; }' +
-    ':host([data-top-level]:not([orientation="vertical"]):not([mobile])) .chevron svg { transform: rotate(0deg); }' +
-    ':host([data-top-level]:not([orientation="vertical"]):not([mobile])[data-open]) .chevron svg { transform: rotate(180deg); }' +
-    ':host([data-top-level][orientation="vertical"]:not([mobile])) .chevron svg,' +
-    ' :host(:not([data-top-level]):not([mobile])) .chevron svg { transform: rotate(-90deg); }' +
-    ':host([data-top-level][orientation="vertical"]:not([mobile])[data-open]) .chevron svg,' +
-    ' :host(:not([data-top-level]):not([mobile])[data-open]) .chevron svg { transform: rotate(0deg); }' +
-    ':host([mobile]) .chevron svg { transform: rotate(0deg); }' +
-    ':host([mobile][data-open]) .chevron svg { transform: rotate(180deg); }' +
-
-    '.submenu { list-style: none; margin: 0; padding: 0.35rem; min-width: var(--lwt-nav-dropdown-min-width, 180px);' +
-    '  background: var(--lwt-nav-dropdown-bg, var(--lwt-color-surface, #fff));' +
-    '  border: 1px solid var(--lwt-nav-dropdown-border, var(--lwt-color-border, #e5e7eb));' +
-    '  border-radius: var(--lwt-nav-dropdown-radius, 8px);' +
-    '  box-shadow: 0 10px 25px var(--lwt-nav-dropdown-shadow, var(--lwt-color-shadow, rgba(0,0,0,0.15))); }' +
-    ':host([data-top-level]:not([orientation="vertical"]):not([mobile])) .submenu {' +
-    '  position: absolute; top: 100%; left: 0; margin-top: 0.3rem; z-index: var(--lwt-nav-menu-z, 100); }' +
-    ':host([data-top-level][orientation="vertical"]:not([mobile])) .submenu,' +
-    ' :host(:not([data-top-level]):not([mobile])) .submenu {' +
-    '  position: absolute; top: 0; left: 100%; margin-left: 0.3rem; z-index: var(--lwt-nav-menu-z, 100); }' +
-    ':host([mobile]) .submenu { position: static; margin: 0.15rem 0; padding: 0; background: none; border: none; box-shadow: none; }';
+  var CSS = `
+    :host { display: block; position: relative; font-family: inherit; }
+    :host([disabled]) { pointer-events: none; }
+    .trigger {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
+      gap: var(--lwt-nav-item-gap, var(--lwt-gap, 0.4rem));
+      padding: var(--lwt-nav-item-padding-y, 0.55rem) var(--lwt-nav-item-padding-x, 0.9rem);
+      border: none;
+      background: none;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.92rem;
+      text-align: left;
+      color: var(--lwt-nav-item-color, var(--lwt-color-text, #1f2937));
+      text-decoration: none;
+      border-radius: var(--lwt-nav-item-radius, var(--lwt-border-radius, 6px));
+      white-space: nowrap;
+    }
+    :where(:host([mobile]) .trigger) {
+      white-space: normal;
+      padding-left: calc(var(--lwt-nav-menu-indent, 1rem) * var(--lwt-nav-item-depth, 0) + var(--lwt-nav-item-padding-x, 0.9rem));
+    }
+    .trigger:hover {
+      color: var(--lwt-nav-item-hover-color, var(--lwt-color-primary, #2563eb));
+      background: var(--lwt-nav-item-hover-bg, var(--lwt-color-surface-alt, rgba(0,0,0,0.05)));
+    }
+    .trigger:focus-visible {
+      outline: 2px solid var(--lwt-nav-focus-color, var(--lwt-focus-color, #2563eb));
+      outline-offset: -2px;
+    }
+    :host([disabled]) .trigger { opacity: 0.5; cursor: not-allowed; }
+    :host([active]) .trigger {
+      color: var(--lwt-nav-item-active-color, var(--lwt-color-primary, #2563eb));
+      font-weight: 600;
+      background: var(--lwt-nav-item-active-bg, transparent);
+    }
+    .content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      overflow: hidden;
+    }
+    .content ::slotted(img), .content ::slotted(svg) {
+      width: 1.05em;
+      height: 1.05em;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+    .chevron {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      margin-left: 0.15rem;
+    }
+    .chevron svg { width: 11px; height: 11px; transition: transform 150ms ease; }
+    :host([data-top-level]:not([orientation="vertical"]):not([mobile])) .chevron svg { transform: rotate(0deg); }
+    :host([data-top-level]:not([orientation="vertical"]):not([mobile])[data-open]) .chevron svg {
+      transform: rotate(180deg);
+    }
+    :host([data-top-level][orientation="vertical"]:not([mobile])) .chevron svg,
+    :host(:not([data-top-level]):not([mobile])) .chevron svg {
+      transform: rotate(-90deg);
+    }
+    :host([data-top-level][orientation="vertical"]:not([mobile])[data-open]) .chevron svg,
+    :host(:not([data-top-level]):not([mobile])[data-open]) .chevron svg {
+      transform: rotate(0deg);
+    }
+    :host([mobile]) .chevron svg { transform: rotate(0deg); }
+    :host([mobile][data-open]) .chevron svg { transform: rotate(180deg); }
+    .submenu {
+      list-style: none;
+      margin: 0;
+      padding: var(--lwt-nav-dropdown-padding, var(--lwt-padding, 0.35rem));
+      min-width: var(--lwt-nav-dropdown-min-width, 180px);
+      background: var(--lwt-nav-dropdown-bg, var(--lwt-color-surface, #fff));
+      border: var(--lwt-nav-dropdown-border, var(--lwt-border, 1px solid #e5e7eb));
+      border-radius: var(--lwt-nav-dropdown-radius, var(--lwt-border-radius, 8px));
+      box-shadow: 0 10px 25px var(--lwt-nav-dropdown-shadow, var(--lwt-color-shadow, rgba(0,0,0,0.15)));
+    }
+    :host([data-top-level]:not([orientation="vertical"]):not([mobile])) .submenu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 0.3rem;
+      z-index: var(--lwt-nav-menu-z, 100);
+    }
+    :host([data-top-level][orientation="vertical"]:not([mobile])) .submenu,
+    :host(:not([data-top-level]):not([mobile])) .submenu {
+      position: absolute;
+      top: 0;
+      left: 100%;
+      margin-left: 0.3rem;
+      z-index: var(--lwt-nav-menu-z, 100);
+    }
+    :host([mobile]) .submenu {
+      position: static;
+      margin: 0.15rem 0;
+      padding: 0;
+      background: none;
+      border: none;
+      box-shadow: none;
+    }
+  `;
 
   class LWTNavItem extends window.LWT.Element {
     static get observedAttributes() {

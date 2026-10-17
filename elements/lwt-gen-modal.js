@@ -5,24 +5,23 @@
     throw new Error('lwt-gen-modal.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    'dialog {' +
-    '  border: none;' +
-    '  border-radius: 10px;' +
-    '  padding: 1.5rem;' +
-    '  max-width: min(90vw, 32rem);' +
-    '  max-height: 85vh;' +
-    '  overflow: auto;' +
-    '  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1);' +
-    '  background: var(--lwt-modal-bg, var(--lwt-color-surface, #fff));' +
-    '  color: var(--lwt-modal-color, var(--lwt-color-text, inherit));' +
-    '  font-family: inherit;' +
-    '}' +
-    'dialog::backdrop {' +
-    '  background: var(--lwt-modal-backdrop, var(--lwt-color-overlay, rgba(15, 23, 42, 0.55)));' +
-    '}' +
-    '::slotted(*:first-child) { margin-top: 0; }' +
-    '::slotted(*:last-child) { margin-bottom: 0; }';
+  var CSS = `
+    dialog {
+      border: var(--lwt-modal-border, none);
+      border-radius: var(--lwt-modal-radius, var(--lwt-border-radius, 10px));
+      padding: var(--lwt-modal-padding, var(--lwt-padding, 1.5rem));
+      max-width: var(--lwt-modal-max-width, min(90vw, 32rem));
+      max-height: 85vh;
+      overflow: auto;
+      box-shadow: var(--lwt-modal-shadow, 0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1));
+      background: var(--lwt-modal-bg, var(--lwt-color-surface, #fff));
+      color: var(--lwt-modal-color, var(--lwt-color-text, inherit));
+      font-family: inherit;
+    }
+    dialog::backdrop { background: var(--lwt-modal-backdrop, var(--lwt-color-overlay, rgba(15, 23, 42, 0.55))); }
+    ::slotted(*:first-child) { margin-top: 0; }
+    ::slotted(*:last-child) { margin-bottom: 0; }
+  `;
 
   class LWTModal extends window.LWT.Element {
     static get observedAttributes() {

@@ -31,7 +31,9 @@
     return item;
   }
 
-  var CSS = ':host { display: block; font-family: inherit; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+  `;
   var TEMPLATE = '<div class="tree" part="tree" role="tree"><slot></slot></div>';
 
   // Uppercase tag name for .tagName comparisons — keep in sync with define().

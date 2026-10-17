@@ -5,40 +5,68 @@
     throw new Error('lwt-gen-tabs.js requires lwt-core.js to be loaded first.');
   }
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.wrap { display: flex; height: 100%; }' +
-    '.tab-bar { display: flex; gap: 0.15rem; flex-shrink: 0; scrollbar-width: thin; }' +
-    '.panel-area { flex: 1; min-width: 0; min-height: 0; padding: 1rem 0.25rem; overflow: auto; }' +
-
-    // Position-driven layout wrapped in :where() so any external CSS
-    // targeting the same parts (e.g. ::part(tab-bar) at a breakpoint)
-    // wins with no !important. See lwt-gen-grid-item.js for the pattern.
-    ':where(:host([position="top"]) .wrap, :host(:not([position])) .wrap) { flex-direction: column; }' +
-    ':where(:host([position="top"]) .tab-bar, :host(:not([position])) .tab-bar) {' +
-    '  order: 0; flex-direction: row; overflow-x: auto; overflow-y: hidden;' +
-    '  border-bottom: 1px solid var(--lwt-tabs-border, var(--lwt-color-border, #e5e7eb)); max-width: 100%; }' +
-    ':where(:host([position="top"]) .panel-area, :host(:not([position])) .panel-area) { order: 1; }' +
-
-    ':where(:host([position="bottom"]) .wrap) { flex-direction: column; }' +
-    ':where(:host([position="bottom"]) .tab-bar) {' +
-    '  order: 1; flex-direction: row; overflow-x: auto; overflow-y: hidden;' +
-    '  border-top: 1px solid var(--lwt-tabs-border, var(--lwt-color-border, #e5e7eb)); max-width: 100%; }' +
-    ':where(:host([position="bottom"]) .panel-area) { order: 0; }' +
-
-    ':where(:host([position="left"]) .wrap) { flex-direction: row; }' +
-    ':where(:host([position="left"]) .tab-bar) {' +
-    '  order: 0; flex-direction: column; overflow-y: auto; overflow-x: hidden;' +
-    '  border-right: 1px solid var(--lwt-tabs-border, var(--lwt-color-border, #e5e7eb));' +
-    '  flex-basis: var(--lwt-tabs-bar-size, 180px); max-height: 100%; }' +
-    ':where(:host([position="left"]) .panel-area) { order: 1; }' +
-
-    ':where(:host([position="right"]) .wrap) { flex-direction: row; }' +
-    ':where(:host([position="right"]) .tab-bar) {' +
-    '  order: 1; flex-direction: column; overflow-y: auto; overflow-x: hidden;' +
-    '  border-left: 1px solid var(--lwt-tabs-border, var(--lwt-color-border, #e5e7eb));' +
-    '  flex-basis: var(--lwt-tabs-bar-size, 180px); max-height: 100%; }' +
-    ':where(:host([position="right"]) .panel-area) { order: 0; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .wrap { display: flex; height: 100%; }
+    .tab-bar {
+      display: flex;
+      gap: var(--lwt-tabs-gap, 0.15rem);
+      flex-shrink: 0;
+      scrollbar-width: thin;
+    }
+    .panel-area {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      padding: var(--lwt-tabs-panel-padding, var(--lwt-padding, 1rem 0.25rem));
+      overflow: auto;
+    }
+    /* Position-driven layout wrapped in :where() so any external CSS
+       targeting the same parts (e.g. ::part(tab-bar) at a breakpoint)
+       wins with no !important. See lwt-gen-grid-item.js for the pattern. */
+    :where(:host([position="top"]) .wrap, :host(:not([position])) .wrap) { flex-direction: column; }
+    :where(:host([position="top"]) .tab-bar, :host(:not([position])) .tab-bar) {
+      order: 0;
+      flex-direction: row;
+      overflow-x: auto;
+      overflow-y: hidden;
+      border-bottom: var(--lwt-tabs-border, var(--lwt-border, 1px solid #e5e7eb));
+      max-width: 100%;
+    }
+    :where(:host([position="top"]) .panel-area, :host(:not([position])) .panel-area) { order: 1; }
+    :where(:host([position="bottom"]) .wrap) { flex-direction: column; }
+    :where(:host([position="bottom"]) .tab-bar) {
+      order: 1;
+      flex-direction: row;
+      overflow-x: auto;
+      overflow-y: hidden;
+      border-top: var(--lwt-tabs-border, var(--lwt-border, 1px solid #e5e7eb));
+      max-width: 100%;
+    }
+    :where(:host([position="bottom"]) .panel-area) { order: 0; }
+    :where(:host([position="left"]) .wrap) { flex-direction: row; }
+    :where(:host([position="left"]) .tab-bar) {
+      order: 0;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border-right: var(--lwt-tabs-border, var(--lwt-border, 1px solid #e5e7eb));
+      flex-basis: var(--lwt-tabs-bar-size, 180px);
+      max-height: 100%;
+    }
+    :where(:host([position="left"]) .panel-area) { order: 1; }
+    :where(:host([position="right"]) .wrap) { flex-direction: row; }
+    :where(:host([position="right"]) .tab-bar) {
+      order: 1;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border-left: var(--lwt-tabs-border, var(--lwt-border, 1px solid #e5e7eb));
+      flex-basis: var(--lwt-tabs-bar-size, 180px);
+      max-height: 100%;
+    }
+    :where(:host([position="right"]) .panel-area) { order: 0; }
+  `;
 
   var TEMPLATE =
     '<div class="wrap" part="wrap">' +

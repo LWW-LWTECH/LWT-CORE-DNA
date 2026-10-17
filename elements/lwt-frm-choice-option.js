@@ -76,59 +76,131 @@
     '<svg class="check" part="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">' +
     '<polyline points="4 12 9 18 20 6"/></svg>';
 
-  var CSS =
-    ':host { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font: inherit; font-size: 0.95rem; min-height: 24px;' +
-    '  color: var(--lwt-choices-color, var(--lwt-color-text, #1f2937)); user-select: none; outline: none; }' +
-    ':host([hidden]) { display: none; }' +
-    ':host([disabled]) { cursor: not-allowed; opacity: 0.55; }' +
-
-    '.box { flex-shrink: 0; width: 1.35rem; height: 1.35rem; box-sizing: border-box; border-radius: 4px;' +
-    '  border: 2px solid var(--lwt-choices-border, var(--lwt-color-border-strong, #d1d5db));' +
-    '  background: var(--lwt-choices-bg, var(--lwt-color-surface, #fff));' +
-    '  display: flex; align-items: center; justify-content: center;' +
-    '  transition: background 120ms ease, border-color 120ms ease; }' +
-    ':host([role="radio"]) .box { border-radius: 50%; }' +
-
-    '.check { width: 1rem; height: 1rem; color: var(--lwt-choices-check-color, #fff); opacity: 0; transform: scale(0.5);' +
-    '  transition: opacity 120ms ease, transform 120ms ease; }' +
-
-    ':host([checked]) .box { background: var(--lwt-choices-checked-bg, var(--lwt-color-success, #15803d));' +
-    '  border-color: var(--lwt-choices-checked-border, var(--lwt-color-success, #15803d)); }' +
-    ':host([checked]) .check { opacity: 1; transform: scale(1); }' +
-
-    ':host([disabled]) .box { background: var(--lwt-color-surface-muted, #f3f4f6); border-color: var(--lwt-color-border, #e5e7eb); }' +
-    ':host([disabled][checked]) .box { background: var(--lwt-choices-disabled-checked-bg, #d1d5db);' +
-    '  border-color: var(--lwt-choices-disabled-checked-bg, #d1d5db); }' +
-
-    ':host(:focus-visible) .box { outline: 2px solid var(--lwt-choices-focus-color, var(--lwt-focus-ring, #2563eb)); outline-offset: 2px; }' +
-
-    '.label { min-width: 0; }' +
-
-    // ---- tile mode (image set) ----
-    // A distinct enough layout that it's easiest to override every
-    // shared part rather than fight the row-mode flex/box rules above.
-    // Each selector here is two attribute-matches deep ([image] plus
-    // whatever else), which makes it more specific than the row-mode
-    // rules regardless of declaration order.
-    '.tile-media { display: none; }' +
-    ':host([image]) { display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-start;' +
-    '  gap: 0.6rem; width: var(--lwt-choices-tile-size, 140px); box-sizing: border-box; padding: 1.1rem 0.75rem;' +
-    '  position: relative; overflow: hidden; border-radius: 10px;' +
-    '  background: var(--lwt-choices-tile-bg, var(--lwt-color-surface, #fff));' +
-    '  border: 3px solid var(--lwt-choices-tile-border, var(--lwt-color-border-strong, #d1d5db));' +
-    '  transition: border-color 120ms ease; }' +
-    ':host([image]) .tile-media { display: flex; align-items: center; justify-content: center; width: 100%; flex: 1; min-height: 2.5rem; }' +
-    ':host([image]) .tile-img { max-width: 100%; max-height: 3.25rem; object-fit: contain; display: block; }' +
-    ':host([image]) .label { text-align: center; font-size: 0.9rem; }' +
-    ':host([image]) .box { position: absolute; top: 0; left: 0; width: 2.2rem; height: 2.2rem; border: none; border-radius: 0;' +
-    '  background: transparent; clip-path: polygon(0 0, 100% 0, 0 100%);' +
-    '  display: flex; align-items: flex-start; justify-content: flex-start; padding: 0.25rem 0 0 0.2rem;' +
-    '  opacity: 0; transition: opacity 120ms ease; }' +
-    ':host([image]) .check { width: 0.85rem; height: 0.85rem; }' +
-    ':host([image][checked]) .box { opacity: 1; background: var(--lwt-choices-tile-accent, var(--lwt-color-primary, #2563eb)); }' +
-    ':host([image][checked]) { border-color: var(--lwt-choices-tile-accent, var(--lwt-color-primary, #2563eb)); }' +
-    ':host([image][disabled]) { background: var(--lwt-color-surface-muted, #f3f4f6); border-color: var(--lwt-color-border, #e5e7eb); }' +
-    ':host([image]:focus-visible) { outline: 2px solid var(--lwt-choices-focus-color, var(--lwt-focus-ring, #2563eb)); outline-offset: 2px; }';
+  var CSS = `
+    :host {
+      display: flex;
+      align-items: center;
+      gap: var(--lwt-choices-option-gap, var(--lwt-gap, 0.6rem));
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.95rem;
+      min-height: 24px;
+      color: var(--lwt-choices-color, var(--lwt-color-text, #1f2937));
+      user-select: none;
+      outline: none;
+    }
+    :host([hidden]) { display: none; }
+    :host([disabled]) { cursor: not-allowed; opacity: 0.55; }
+    .box {
+      flex-shrink: 0;
+      width: 1.35rem;
+      height: 1.35rem;
+      box-sizing: border-box;
+      border-radius: var(--lwt-choices-box-radius, 4px);
+      border: 2px solid var(--lwt-choices-border, var(--lwt-color-border-strong, #d1d5db));
+      background: var(--lwt-choices-bg, var(--lwt-color-surface, #fff));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 120ms ease, border-color 120ms ease;
+    }
+    :host([role="radio"]) .box { border-radius: 50%; }
+    .check {
+      width: 1rem;
+      height: 1rem;
+      color: var(--lwt-choices-check-color, #fff);
+      opacity: 0;
+      transform: scale(0.5);
+      transition: opacity 120ms ease, transform 120ms ease;
+    }
+    :host([checked]) .box {
+      background: var(--lwt-choices-checked-bg, var(--lwt-color-success, #15803d));
+      border-color: var(--lwt-choices-checked-border, var(--lwt-color-success, #15803d));
+    }
+    :host([checked]) .check { opacity: 1; transform: scale(1); }
+    :host([disabled]) .box {
+      background: var(--lwt-color-surface-muted, #f3f4f6);
+      border-color: var(--lwt-border-color, #e5e7eb);
+    }
+    :host([disabled][checked]) .box {
+      background: var(--lwt-choices-disabled-checked-bg, #d1d5db);
+      border-color: var(--lwt-choices-disabled-checked-bg, #d1d5db);
+    }
+    :host(:focus-visible) .box {
+      outline: 2px solid var(--lwt-choices-focus-color, var(--lwt-focus-color, #2563eb));
+      outline-offset: 2px;
+    }
+    .label { min-width: 0; }
+    /* ---- tile mode (image set) ----
+       A distinct enough layout that it's easiest to override every
+       shared part rather than fight the row-mode flex/box rules above.
+       Each selector here is two attribute-matches deep ([image] plus
+       whatever else), which makes it more specific than the row-mode
+       rules regardless of declaration order. */
+    .tile-media { display: none; }
+    :host([image]) {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: var(--lwt-choices-tile-gap, var(--lwt-gap, 0.6rem));
+      width: var(--lwt-choices-tile-size, 140px);
+      box-sizing: border-box;
+      padding: var(--lwt-choices-tile-padding, var(--lwt-padding, 1.1rem 0.75rem));
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--lwt-choices-tile-radius, var(--lwt-border-radius, 10px));
+      background: var(--lwt-choices-tile-bg, var(--lwt-color-surface, #fff));
+      border: 3px solid var(--lwt-choices-tile-border, var(--lwt-color-border-strong, #d1d5db));
+      transition: border-color 120ms ease;
+    }
+    :host([image]) .tile-media {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      flex: 1;
+      min-height: 2.5rem;
+    }
+    :host([image]) .tile-img {
+      max-width: 100%;
+      max-height: 3.25rem;
+      object-fit: contain;
+      display: block;
+    }
+    :host([image]) .label { text-align: center; font-size: 0.9rem; }
+    :host([image]) .box {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 2.2rem;
+      height: 2.2rem;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      clip-path: polygon(0 0, 100% 0, 0 100%);
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 0.25rem 0 0 0.2rem;
+      opacity: 0;
+      transition: opacity 120ms ease;
+    }
+    :host([image]) .check { width: 0.85rem; height: 0.85rem; }
+    :host([image][checked]) .box {
+      opacity: 1;
+      background: var(--lwt-choices-tile-accent, var(--lwt-color-primary, #2563eb));
+    }
+    :host([image][checked]) { border-color: var(--lwt-choices-tile-accent, var(--lwt-color-primary, #2563eb)); }
+    :host([image][disabled]) {
+      background: var(--lwt-color-surface-muted, #f3f4f6);
+      border-color: var(--lwt-border-color, #e5e7eb);
+    }
+    :host([image]:focus-visible) {
+      outline: 2px solid var(--lwt-choices-focus-color, var(--lwt-focus-color, #2563eb));
+      outline-offset: 2px;
+    }
+  `;
 
   var TEMPLATE =
     '<span class="tile-media" part="tile-media"><img class="tile-img" part="tile-image" alt=""></span>' +

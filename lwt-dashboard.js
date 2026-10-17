@@ -1,7 +1,7 @@
 /*!
  * LWT Dashboard Elements
  * Developer: Lee W Winter
- * Last Generated: 2026-10-17T16:20:23.265Z
+ * Last Generated: 2026-10-17T16:40:25.860Z
  * Requires lwt-core.js to be loaded first.
  */
 
@@ -132,17 +132,32 @@
       '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5" rx="2"></rect>';
   }
 
-  var CSS =
-    ':host { display: block; width: 100%; aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5); font-family: inherit; background: var(--lwt-chart-bg, transparent); }' +
-    '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
-    '.grid-line { stroke: var(--lwt-chart-grid, var(--lwt-color-border, #e5e7eb)); stroke-width: 1; }' +
-    '.plot-border { stroke: var(--lwt-chart-border, var(--lwt-color-border, #e5e7eb)); stroke-width: 1; }' +
-    '.axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }' +
-    '.axis-title { fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151)); font-size: 12px; font-weight: 600; }' +
-    '.chart-title { fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }' +
-    '.legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }' +
-    '.target-line { stroke-width: 2; stroke-dasharray: 6 4; }' +
-    '.target-text { font-size: 11px; font-weight: 600; }';
+  var CSS = `
+    :host {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5);
+      font-family: inherit;
+      background: var(--lwt-chart-bg, transparent);
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .grid-line { stroke: var(--lwt-chart-grid, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; }
+    .plot-border { stroke: var(--lwt-chart-border, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; }
+    .axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }
+    .axis-title {
+      fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151));
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .chart-title {
+      fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937));
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+    .target-line { stroke-width: 2; stroke-dasharray: 6 4; }
+    .target-text { font-size: 11px; font-weight: 600; }
+  `;
 
   class LWTBarChart extends window.LWT.Element {
     static get observedAttributes() {
@@ -529,16 +544,31 @@
       .replace(/"/g, '&quot;');
   }
 
-  var CSS =
-    ':host { display: block; width: 100%; aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5); font-family: inherit; background: var(--lwt-chart-bg, transparent); }' +
-    '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
-    '.grid-line { stroke: var(--lwt-chart-grid, var(--lwt-color-border, #e5e7eb)); stroke-width: 1; }' +
-    '.plot-border { stroke: var(--lwt-chart-border, var(--lwt-color-border, #e5e7eb)); stroke-width: 1; }' +
-    '.axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }' +
-    '.axis-title { fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151)); font-size: 12px; font-weight: 600; }' +
-    '.chart-title { fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }' +
-    '.legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }' +
-    '.bubble { stroke-width: 1.5; }';
+  var CSS = `
+    :host {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5);
+      font-family: inherit;
+      background: var(--lwt-chart-bg, transparent);
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .grid-line { stroke: var(--lwt-chart-grid, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; }
+    .plot-border { stroke: var(--lwt-chart-border, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; }
+    .axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }
+    .axis-title {
+      fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151));
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .chart-title {
+      fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937));
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+    .bubble { stroke-width: 1.5; }
+  `;
 
   class LWTBubbleChart extends window.LWT.Element {
     static get observedAttributes() {
@@ -824,12 +854,23 @@
     return { fill: fill, stroke: stroke };
   }
 
-  var CSS =
-    ':host { display: block; width: 100%; aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5); font-family: inherit; background: var(--lwt-chart-bg, transparent); }' +
-    '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
-    '.slice { stroke-width: 1.5; }' +
-    '.chart-title { fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }' +
-    '.legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }';
+  var CSS = `
+    :host {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5);
+      font-family: inherit;
+      background: var(--lwt-chart-bg, transparent);
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .slice { stroke-width: 1.5; }
+    .chart-title {
+      fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937));
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+  `;
 
   class LWTDoughnutChart extends window.LWT.Element {
     static get observedAttributes() {
@@ -924,7 +965,7 @@
         });
       } else {
         slicesSvg = '<circle cx="' + cx.toFixed(2) + '" cy="' + cy.toFixed(2) + '" r="' + outerR.toFixed(2) +
-          '" fill="var(--lwt-chart-empty, var(--lwt-color-surface-muted, #f3f4f6))" stroke="var(--lwt-chart-border, var(--lwt-color-border, #e5e7eb))"></circle>';
+          '" fill="var(--lwt-chart-empty, var(--lwt-color-surface-muted, #f3f4f6))" stroke="var(--lwt-chart-border, var(--lwt-border-color, #e5e7eb))"></circle>';
         if (innerR > 0) {
           slicesSvg += '<circle cx="' + cx.toFixed(2) + '" cy="' + cy.toFixed(2) + '" r="' + innerR.toFixed(2) +
             '" fill="var(--lwt-chart-bg, var(--lwt-color-surface, #fff))"></circle>';
@@ -1059,14 +1100,29 @@
       ' A ' + r.toFixed(2) + ' ' + r.toFixed(2) + ' 0 ' + largeArc + ' 1 ' + end.x.toFixed(2) + ' ' + end.y.toFixed(2);
   }
 
-  var CSS =
-    ':host { display: block; width: 100%; aspect-ratio: var(--lwt-gauge-aspect-ratio, 1 / 1); font-family: inherit; background: var(--lwt-gauge-bg, transparent); }' +
-    '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
-    '.track { fill: none; stroke: var(--lwt-gauge-track-color, var(--lwt-color-border, #e5e7eb)); }' +
-    '.tick-text { fill: var(--lwt-gauge-tick-color, var(--lwt-color-text-subtle, #6b7280)); font-size: 12px; }' +
-    '.value-text { fill: var(--lwt-gauge-value-color, var(--lwt-color-text-strong, #111827)); font-size: 34px; font-weight: 700; }' +
-    '.label-text { fill: var(--lwt-gauge-label-color, var(--lwt-color-text-muted, #6b7280)); font-size: 13px; }' +
-    '.title-text { fill: var(--lwt-gauge-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }';
+  var CSS = `
+    :host {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--lwt-gauge-aspect-ratio, 1 / 1);
+      font-family: inherit;
+      background: var(--lwt-gauge-bg, transparent);
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .track { fill: none; stroke: var(--lwt-gauge-track-color, var(--lwt-border-color, #e5e7eb)); }
+    .tick-text { fill: var(--lwt-gauge-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 12px; }
+    .value-text {
+      fill: var(--lwt-gauge-value-color, var(--lwt-color-text-strong, #111827));
+      font-size: 34px;
+      font-weight: 700;
+    }
+    .label-text { fill: var(--lwt-gauge-label-color, var(--lwt-color-text-muted, #6b7280)); font-size: 13px; }
+    .title-text {
+      fill: var(--lwt-gauge-title-color, var(--lwt-color-text-strong, #1f2937));
+      font-size: 15px;
+      font-weight: 700;
+    }
+  `;
 
   class LWTGauge extends window.LWT.Element {
     static get observedAttributes() {
@@ -1326,16 +1382,31 @@
     return d + ' Z';
   }
 
-  var CSS =
-    ':host { display: block; width: 100%; aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5); font-family: inherit; background: var(--lwt-chart-bg, transparent); }' +
-    '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
-    '.grid-line { stroke: var(--lwt-chart-grid, var(--lwt-color-border, #e5e7eb)); stroke-width: 1; }' +
-    '.plot-border { stroke: var(--lwt-chart-border, var(--lwt-color-border, #e5e7eb)); stroke-width: 1; }' +
-    '.axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }' +
-    '.axis-title { fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151)); font-size: 12px; font-weight: 600; }' +
-    '.chart-title { fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }' +
-    '.legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }' +
-    '.line { fill: none; stroke-linejoin: round; stroke-linecap: round; }';
+  var CSS = `
+    :host {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5);
+      font-family: inherit;
+      background: var(--lwt-chart-bg, transparent);
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .grid-line { stroke: var(--lwt-chart-grid, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; }
+    .plot-border { stroke: var(--lwt-chart-border, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; }
+    .axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }
+    .axis-title {
+      fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151));
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .chart-title {
+      fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937));
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+    .line { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+  `;
 
   class LWTLineChart extends window.LWT.Element {
     static get observedAttributes() {
@@ -1639,12 +1710,23 @@
     return { fill: fill, stroke: stroke };
   }
 
-  var CSS =
-    ':host { display: block; width: 100%; aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5); font-family: inherit; background: var(--lwt-chart-bg, transparent); }' +
-    '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
-    '.slice { stroke-width: 1.5; }' +
-    '.chart-title { fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }' +
-    '.legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }';
+  var CSS = `
+    :host {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5);
+      font-family: inherit;
+      background: var(--lwt-chart-bg, transparent);
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .slice { stroke-width: 1.5; }
+    .chart-title {
+      fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937));
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+  `;
 
   class LWTPieChart extends window.LWT.Element {
     static get observedAttributes() {
@@ -1746,7 +1828,7 @@
         });
       } else {
         slicesSvg = '<circle cx="' + cx.toFixed(2) + '" cy="' + cy.toFixed(2) + '" r="' + outerR.toFixed(2) +
-          '" fill="var(--lwt-chart-empty, var(--lwt-color-surface-muted, #f3f4f6))" stroke="var(--lwt-chart-border, var(--lwt-color-border, #e5e7eb))"></circle>';
+          '" fill="var(--lwt-chart-empty, var(--lwt-color-surface-muted, #f3f4f6))" stroke="var(--lwt-chart-border, var(--lwt-border-color, #e5e7eb))"></circle>';
         if (innerR > 0) {
           slicesSvg += '<circle cx="' + cx.toFixed(2) + '" cy="' + cy.toFixed(2) + '" r="' + innerR.toFixed(2) +
             '" fill="var(--lwt-chart-bg, var(--lwt-color-surface, #fff))"></circle>';
@@ -1915,15 +1997,26 @@
     return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
   }
 
-  var CSS =
-    ':host { display: block; width: 100%; aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5); font-family: inherit; background: var(--lwt-chart-bg, transparent); }' +
-    '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
-    '.grid-line { stroke: var(--lwt-chart-grid, var(--lwt-color-border, #e5e7eb)); stroke-width: 1; fill: none; }' +
-    '.axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }' +
-    '.axis-label { fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151)); font-size: 11px; }' +
-    '.chart-title { fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }' +
-    '.legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }' +
-    '.radar-shape { stroke-linejoin: round; }';
+  var CSS = `
+    :host {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5);
+      font-family: inherit;
+      background: var(--lwt-chart-bg, transparent);
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .grid-line { stroke: var(--lwt-chart-grid, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; fill: none; }
+    .axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }
+    .axis-label { fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+    .chart-title {
+      fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937));
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+    .radar-shape { stroke-linejoin: round; }
+  `;
 
   class LWTRadarChart extends window.LWT.Element {
     static get observedAttributes() {
@@ -2192,10 +2285,15 @@
       .replace(/"/g, '&quot;');
   }
 
-  var CSS =
-    ':host { display: inline-block; width: var(--lwt-sparkline-width, 120px); height: var(--lwt-sparkline-height, 32px); }' +
-    'svg { display: block; width: 100%; height: 100%; }' +
-    '.spark-line { fill: none; stroke-linejoin: round; stroke-linecap: round; }';
+  var CSS = `
+    :host {
+      display: inline-block;
+      width: var(--lwt-sparkline-width, 120px);
+      height: var(--lwt-sparkline-height, 32px);
+    }
+    svg { display: block; width: 100%; height: 100%; }
+    .spark-line { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+  `;
 
   class LWTSparkline extends window.LWT.Element {
     static get observedAttributes() {
@@ -2273,7 +2371,7 @@
           ? (last - first) / Math.abs(first)
           : (last === first ? 0 : (last > first ? 1 : -1));
         var varName, fallback;
-        if (Math.abs(pctChange) < 0.05) { varName = '--lwt-sparkline-flat-color'; fallback = 'var(--lwt-color-text-subtle, #6b7280)'; }
+        if (Math.abs(pctChange) < 0.05) { varName = '--lwt-sparkline-flat-color'; fallback = 'var(--lwt-color-text-muted, #6b7280)'; }
         else if (pctChange > 0) { varName = '--lwt-sparkline-up-color'; fallback = 'var(--lwt-color-success, #22c55e)'; }
         else { varName = '--lwt-sparkline-down-color'; fallback = 'var(--lwt-color-danger, #ef4444)'; }
         strokeStyle = 'stroke: var(' + varName + ', ' + fallback + ');';
@@ -2383,24 +2481,62 @@
     '  <div class="chart-slot" part="chart"><slot name="chart"></slot></div>' +
     '</div>';
 
-  var CSS =
-    ':host { display: block; font-family: inherit; }' +
-    '.card { display: flex; flex-direction: column; gap: 0.5rem; padding: 1.25rem; border-radius: 12px; box-sizing: border-box;' +
-    '  border: 1px solid var(--lwt-stat-border, var(--lwt-color-border, #e5e7eb)); background: var(--lwt-stat-bg, var(--lwt-color-surface, #fff)); }' +
-    '.header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }' +
-    '.label { font-size: 0.82rem; font-weight: 600; color: var(--lwt-stat-label-color, var(--lwt-color-text-muted, #6b7280)); }' +
-    '.icon-slot { flex-shrink: 0; width: 2.25rem; height: 2.25rem; border-radius: 8px; background: var(--lwt-stat-icon-bg, var(--lwt-color-surface-muted, #f3f4f6));' +
-    '  display: flex; align-items: center; justify-content: center; font-size: 1.1rem; line-height: 1; }' +
-    '.value-row { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }' +
-    '.value { font-size: 1.75rem; font-weight: 700; line-height: 1.1; color: var(--lwt-stat-value-color, var(--lwt-color-text-strong, #111827)); }' +
-    '.delta { font-size: 0.85rem; font-weight: 600; }' +
-    // Text colors that pass 4.5:1 on white (the line colors are often
-    // lighter, which is fine for a graphic but not for small text).
-    '.delta-up { color: var(--lwt-stat-delta-up-color, #15803d); }' +
-    '.delta-down { color: var(--lwt-stat-delta-down-color, #b91c1c); }' +
-    '.delta-neutral { color: var(--lwt-sparkline-flat-color, var(--lwt-color-text-subtle, #6b7280)); }' +
-    '.chart-slot { margin-top: 0.25rem; }' +
-    '::slotted([slot="chart"]) { display: block; width: 100%; }';
+  var CSS = `
+    :host { display: block; font-family: inherit; }
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--lwt-stat-gap, var(--lwt-gap, 0.5rem));
+      padding: var(--lwt-stat-padding, var(--lwt-padding, 1.25rem));
+      border-radius: var(--lwt-stat-radius, var(--lwt-border-radius, 12px));
+      box-sizing: border-box;
+      border: var(--lwt-stat-border, var(--lwt-border, 1px solid #e5e7eb));
+      background: var(--lwt-stat-bg, var(--lwt-color-surface, #fff));
+    }
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--lwt-stat-label-color, var(--lwt-color-text-muted, #6b7280));
+    }
+    .icon-slot {
+      flex-shrink: 0;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: var(--lwt-stat-icon-radius, var(--lwt-border-radius, 8px));
+      background: var(--lwt-stat-icon-bg, var(--lwt-color-surface-muted, #f3f4f6));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+    .value-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--lwt-stat-value-color, var(--lwt-color-text-strong, #111827));
+    }
+    .delta { font-size: 0.85rem; font-weight: 600; }
+    /* Text colors that pass 4.5:1 on white (the line colors are often
+       lighter, which is fine for a graphic but not for small text). */
+    .delta-up { color: var(--lwt-stat-delta-up-color, #15803d); }
+    .delta-down { color: var(--lwt-stat-delta-down-color, #b91c1c); }
+    .delta-neutral { color: var(--lwt-sparkline-flat-color, var(--lwt-color-text-muted, #6b7280)); }
+    .chart-slot { margin-top: 0.25rem; }
+    ::slotted([slot="chart"]) { display: block; width: 100%; }
+  `;
 
   class LWTStatCard extends window.LWT.Element {
     static get observedAttributes() {

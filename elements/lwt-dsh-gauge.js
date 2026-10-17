@@ -92,14 +92,29 @@
       ' A ' + r.toFixed(2) + ' ' + r.toFixed(2) + ' 0 ' + largeArc + ' 1 ' + end.x.toFixed(2) + ' ' + end.y.toFixed(2);
   }
 
-  var CSS =
-    ':host { display: block; width: 100%; aspect-ratio: var(--lwt-gauge-aspect-ratio, 1 / 1); font-family: inherit; background: var(--lwt-gauge-bg, transparent); }' +
-    '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
-    '.track { fill: none; stroke: var(--lwt-gauge-track-color, var(--lwt-color-border, #e5e7eb)); }' +
-    '.tick-text { fill: var(--lwt-gauge-tick-color, var(--lwt-color-text-subtle, #6b7280)); font-size: 12px; }' +
-    '.value-text { fill: var(--lwt-gauge-value-color, var(--lwt-color-text-strong, #111827)); font-size: 34px; font-weight: 700; }' +
-    '.label-text { fill: var(--lwt-gauge-label-color, var(--lwt-color-text-muted, #6b7280)); font-size: 13px; }' +
-    '.title-text { fill: var(--lwt-gauge-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }';
+  var CSS = `
+    :host {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--lwt-gauge-aspect-ratio, 1 / 1);
+      font-family: inherit;
+      background: var(--lwt-gauge-bg, transparent);
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .track { fill: none; stroke: var(--lwt-gauge-track-color, var(--lwt-border-color, #e5e7eb)); }
+    .tick-text { fill: var(--lwt-gauge-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 12px; }
+    .value-text {
+      fill: var(--lwt-gauge-value-color, var(--lwt-color-text-strong, #111827));
+      font-size: 34px;
+      font-weight: 700;
+    }
+    .label-text { fill: var(--lwt-gauge-label-color, var(--lwt-color-text-muted, #6b7280)); font-size: 13px; }
+    .title-text {
+      fill: var(--lwt-gauge-title-color, var(--lwt-color-text-strong, #1f2937));
+      font-size: 15px;
+      font-weight: 700;
+    }
+  `;
 
   class LWTGauge extends window.LWT.Element {
     static get observedAttributes() {

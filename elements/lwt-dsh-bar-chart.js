@@ -124,17 +124,32 @@
       '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5" rx="2"></rect>';
   }
 
-  var CSS =
-    ':host { display: block; width: 100%; aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5); font-family: inherit; background: var(--lwt-chart-bg, transparent); }' +
-    '.chart-wrap, svg { display: block; width: 100%; height: 100%; }' +
-    '.grid-line { stroke: var(--lwt-chart-grid, var(--lwt-color-border, #e5e7eb)); stroke-width: 1; }' +
-    '.plot-border { stroke: var(--lwt-chart-border, var(--lwt-color-border, #e5e7eb)); stroke-width: 1; }' +
-    '.axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }' +
-    '.axis-title { fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151)); font-size: 12px; font-weight: 600; }' +
-    '.chart-title { fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }' +
-    '.legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }' +
-    '.target-line { stroke-width: 2; stroke-dasharray: 6 4; }' +
-    '.target-text { font-size: 11px; font-weight: 600; }';
+  var CSS = `
+    :host {
+      display: block;
+      width: 100%;
+      aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5);
+      font-family: inherit;
+      background: var(--lwt-chart-bg, transparent);
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .grid-line { stroke: var(--lwt-chart-grid, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; }
+    .plot-border { stroke: var(--lwt-chart-border, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; }
+    .axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }
+    .axis-title {
+      fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151));
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .chart-title {
+      fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937));
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+    .target-line { stroke-width: 2; stroke-dasharray: 6 4; }
+    .target-text { font-size: 11px; font-weight: 600; }
+  `;
 
   class LWTBarChart extends window.LWT.Element {
     static get observedAttributes() {
