@@ -42,6 +42,10 @@
  *   selected-label               — right column heading (default "Selected")
  *   sortable                    — boolean; shows Move Up / Move Down
  *                                 buttons for reordering the right column
+ *
+ *   The -All / +All split button under Add / Remove moves every item
+ *   back to the available column / across to the selected column. Each
+ *   half disables itself when there is nothing for it to move.
  *   size                        — visible row count of each listbox
  *                                 (native <select size>, default 8)
  *   required                    — boolean; at least one item must end up
@@ -173,6 +177,14 @@
       outline-offset: 1px;
     }
     .btn-col button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-col .all-group { display: flex; gap: var(--lwt-transfer-split-gap, 0.2rem); }
+    .btn-col .all-group button { flex: 1 1 0; min-width: 0; }
+    .btn-col .remove-all-btn {
+      border-radius: var(--lwt-transfer-radius, var(--lwt-border-radius, 6px)) 0 0 var(--lwt-transfer-radius, var(--lwt-border-radius, 6px));
+    }
+    .btn-col .add-all-btn {
+      border-radius: 0 var(--lwt-transfer-radius, var(--lwt-border-radius, 6px)) var(--lwt-transfer-radius, var(--lwt-border-radius, 6px)) 0;
+    }
     .btn-col .sort-btn { display: none; }
     :host([sortable]) .btn-col .sort-btn { display: inline-block; }
     .below { margin-top: 0.45rem; font-size: 0.78rem; min-height: 1rem; }
@@ -190,6 +202,10 @@
     '  <div class="btn-col" part="button-col">' +
     '    <button type="button" class="add-btn" part="add-btn">Add &gt;&gt;</button>' +
     '    <button type="button" class="remove-btn" part="remove-btn">&lt;&lt; Remove</button>' +
+    '    <div class="all-group" part="all-group" role="group">' +
+    '      <button type="button" class="remove-all-btn" part="remove-all-btn">-All</button>' +
+    '      <button type="button" class="add-all-btn" part="add-all-btn">+All</button>' +
+    '    </div>' +
     '    <button type="button" class="up-btn sort-btn" part="up-btn">Move Up</button>' +
     '    <button type="button" class="down-btn sort-btn" part="down-btn">Move Down</button>' +
     '  </div>' +
@@ -310,6 +326,9 @@
       this._selSelect = root.querySelector('.sel-select');
       this._addBtn = root.querySelector('.add-btn');
       this._removeBtn = root.querySelector('.remove-btn');
+      this._addAllBtn = root.querySelector('.add-all-btn');
+      this._removeAllBtn = root.querySelector('.remove-all-btn');
+      this._allGroup = root.querySelector('.all-group');
       this._upBtn = root.querySelector('.up-btn');
       this._downBtn = root.querySelector('.down-btn');
 
@@ -323,6 +342,8 @@
 
       this._addBtn.addEventListener('click', this._onAddClick);
       this._removeBtn.addEventListener('click', this._onRemoveClick);
+      this._addAllBtn.addEventListener('click', this._onAddAllClick.bind(this));
+      this._removeAllBtn.addEventListener('click', this._onRemoveAllClick.bind(this));
       this._upBtn.addEventListener('click', this._onUpClick);
       this._downBtn.addEventListener('click', this._onDownClick);
       this._availSelect.addEventListener('dblclick', this._onAvailDblClick);
@@ -361,6 +382,9 @@
       this._selSelect.setAttribute('aria-label', groupName + ': ' + selName);
       this._addBtn.setAttribute('aria-label', 'Add chosen items to ' + selName);
       this._removeBtn.setAttribute('aria-label', 'Remove chosen items from ' + selName);
+      this._allGroup.setAttribute('aria-label', 'Move all items');
+      this._addAllBtn.setAttribute('aria-label', 'Add all items to ' + selName);
+      this._removeAllBtn.setAttribute('aria-label', 'Remove all items from ' + selName);
       this._upBtn.setAttribute('aria-label', 'Move chosen items up');
       this._downBtn.setAttribute('aria-label', 'Move chosen items down');
       if (helper || error) {
@@ -380,6 +404,7 @@
       this._removeBtn.disabled = disabled;
       this._upBtn.disabled = disabled;
       this._downBtn.disabled = disabled;
+      this._syncAllButtons();
 
       var errorMsg = error;
       if (errorMsg) {
@@ -440,6 +465,19 @@
       selItems.forEach(function (item) {
         self._selSelect.appendChild(self._genhtml({ type: 'option', attr: { value: item.value }, text: item.label }));
       });
+
+      this._syncAllButtons();
+    }
+
+    // -All is only useful while something is selected, +All while
+    // something is still available.
+    _syncAllButtons() {
+      if (!this._addAllBtn) return;
+      var disabled = this._boolAttr('disabled');
+      var self = this;
+      var availCount = this._items.filter(function (i) { return self._order.indexOf(i.value) === -1; }).length;
+      this._addAllBtn.disabled = disabled || availCount === 0;
+      this._removeAllBtn.disabled = disabled || this._order.length === 0;
     }
 
     // ---- button handlers ----
@@ -461,6 +499,22 @@
       this._reportValidity();
       this._announceMove(vals.length, false);
       this.emit('change', { value: this._order.slice() });
+    }
+
+    _onAddAllClick() {
+      if (this._boolAttr('disabled')) return;
+      this._moveToSelected(this._items.map(function (i) { return i.value; }));
+    }
+
+    _onRemoveAllClick() {
+      if (this._boolAttr('disabled') || !this._order.length) return;
+      var count = this._order.length;
+      this._order = [];
+      this._renderLists();
+      this._reportValue();
+      this._reportValidity();
+      this._announceMove(count, false);
+      this.emit('change', { value: [] });
     }
 
     _announceMove(count, added) {
