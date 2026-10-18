@@ -123,17 +123,107 @@
       pointer-events: none;
     }
     :host(:hover) .label-overlay, :host(:focus-visible) .label-overlay { opacity: 1; transform: translateY(0); }
+  
+    /* Resize handles (only inside <lwtg-grid resizable>, see lwt-gen-grid.js).
+       The grab area is always there; the line shows on hover / focus. */
+    .rz { display: none; position: absolute; z-index: 3; touch-action: none; outline: none; }
+    :host([data-resizable]) .rz { display: block; }
+    .rz-left, .rz-right { top: 0; bottom: 0; width: var(--lwt-grid-resize-size, 10px); cursor: col-resize; }
+    .rz-left { left: 0; }
+    .rz-right { right: 0; }
+    .rz-top, .rz-bottom { left: 0; right: 0; height: var(--lwt-grid-resize-size, 10px); cursor: row-resize; }
+    .rz-top { top: 0; }
+    .rz-bottom { bottom: 0; }
+    .rz::before {
+      content: "";
+      position: absolute;
+      background: var(--lwt-grid-resize-color, var(--lwt-primary, #2563eb));
+      opacity: 0;
+      transition: opacity 120ms ease;
+      border-radius: 2px;
+    }
+    .rz-left::before, .rz-right::before { top: 0; bottom: 0; width: 3px; }
+    .rz-left::before { left: 0; }
+    .rz-right::before { right: 0; }
+    .rz-top::before, .rz-bottom::before { left: 0; right: 0; height: 3px; }
+    .rz-top::before { top: 0; }
+    .rz-bottom::before { bottom: 0; }
+    /* Grip in the middle of the edge. */
+    .rz::after {
+      content: "";
+      position: absolute;
+      background: var(--lwt-grid-resize-color, var(--lwt-primary, #2563eb));
+      border: 2px solid var(--lwt-color-surface, #fff);
+      border-radius: 999px;
+      opacity: 0;
+      transition: opacity 120ms ease;
+    }
+    .rz-left::after, .rz-right::after { top: 50%; width: 6px; height: 32px; margin-top: -16px; }
+    .rz-left::after { left: -1px; }
+    .rz-right::after { right: -1px; }
+    .rz-top::after, .rz-bottom::after { left: 50%; height: 6px; width: 32px; margin-left: -16px; }
+    .rz-top::after { top: -1px; }
+    .rz-bottom::after { bottom: -1px; }
+    :host(:hover) .rz::before { opacity: 0.45; }
+    :host(:hover) .rz::after { opacity: 1; }
+    .rz:hover::before, .rz.active::before, .rz:focus-visible::before { opacity: 1; }
+    .rz:focus-visible::after, .rz.active::after { opacity: 1; }
+    .rz:focus-visible { box-shadow: inset 0 0 0 2px var(--lwt-grid-item-focus-color, var(--lwt-focus-color, #3b82f6)); }
+    @media (prefers-reduced-motion: reduce) { .rz::before, .rz::after { transition: none; } }
   `;
 
   class LWTGridItem extends window.LWT.Element {
     static get observedAttributes() {
-      return ['src', 'href', 'type', 'label', 'video-id', 'alt', 'col-span', 'row-span'];
+      return ['src', 'href', 'type', 'label', 'video-id', 'alt', 'col-span', 'row-span',
+              'resize-left', 'resize-right', 'resize-top', 'resize-bottom', 'min-width', 'min-height'];
     }
 
     constructor() {
       super();
       this._handleActivate = this._handleActivate.bind(this);
       this._handleKeydown = this._handleKeydown.bind(this);
+
+      // Resize handles live in the shadow root. Their events are handled
+      // here and stopped, so a drag / key press on a handle never also
+      // "clicks" the item.
+      var self = this;
+      var handleOf = function (e) { return e.target && e.target.closest ? e.target.closest('.rz') : null; };
+      var grid = function () { var p = self.parentElement; return p && p.localName === 'lwtg-grid' ? p : null; };
+      this._root.addEventListener('pointerdown', function (e) {
+        var h = handleOf(e); if (!h) return;
+        e.stopPropagation();
+        if (e.button !== 0 || !grid()) return;
+        e.preventDefault();
+        h.focus({ preventScroll: true });
+        if (grid()._beginResize(self, h.getAttribute('data-edge'), e)) {
+          h.classList.add('active');
+          var done = function () { h.classList.remove('active'); window.removeEventListener('pointerup', done); window.removeEventListener('pointercancel', done); };
+          window.addEventListener('pointerup', done);
+          window.addEventListener('pointercancel', done);
+        }
+      });
+      this._root.addEventListener('click', function (e) { if (handleOf(e)) e.stopPropagation(); });
+      this._root.addEventListener('dblclick', function (e) {
+        var h = handleOf(e); if (!h) return;
+        e.stopPropagation();
+        if (grid() && grid()._equalize(self, h.getAttribute('data-edge'))) self._refreshHandles();
+      });
+      this._root.addEventListener('keydown', function (e) {
+        var h = handleOf(e); if (!h) return;
+        e.stopPropagation(); // keep Enter / Space from activating the item
+        var edge = h.getAttribute('data-edge');
+        var horizontal = edge === 'left' || edge === 'right';
+        var step = e.shiftKey ? 50 : 10;
+        var delta = 0;
+        if (horizontal && e.key === 'ArrowLeft') delta = -step;
+        else if (horizontal && e.key === 'ArrowRight') delta = step;
+        else if (!horizontal && e.key === 'ArrowUp') delta = -step;
+        else if (!horizontal && e.key === 'ArrowDown') delta = step;
+        if (!delta || !grid()) return;
+        e.preventDefault();
+        if (grid()._nudge(self, edge, delta)) self._refreshHandles();
+      });
+      this._root.addEventListener('focusin', function (e) { if (handleOf(e)) self._refreshHandles(); });
     }
 
     connectedCallback() {
@@ -154,11 +244,48 @@
 
       var html =
         '<div class="media" part="media">' + this._buildMediaHtml(type) + '</div>' +
-        (label ? '<div class="label-overlay" part="label">' + escapeXml(label) + '</div>' : '');
+        (label ? '<div class="label-overlay" part="label">' + escapeXml(label) + '</div>' : '') +
+        this._handlesHtml();
 
       this._renderShadow(html, CSS);
       this._mediaEl = this._root.querySelector('.media');
+      // min-width / min-height are applied by the parent grid to the tracks
+      // this item spans.
+      var grid = this.parentElement;
+      if (grid && grid.localName === 'lwtg-grid' && typeof grid._scheduleMins === 'function') grid._scheduleMins();
       this._applyA11y(type);
+    }
+
+    // One drag handle per resize-* attribute. They only show (and are only
+    // focusable) when the parent <lwtg-grid> has `resizable`.
+    _handlesHtml() {
+      var self = this;
+      return ['left', 'right', 'top', 'bottom'].filter(function (edge) {
+        return self.hasAttribute('resize-' + edge);
+      }).map(function (edge) {
+        var vertical = edge === 'left' || edge === 'right';
+        return '<div class="rz rz-' + edge + '" part="resize-handle resize-' + edge + '" data-edge="' + edge + '"' +
+          ' role="separator" tabindex="0" aria-orientation="' + (vertical ? 'vertical' : 'horizontal') + '"' +
+          ' aria-valuemin="0" aria-valuemax="100" aria-label="Resize ' + (vertical ? 'column' : 'row') + ' (' + edge + ' edge)"></div>';
+      }).join('');
+    }
+
+    // Keep each handle's aria-valuenow / valuetext in step with the layout.
+    _refreshHandles() {
+      var p = this.parentElement;
+      if (!p || p.localName !== 'lwtg-grid' || typeof p._handleState !== 'function') return;
+      var self = this;
+      this._root.querySelectorAll('.rz').forEach(function (h) {
+        var st = p._handleState(self, h.getAttribute('data-edge'));
+        if (st) {
+          h.setAttribute('aria-valuenow', String(st.now));
+          h.setAttribute('aria-valuetext', st.text);
+          h.removeAttribute('aria-disabled');
+        } else {
+          // An outer grid edge: nothing to resize.
+          h.setAttribute('aria-disabled', 'true');
+        }
+      });
     }
 
     // Accessible name: label, then alt, then a name derived from the file

@@ -409,7 +409,29 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
     <div style="background:#eef2ff;padding:12px;border-radius:6px;">Item 4</div>
     <div style="background:#eef2ff;padding:12px;border-radius:6px;">Item 5</div>
 </lwtg-grid>
-                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>columns</code> &mdash; target/maximum column count. Omit for pure responsive mode (auto-fit at min-col-width).</li><li><code>rows</code> &mdash; fixed row count with equal (1fr) heights. Omit to let rows size to their content.</li><li><code>gap</code> &mdash; CSS length between cells (default 1rem).</li><li><code>min-col-width</code> &mdash; minimum column width before wrapping (default 200px) &mdash; governs when the layout collapses to fewer columns.</li><li><code>row-height</code> &mdash; fixed height for every implicit row (default "auto").</li><li><code>dense</code> &mdash; boolean; grid-auto-flow: dense &mdash; lets smaller items backfill gaps left by spanning items.</li></ul><p><strong>Slots:</strong></p><ul><li><code>(default)</code> &mdash; any children you want laid out.</li></ul><p><strong>Theming:</strong> --lwt-grid-gap, --lwt-grid-row-height, --lwt-grid-min-col-width, --lwt-grid-columns, --lwt-grid-rows.</p>
+
+                <h4>Resizable panels</h4>
+                <p>Add <code>resizable</code> to the grid, then choose which edges of each <code>&lt;lwtg-grid-item&gt;</code> can be dragged with <code>resize-left</code>, <code>resize-right</code>, <code>resize-top</code> and <code>resize-bottom</code>. Hover an item to see its handles; drag one (or Tab to it and use the arrow keys) to move that grid line for the whole grid. Double-click a handle to share the two tracks equally again. <code>min-width</code> / <code>min-height</code> on an item stop the tracks it spans from shrinking below that size, while dragging and when the window resizes (here the Sidebar keeps at least 160px and Panel A&apos;s row at least 120px).</p>
+                <pre><code>&lt;lwtg-grid resizable columns="3" rows="2" row-height="140px" gap="8px" resize-min="80px"&gt;
+    &lt;lwtg-grid-item row-span="2" resize-right min-width="160px" label="Sidebar"&gt;&lt;div&gt;Sidebar&lt;/div&gt;&lt;/lwtg-grid-item&gt;
+    &lt;lwtg-grid-item col-span="2" resize-left resize-bottom label="Main"&gt;&lt;div&gt;Main&lt;/div&gt;&lt;/lwtg-grid-item&gt;
+    &lt;lwtg-grid-item resize-left resize-right resize-top min-height="120px" label="Panel A"&gt;&lt;div&gt;Panel A&lt;/div&gt;&lt;/lwtg-grid-item&gt;
+    &lt;lwtg-grid-item resize-left resize-top resize-bottom label="Panel B"&gt;&lt;div&gt;Panel B&lt;/div&gt;&lt;/lwtg-grid-item&gt;
+&lt;/lwtg-grid&gt;
+
+grid.addEventListener('lwt-resize', function (e) {
+    localStorage.setItem('layout', JSON.stringify(e.detail.sizes)); // save
+});
+grid.sizes = JSON.parse(localStorage.getItem('layout'));            // restore</code></pre>
+                <lwtg-grid id="demo-resizable-grid" resizable columns="3" rows="2" row-height="140px" gap="8px" resize-min="80px">
+    <lwtg-grid-item row-span="2" resize-right min-width="160px" label="Sidebar"><div style="padding:12px;height:100%;box-sizing:border-box;background:#eef2ff;">Sidebar</div></lwtg-grid-item>
+    <lwtg-grid-item col-span="2" resize-left resize-bottom label="Main"><div style="padding:12px;height:100%;box-sizing:border-box;background:#ecfdf5;">Main</div></lwtg-grid-item>
+    <lwtg-grid-item resize-left resize-right resize-top min-height="120px" label="Panel A"><div style="padding:12px;height:100%;box-sizing:border-box;background:#fff7ed;">Panel A</div></lwtg-grid-item>
+    <lwtg-grid-item resize-left resize-top resize-bottom label="Panel B"><div style="padding:12px;height:100%;box-sizing:border-box;background:#fdf2f8;">Panel B</div></lwtg-grid-item>
+</lwtg-grid>
+                <lwtg-button id="demo-resizable-reset" variant="secondary" label="Reset layout"></lwtg-button>
+                <pre id="demo-resizable-sizes" style="font-size:12px;">Drag a handle to see .sizes</pre>
+                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>columns</code> &mdash; target/maximum column count. Omit for pure responsive mode (auto-fit at min-col-width).</li><li><code>rows</code> &mdash; fixed row count with equal (1fr) heights. Omit to let rows size to their content.</li><li><code>gap</code> &mdash; CSS length between cells (default 1rem).</li><li><code>min-col-width</code> &mdash; minimum column width before wrapping (default 200px) &mdash; governs when the layout collapses to fewer columns.</li><li><code>row-height</code> &mdash; fixed height for every implicit row (default "auto").</li><li><code>dense</code> &mdash; boolean; grid-auto-flow: dense &mdash; lets smaller items backfill gaps left by spanning items.</li><li><code>resizable</code> &mdash; boolean; lets <code>&lt;lwtg-grid-item&gt;</code> edges marked with <code>resize-left / -right / -top / -bottom</code> drag the grid lines. Columns stay proportional; dragged rows get fixed heights.</li><li><code>resize-min</code> &mdash; smallest size a dragged column or row can reach when no item sets its own <code>min-width</code> / <code>min-height</code> (default 48px).</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>sizes</code> &mdash; get/set { columns, rows } track sizes (null when not resized) &mdash; save and restore a layout.</li><li><code>resetSizes()</code> &mdash; back to the attribute layout.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-resize</code> &mdash; after each drag or key nudge; detail: { axis, sizes }.</li></ul><p><strong>Slots:</strong></p><ul><li><code>(default)</code> &mdash; any children you want laid out.</li></ul><p><strong>Theming:</strong> --lwt-grid-gap, --lwt-grid-row-height, --lwt-grid-min-col-width, --lwt-grid-columns, --lwt-grid-rows, --lwt-grid-resize-color, --lwt-grid-resize-size.</p>
             </details>
 
             <details>
@@ -431,7 +453,7 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
     </lwtg-grid-item>
     <lwtg-grid-item src="https://youtu.be/dQw4w9WgXcQ" label="YouTube video" play-inline></lwtg-grid-item>
 </lwtg-image-grid>
-                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>src</code> &mdash; image URL, base64/data URI, or a YouTube URL.</li><li><code>href</code> &mdash; optional link URL; wraps the rendered image in an &lt;a target="_blank"&gt;.</li><li><code>video-id</code> &mdash; explicit YouTube video id; skips URL parsing, takes priority over src.</li><li><code>type</code> &mdash; "image" (default) | "svg" | "embed" &mdash; forces resolution; YouTube detection from src/video-id always wins regardless.</li><li><code>alt</code> &mdash; alt text for the rendered &lt;img&gt;.</li><li><code>label</code> &mdash; caption shown as an overlay on hover/focus; omitted entirely from the DOM when unset.</li><li><code>col-span</code> &mdash; how many grid columns this cell spans (default 1; 2&ndash;8 or "full").</li><li><code>row-span</code> &mdash; how many grid rows this cell spans (default 1; 2&ndash;6).</li><li><code>play-inline</code> &mdash; boolean, YouTube only; clicking swaps the thumbnail facade for a live autoplaying iframe in place.</li></ul><p><strong>Slots:</strong></p><ul><li><code>(default)</code> &mdash; raw content for "svg" (no src) and "embed" types &mdash; the only way to get a stylable, currentColor-aware SVG.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-click</code> &mdash; detail: { type, src, label, index }.</li><li><code>lwt-play</code> &mdash; YouTube + play-inline only; detail: { videoId }.</li></ul><p><strong>Theming:</strong> --lwt-grid-item-radius, --lwt-grid-item-bg, --lwt-grid-item-label-bg, --lwt-grid-item-label-color, --lwt-grid-item-label-padding, --lwt-grid-item-focus-color.</p>
+                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>src</code> &mdash; image URL, base64/data URI, or a YouTube URL.</li><li><code>href</code> &mdash; optional link URL; wraps the rendered image in an &lt;a target="_blank"&gt;.</li><li><code>video-id</code> &mdash; explicit YouTube video id; skips URL parsing, takes priority over src.</li><li><code>type</code> &mdash; "image" (default) | "svg" | "embed" &mdash; forces resolution; YouTube detection from src/video-id always wins regardless.</li><li><code>alt</code> &mdash; alt text for the rendered &lt;img&gt;.</li><li><code>label</code> &mdash; caption shown as an overlay on hover/focus; omitted entirely from the DOM when unset.</li><li><code>col-span</code> &mdash; how many grid columns this cell spans (default 1; 2&ndash;8 or "full").</li><li><code>row-span</code> &mdash; how many grid rows this cell spans (default 1; 2&ndash;6).</li><li><code>resize-left, resize-right, resize-top, resize-bottom</code> &mdash; inside a <code>&lt;lwtg-grid resizable&gt;</code>, shows a drag handle on that edge when the item is hovered or focused. Dragging moves that grid line; arrow keys nudge it (Shift for bigger steps); double-click shares the two tracks equally. Handles on the grid&apos;s outer left, right and top edges do nothing.</li><li><code>min-width, min-height</code> &mdash; smallest size of the column(s) / row(s) this item spans (px, rem, em, %, vw, vh), kept while dragging and when the window resizes. A spanning item&apos;s minimum is shared across its tracks; the largest minimum on a track wins. If the minimums don&apos;t fit, the grid scrolls sideways.</li><li><code>play-inline</code> &mdash; boolean, YouTube only; clicking swaps the thumbnail facade for a live autoplaying iframe in place.</li></ul><p><strong>Slots:</strong></p><ul><li><code>(default)</code> &mdash; raw content for "svg" (no src) and "embed" types &mdash; the only way to get a stylable, currentColor-aware SVG.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-click</code> &mdash; detail: { type, src, label, index }.</li><li><code>lwt-play</code> &mdash; YouTube + play-inline only; detail: { videoId }.</li></ul><p><strong>Theming:</strong> --lwt-grid-item-radius, --lwt-grid-item-bg, --lwt-grid-item-label-bg, --lwt-grid-item-label-color, --lwt-grid-item-label-padding, --lwt-grid-item-focus-color.</p>
             </details>
 
             <details>
@@ -1216,6 +1238,22 @@ chart.data = {
                         }
                     }, 180 + i * 60);
                 });
+            });
+        })();
+    </script>
+    <script>
+        // Resizable grid demo: show .sizes after each resize, and reset.
+        (function () {
+            var grid = document.getElementById('demo-resizable-grid');
+            var out = document.getElementById('demo-resizable-sizes');
+            var reset = document.getElementById('demo-resizable-reset');
+            if (!grid) return;
+            grid.addEventListener('lwt-resize', function (e) {
+                out.textContent = 'lwt-resize (' + e.detail.axis + ')\n' + JSON.stringify(e.detail.sizes, null, 2);
+            });
+            reset.addEventListener('click', function () {
+                grid.resetSizes();
+                out.textContent = 'Layout reset.';
             });
         })();
     </script>
