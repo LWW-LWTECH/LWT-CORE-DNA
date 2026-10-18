@@ -128,6 +128,7 @@
        The grab area is always there; the line shows on hover / focus. */
     .rz { display: none; position: absolute; z-index: 3; touch-action: none; outline: none; }
     :host([data-resizable]) .rz { display: block; }
+    :host([data-resizable="rows"]) .rz-left, :host([data-resizable="rows"]) .rz-right { display: none; }
     .rz-left, .rz-right { top: 0; bottom: 0; width: var(--lwt-grid-resize-size, 10px); cursor: col-resize; }
     .rz-left { left: 0; }
     .rz-right { right: 0; }

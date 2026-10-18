@@ -1,7 +1,7 @@
 /*!
  * LWT General Elements
  * Developer: Lee W Winter
- * Last Generated: 2026-10-18T17:40:56.091Z
+ * Last Generated: 2026-10-18T19:13:56.036Z
  * Requires lwt-core.js to be loaded first.
  */
 
@@ -1012,6 +1012,7 @@
        The grab area is always there; the line shows on hover / focus. */
     .rz { display: none; position: absolute; z-index: 3; touch-action: none; outline: none; }
     :host([data-resizable]) .rz { display: block; }
+    :host([data-resizable="rows"]) .rz-left, :host([data-resizable="rows"]) .rz-right { display: none; }
     .rz-left, .rz-right { top: 0; bottom: 0; width: var(--lwt-grid-resize-size, 10px); cursor: col-resize; }
     .rz-left { left: 0; }
     .rz-right { right: 0; }
@@ -1326,14 +1327,30 @@
  *
  *   <lwtg-grid columns="4" gap="12px" min-col-width="140px"> ... </lwtg-grid>
  *
- * Attributes: columns, rows, gap, min-col-width, row-height, dense
- * (copied onto the host as --lwt-grid-* variables, so the same variables
- * can also be set from a stylesheet).
+ * Column modes (picked from the attributes):
+ *   - no `columns`            responsive: as many columns as fit at
+ *                             min-col-width (default 200px), wrapping on
+ *                             small screens.
+ *   - `columns` + `responsive` at most N columns, still collapsing once a
+ *                             column would drop below min-col-width.
+ *   - `columns` alone         exactly N columns of min-col-width each
+ *                             (default 1fr). Needed for `resizable` columns.
+ *
+ * Attributes: columns, rows, gap, min-col-width, row-height, dense,
+ * responsive (copied onto the host as --lwt-grid-* variables, so the same
+ * variables can also be set from a stylesheet). In the responsive modes
+ * rows default to their content height; set row-height (e.g. 160px) for
+ * an even image wall.
+ *
+ * <lwtg-image-grid> is the same element under its old name (see
+ * lwt-gen-image-grid.js) -- kept so existing pages keep working.
  *
  * ---------------------------------------------------------------------
  * Resizable panels
  * ---------------------------------------------------------------------
- * Add `resizable` and the grid's column and row sizes can be dragged,
+ * Add `resizable` and the grid's column and row sizes can be dragged
+ * (columns only in the fixed mode -- responsive columns have no fixed
+ * count to resize; row handles still work there),
  * like panels in a desktop app. Which edges get a drag handle is chosen
  * per item with resize-left / resize-right / resize-top / resize-bottom
  * on <lwtg-grid-item>; the handle appears when the item is hovered (or
@@ -1401,8 +1418,28 @@
       display: grid;
       width: 100%;
       gap: var(--lwt-grid-gap, var(--lwt-gap, 1rem));
+    }
+    /* Track rules all have zero specificity (:where), so the mode rules
+       below win by order and a page's own CSS wins over all of them. */
+    :where(.grid) {
       grid-template-rows: var(--lwt-grid-template-rows, repeat(var(--lwt-grid-rows, 1), var(--lwt-grid-row-height, 1fr)));
       grid-template-columns: var(--lwt-grid-template-columns, repeat(var(--lwt-grid-columns, 1), var(--lwt-grid-min-col-width, 1fr)));
+    }
+    /* Responsive modes (see the header). Wrapped in :where() so a page's own
+       CSS on ::part(grid) wins without !important. */
+    :where(:host([data-mode="responsive"]) .grid) {
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--lwt-grid-min-col-width, 200px)), 1fr));
+    }
+    :where(:host([data-mode="capped"]) .grid) {
+      grid-template-columns: repeat(auto-fit, minmax(max(var(--lwt-grid-min-col-width, 200px),
+        calc((100% - (var(--lwt-grid-columns, 4) - 1) * var(--lwt-grid-gap, var(--lwt-gap, 1rem))) / var(--lwt-grid-columns, 4))), 1fr));
+    }
+    :where(:host([data-mode="responsive"]) .grid, :host([data-mode="capped"]) .grid) {
+      grid-template-rows: var(--lwt-grid-template-rows, none);
+      grid-auto-rows: var(--lwt-grid-row-height, auto);
+    }
+    :where(:host([data-mode="responsive"][rows]) .grid, :host([data-mode="capped"][rows]) .grid) {
+      grid-template-rows: var(--lwt-grid-template-rows, repeat(var(--lwt-grid-rows, 1), var(--lwt-grid-row-height, 1fr)));
     }
     :where(:host([dense]) .grid) { grid-auto-flow: dense; }
     /* Item minimums can add up to more than the available width: scroll. */
@@ -1417,7 +1454,7 @@
 
   class LWTGrid extends window.LWT.Element {
     static get observedAttributes() {
-      return ['columns', 'rows', 'gap', 'min-col-width', 'row-height', 'dense', 'resizable', 'resize-min'];
+      return ['columns', 'rows', 'gap', 'min-col-width', 'row-height', 'dense', 'resizable', 'resize-min', 'responsive'];
     }
 
     constructor() {
@@ -1449,15 +1486,22 @@
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue) return;
       // A different track count or base size invalidates a resized layout.
-      if (name === 'columns' || name === 'min-col-width') this._colSizes = null;
+      if (name === 'columns' || name === 'min-col-width' || name === 'responsive') this._colSizes = null;
       if (name === 'rows' || name === 'row-height') this._rowSizes = null;
       if (name === 'resizable' && newValue === null) { this._colSizes = null; this._rowSizes = null; }
       super.attributeChangedCallback(name, oldValue, newValue);
     }
 
+    // 'fixed' | 'responsive' | 'capped' -- see the header.
+    _mode() {
+      if (!this.hasAttribute('columns')) return 'responsive';
+      return this._boolAttr('responsive') ? 'capped' : 'fixed';
+    }
+
     render() {
       this._syncVars();
-      this._renderShadow('<div class="grid" part="grid"><slot></slot></div>', CSS);
+      this.setAttribute('data-mode', this._mode());
+      this._renderShadow('<div class="grid" part="grid"><slot></slot></div>', CSS + (this.constructor.extraCSS || ''));
       this._gridEl = this._root.querySelector('.grid');
       this._root.querySelector('slot').addEventListener('slotchange', this._onSlotChange);
       this._applyTemplates();
@@ -1484,9 +1528,11 @@
     _syncItems() {
       this._scheduleMins();
       var on = this._boolAttr('resizable');
+      // Responsive columns can't be dragged: only row handles stay live.
+      var axes = this._mode() === 'fixed' ? 'both' : 'rows';
       Array.prototype.forEach.call(this.children, function (child) {
         if (child.localName !== 'lwtg-grid-item') return;
-        if (on) child.setAttribute('data-resizable', '');
+        if (on) child.setAttribute('data-resizable', axes);
         else child.removeAttribute('data-resizable');
       });
     }
@@ -1495,6 +1541,7 @@
     // Tracks with an item minimum become minmax(<min>, <size>).
     _applyTemplates() {
       var mins = this._mins || { columns: [], rows: [] };
+      if (this._mode() !== 'fixed') { this._colSizes = null; mins = { columns: [], rows: mins.rows }; }
       var hasColMins = mins.columns.some(function (m) { return m > 0; });
       var hasRowMins = mins.rows.some(function (m) { return m > 0; });
       var wrap = function (min, size) { return min > 0 ? 'minmax(' + Math.round(min * 100) / 100 + 'px, ' + size + ')' : size; };
@@ -1608,6 +1655,7 @@
     _target(item, edge) {
       if (!this._boolAttr('resizable') || !this._gridEl) return null;
       var axis = edge === 'left' || edge === 'right' ? 'columns' : 'rows';
+      if (axis === 'columns' && this._mode() !== 'fixed') return null;
       var lines = this._itemLines(item, axis);
       var n = lines.measure.sizes.length;
       var a, b;
@@ -1762,6 +1810,7 @@
     }
   }
 
+  window.LWT.Grid = LWTGrid; // base class for the <lwtg-image-grid> alias
   window.LWT.define('lwtg-grid', LWTGrid);
 })();
 
@@ -1872,77 +1921,54 @@
 })();
 
 /* ---- lwt-gen-image-grid.js ---- */
+/*!
+ * <lwtg-image-grid>  (deprecated alias of <lwtg-grid>)
+ * Kept so existing pages keep working. It is <lwtg-grid> with the old
+ * image-grid defaults; new pages should use <lwtg-grid> directly:
+ *
+ *   <lwtg-image-grid>                 -> <lwtg-grid row-height="160px">
+ *   <lwtg-image-grid columns="4">     -> <lwtg-grid columns="4" responsive row-height="160px">
+ *   <lwtg-image-grid columns="4" rows="2">
+ *                                     -> <lwtg-grid columns="4" rows="2" row-height="160px">
+ *
+ * Old behaviour kept: rows default to 160px, columns collapse at 200px,
+ * `columns` alone caps the count (still responsive), `columns` + `rows`
+ * gives exactly that many equal columns, and the --lwt-image-grid-gap /
+ * -row-height / -min-width / -columns / -rows variables still work.
+ *
+ * Requires lwt-core.js and lwt-gen-grid.js (both in lwt-general.js).
+ */
 (function () {
   'use strict';
 
-  if (!window.LWT || !window.LWT.Element) {
-    throw new Error('lwt-gen-image-grid.js requires lwt-core.js to be loaded first.');
+  if (!window.LWT || !window.LWT.Grid) {
+    throw new Error('lwt-gen-image-grid.js requires lwt-core.js and lwt-gen-grid.js to be loaded first.');
   }
 
-  var CSS = `
-    :host { display: block; font-family: inherit; }
-    .grid {
-      display: grid;
-      gap: var(--lwt-image-grid-gap, var(--lwt-gap, 1rem));
-      grid-auto-rows: var(--lwt-image-grid-row-height, 160px);
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--lwt-image-grid-min-width, 200px)), 1fr));
+  class LWTImageGrid extends window.LWT.Grid {
+    // Old mode rules: no columns -> responsive; columns -> capped
+    // (still responsive); columns + rows -> exactly N equal columns.
+    _mode() {
+      if (!this.hasAttribute('columns')) return 'responsive';
+      return this.hasAttribute('rows') ? 'fixed' : 'capped';
     }
-    /* With "columns" set: cap the count, but let it collapse on small
-       screens once each column would fall below --lwt-image-grid-min-width.
-       The columns/dense structural rules are wrapped in :where() so
-       external CSS via ::part(grid) or a responsive override wins with
-       no !important. Same pattern applied to <lwtg-grid-item> and friends. */
-    :where(:host([columns]) .grid) {
-      grid-template-columns: repeat(auto-fit, minmax( max(var(--lwt-image-grid-min-width, 200px), calc((100% - (var(--lwt-image-grid-columns, 4) - 1) * var(--lwt-image-grid-gap, var(--lwt-gap, 1rem))) / var(--lwt-image-grid-columns, 4))), 1fr));
+  }
+
+  // The old --lwt-image-grid-* variables and defaults, mapped onto the
+  // grid's. Attributes (copied inline by the grid) still win.
+  LWTImageGrid.extraCSS = `
+    :host {
+      --lwt-grid-gap: var(--lwt-image-grid-gap, var(--lwt-gap, 1rem));
+      --lwt-grid-row-height: var(--lwt-image-grid-row-height, 160px);
+      --lwt-grid-min-col-width: var(--lwt-image-grid-min-width, 200px);
+      --lwt-grid-columns: var(--lwt-image-grid-columns, 4);
+      --lwt-grid-rows: var(--lwt-image-grid-rows, 1);
     }
-    /* "rows" alone: fixed row count, columns still responsive. */
-    :where(:host([rows]) .grid) {
-      grid-template-rows: repeat(var(--lwt-image-grid-rows, 1), var(--lwt-image-grid-row-height, 160px));
+    /* columns + rows: equal columns (min-col-width is the collapse point here, not the track size). */
+    :where(:host([data-mode="fixed"]) .grid) {
+      grid-template-columns: var(--lwt-grid-template-columns, repeat(var(--lwt-grid-columns, 4), 1fr));
     }
-    /* Both "columns" AND "rows" set: user has committed to a fixed grid,
-       so drop the responsive auto-fit magic and hard-cap the column count
-       at exactly N. Comes AFTER the "[columns]" rule so it wins the
-       cascade (same zero specificity, order matters). */
-    :where(:host([columns][rows]) .grid) { grid-template-columns: repeat(var(--lwt-image-grid-columns, 4), 1fr); }
-    :where(:host([dense]) .grid) { grid-auto-flow: dense; }
   `;
-
-  class LWTImageGrid extends window.LWT.Element {
-    static get observedAttributes() {
-      return ['columns', 'rows', 'gap', 'row-height', 'dense'];
-    }
-
-    render() {
-      this._syncVars();
-      this._renderShadow('<div class="grid" part="grid"><slot></slot></div>', CSS);
-    }
-
-    _syncVars() {
-      if (this.hasAttribute('columns')) {
-        this.style.setProperty('--lwt-image-grid-columns', this._strAttr('columns', '4'));
-      } else {
-        this.style.removeProperty('--lwt-image-grid-columns');
-      }
-
-      if (this.hasAttribute('rows')) {
-        this.style.setProperty('--lwt-image-grid-rows', this._strAttr('rows', '1'));
-      } else {
-        this.style.removeProperty('--lwt-image-grid-rows');
-      }
-
-      if (this.hasAttribute('gap')) {
-        this.style.setProperty('--lwt-image-grid-gap', this._strAttr('gap', ''));
-      } else {
-        this.style.removeProperty('--lwt-image-grid-gap');
-      }
-
-      if (this.hasAttribute('row-height')) {
-        this.style.setProperty('--lwt-image-grid-row-height', this._strAttr('row-height', ''));
-      } else {
-        this.style.removeProperty('--lwt-image-grid-row-height');
-      }
-    }
-  }
 
   window.LWT.define('lwtg-image-grid', LWTImageGrid);
 })();

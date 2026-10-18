@@ -1,74 +1,51 @@
+/*!
+ * <lwtg-image-grid>  (deprecated alias of <lwtg-grid>)
+ * Kept so existing pages keep working. It is <lwtg-grid> with the old
+ * image-grid defaults; new pages should use <lwtg-grid> directly:
+ *
+ *   <lwtg-image-grid>                 -> <lwtg-grid row-height="160px">
+ *   <lwtg-image-grid columns="4">     -> <lwtg-grid columns="4" responsive row-height="160px">
+ *   <lwtg-image-grid columns="4" rows="2">
+ *                                     -> <lwtg-grid columns="4" rows="2" row-height="160px">
+ *
+ * Old behaviour kept: rows default to 160px, columns collapse at 200px,
+ * `columns` alone caps the count (still responsive), `columns` + `rows`
+ * gives exactly that many equal columns, and the --lwt-image-grid-gap /
+ * -row-height / -min-width / -columns / -rows variables still work.
+ *
+ * Requires lwt-core.js and lwt-gen-grid.js (both in lwt-general.js).
+ */
 (function () {
   'use strict';
 
-  if (!window.LWT || !window.LWT.Element) {
-    throw new Error('lwt-gen-image-grid.js requires lwt-core.js to be loaded first.');
+  if (!window.LWT || !window.LWT.Grid) {
+    throw new Error('lwt-gen-image-grid.js requires lwt-core.js and lwt-gen-grid.js to be loaded first.');
   }
 
-  var CSS = `
-    :host { display: block; font-family: inherit; }
-    .grid {
-      display: grid;
-      gap: var(--lwt-image-grid-gap, var(--lwt-gap, 1rem));
-      grid-auto-rows: var(--lwt-image-grid-row-height, 160px);
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--lwt-image-grid-min-width, 200px)), 1fr));
+  class LWTImageGrid extends window.LWT.Grid {
+    // Old mode rules: no columns -> responsive; columns -> capped
+    // (still responsive); columns + rows -> exactly N equal columns.
+    _mode() {
+      if (!this.hasAttribute('columns')) return 'responsive';
+      return this.hasAttribute('rows') ? 'fixed' : 'capped';
     }
-    /* With "columns" set: cap the count, but let it collapse on small
-       screens once each column would fall below --lwt-image-grid-min-width.
-       The columns/dense structural rules are wrapped in :where() so
-       external CSS via ::part(grid) or a responsive override wins with
-       no !important. Same pattern applied to <lwtg-grid-item> and friends. */
-    :where(:host([columns]) .grid) {
-      grid-template-columns: repeat(auto-fit, minmax( max(var(--lwt-image-grid-min-width, 200px), calc((100% - (var(--lwt-image-grid-columns, 4) - 1) * var(--lwt-image-grid-gap, var(--lwt-gap, 1rem))) / var(--lwt-image-grid-columns, 4))), 1fr));
+  }
+
+  // The old --lwt-image-grid-* variables and defaults, mapped onto the
+  // grid's. Attributes (copied inline by the grid) still win.
+  LWTImageGrid.extraCSS = `
+    :host {
+      --lwt-grid-gap: var(--lwt-image-grid-gap, var(--lwt-gap, 1rem));
+      --lwt-grid-row-height: var(--lwt-image-grid-row-height, 160px);
+      --lwt-grid-min-col-width: var(--lwt-image-grid-min-width, 200px);
+      --lwt-grid-columns: var(--lwt-image-grid-columns, 4);
+      --lwt-grid-rows: var(--lwt-image-grid-rows, 1);
     }
-    /* "rows" alone: fixed row count, columns still responsive. */
-    :where(:host([rows]) .grid) {
-      grid-template-rows: repeat(var(--lwt-image-grid-rows, 1), var(--lwt-image-grid-row-height, 160px));
+    /* columns + rows: equal columns (min-col-width is the collapse point here, not the track size). */
+    :where(:host([data-mode="fixed"]) .grid) {
+      grid-template-columns: var(--lwt-grid-template-columns, repeat(var(--lwt-grid-columns, 4), 1fr));
     }
-    /* Both "columns" AND "rows" set: user has committed to a fixed grid,
-       so drop the responsive auto-fit magic and hard-cap the column count
-       at exactly N. Comes AFTER the "[columns]" rule so it wins the
-       cascade (same zero specificity, order matters). */
-    :where(:host([columns][rows]) .grid) { grid-template-columns: repeat(var(--lwt-image-grid-columns, 4), 1fr); }
-    :where(:host([dense]) .grid) { grid-auto-flow: dense; }
   `;
-
-  class LWTImageGrid extends window.LWT.Element {
-    static get observedAttributes() {
-      return ['columns', 'rows', 'gap', 'row-height', 'dense'];
-    }
-
-    render() {
-      this._syncVars();
-      this._renderShadow('<div class="grid" part="grid"><slot></slot></div>', CSS);
-    }
-
-    _syncVars() {
-      if (this.hasAttribute('columns')) {
-        this.style.setProperty('--lwt-image-grid-columns', this._strAttr('columns', '4'));
-      } else {
-        this.style.removeProperty('--lwt-image-grid-columns');
-      }
-
-      if (this.hasAttribute('rows')) {
-        this.style.setProperty('--lwt-image-grid-rows', this._strAttr('rows', '1'));
-      } else {
-        this.style.removeProperty('--lwt-image-grid-rows');
-      }
-
-      if (this.hasAttribute('gap')) {
-        this.style.setProperty('--lwt-image-grid-gap', this._strAttr('gap', ''));
-      } else {
-        this.style.removeProperty('--lwt-image-grid-gap');
-      }
-
-      if (this.hasAttribute('row-height')) {
-        this.style.setProperty('--lwt-image-grid-row-height', this._strAttr('row-height', ''));
-      } else {
-        this.style.removeProperty('--lwt-image-grid-row-height');
-      }
-    }
-  }
 
   window.LWT.define('lwtg-image-grid', LWTImageGrid);
 })();
