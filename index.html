@@ -413,10 +413,10 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
                 <h4>Resizable panels</h4>
                 <p>Add <code>resizable</code> to the grid, then choose which edges of each <code>&lt;lwtg-grid-item&gt;</code> can be dragged with <code>resize-left</code>, <code>resize-right</code>, <code>resize-top</code> and <code>resize-bottom</code>. Hover an item to see its handles; drag one (or Tab to it and use the arrow keys) to move that grid line for the whole grid. Double-click a handle to share the two tracks equally again. <code>min-width</code> / <code>min-height</code> on an item stop the tracks it spans from shrinking below that size, while dragging and when the window resizes (here the Sidebar keeps at least 160px and Panel A&apos;s row at least 120px).</p>
                 <pre><code>&lt;lwtg-grid resizable columns="3" rows="2" row-height="140px" gap="8px" resize-min="80px"&gt;
-    &lt;lwtg-grid-item row-span="2" resize-right min-width="160px" label="Sidebar"&gt;&lt;div&gt;Sidebar&lt;/div&gt;&lt;/lwtg-grid-item&gt;
-    &lt;lwtg-grid-item col-span="2" resize-left resize-bottom label="Main"&gt;&lt;div&gt;Main&lt;/div&gt;&lt;/lwtg-grid-item&gt;
-    &lt;lwtg-grid-item resize-left resize-right resize-top min-height="120px" label="Panel A"&gt;&lt;div&gt;Panel A&lt;/div&gt;&lt;/lwtg-grid-item&gt;
-    &lt;lwtg-grid-item resize-left resize-top resize-bottom label="Panel B"&gt;&lt;div&gt;Panel B&lt;/div&gt;&lt;/lwtg-grid-item&gt;
+    &lt;lwtg-grid-item row-span="2" resize-right min-width="160px"&gt;&lt;div&gt;Sidebar&lt;/div&gt;&lt;/lwtg-grid-item&gt;
+    &lt;lwtg-grid-item col-span="2" resize-left resize-bottom&gt;&lt;div&gt;Main&lt;/div&gt;&lt;/lwtg-grid-item&gt;
+    &lt;lwtg-grid-item resize-left resize-right resize-top min-height="120px"&gt;&lt;div&gt;Panel A&lt;/div&gt;&lt;/lwtg-grid-item&gt;
+    &lt;lwtg-grid-item resize-left resize-top resize-bottom&gt;&lt;div&gt;Panel B&lt;/div&gt;&lt;/lwtg-grid-item&gt;
 &lt;/lwtg-grid&gt;
 
 grid.addEventListener('lwt-resize', function (e) {
@@ -424,10 +424,10 @@ grid.addEventListener('lwt-resize', function (e) {
 });
 grid.sizes = JSON.parse(localStorage.getItem('layout'));            // restore</code></pre>
                 <lwtg-grid id="demo-resizable-grid" resizable columns="3" rows="2" row-height="140px" gap="8px" resize-min="80px">
-    <lwtg-grid-item row-span="2" resize-right min-width="160px" label="Sidebar"><div style="padding:12px;height:100%;box-sizing:border-box;background:#eef2ff;">Sidebar</div></lwtg-grid-item>
-    <lwtg-grid-item col-span="2" resize-left resize-bottom label="Main"><div style="padding:12px;height:100%;box-sizing:border-box;background:#ecfdf5;">Main</div></lwtg-grid-item>
-    <lwtg-grid-item resize-left resize-right resize-top min-height="120px" label="Panel A"><div style="padding:12px;height:100%;box-sizing:border-box;background:#fff7ed;">Panel A</div></lwtg-grid-item>
-    <lwtg-grid-item resize-left resize-top resize-bottom label="Panel B"><div style="padding:12px;height:100%;box-sizing:border-box;background:#fdf2f8;">Panel B</div></lwtg-grid-item>
+    <lwtg-grid-item row-span="2" resize-right min-width="160px"><div style="padding:12px;height:100%;box-sizing:border-box;background:#eef2ff;">Sidebar</div></lwtg-grid-item>
+    <lwtg-grid-item col-span="2" resize-left resize-bottom><div style="padding:12px;height:100%;box-sizing:border-box;background:#ecfdf5;">Main</div></lwtg-grid-item>
+    <lwtg-grid-item resize-left resize-right resize-top min-height="120px"><div style="padding:12px;height:100%;box-sizing:border-box;background:#fff7ed;">Panel A</div></lwtg-grid-item>
+    <lwtg-grid-item resize-left resize-top resize-bottom><div style="padding:12px;height:100%;box-sizing:border-box;background:#fdf2f8;">Panel B</div></lwtg-grid-item>
 </lwtg-grid>
                 <lwtg-button id="demo-resizable-reset" variant="secondary" label="Reset layout"></lwtg-button>
                 <pre id="demo-resizable-sizes" style="font-size:12px;">Drag a handle to see .sizes</pre>
