@@ -67,15 +67,16 @@
   }
 
   var PALETTE = [
-    { fill: '#93c5fd', stroke: '#3b82f6' }, // blue
-    { fill: '#f9a8d4', stroke: '#ec4899' }, // pink
-    { fill: '#86efac', stroke: '#22c55e' }, // green
-    { fill: '#fcd34d', stroke: '#f59e0b' }, // amber
-    { fill: '#c4b5fd', stroke: '#8b5cf6' }, // violet
-    { fill: '#67e8f9', stroke: '#06b6d4' }, // cyan
-    { fill: '#fda4af', stroke: '#f43f5e' }, // rose
-    { fill: '#fdba74', stroke: '#f97316' }  // orange
+    { fill: '#b8f3e0', stroke: '#2ec4b6' }, // mint aqua
+    { fill: '#ffd6e8', stroke: '#ff5c8a' }, // candy rose
+    { fill: '#fef7c3', stroke: '#f2c94c' }, // soft gold
+    { fill: '#e3d7ff', stroke: '#9b5de5' }, // lavender purple
+    { fill: '#d9f2ff', stroke: '#4ea8de' }, // ice blue
+    { fill: '#ffe8cc', stroke: '#ff7f11' }, // warm apricot
+    { fill: '#c9f7d4', stroke: '#34c759' }, // fresh green
+    { fill: '#ffe4f2', stroke: '#ff2e63' }  // neon pink
   ];
+
 
   // Classic "nice numbers for graph labels" algorithm (Heckbert).
   function niceNumber(range, round) {

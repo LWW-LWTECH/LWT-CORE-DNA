@@ -896,7 +896,9 @@ form.addEventListener('submit', function (e) {
                 <summary><lwtg-icon icon="app_bar-chart" width="15px" height="15px"></lwtg-icon> Bar Chart</summary>
                 <p>A bar chart rendered as inline SVG (no Chart.js dependency, but a Chart.js-compatible <code>data</code> shape), redrawn whenever <code>.data</code> or a style attribute changes. Supports grouped or stacked bars, horizontal orientation, and dashed goal/target reference lines.</p>
                 <h4>Implementation</h4>
-                <pre><code>var chart = document.querySelector('lwtd-bar-chart');
+                <pre><code>&lt;lwtd-bar-chart id="demo-lwtd-bar-chart" title="Quarterly Sales" style="max-width:480px;"&gt;&lt;/lwtd-bar-chart&gt;
+
+var chart = document.querySelector('lwtd-bar-chart');
 chart.data = {
   labels: ['Q1', 'Q2', 'Q3', 'Q4'],
   datasets: [
