@@ -96,6 +96,9 @@
             color: #475569;
         }
         .value-readout .vr-event{ color: #94a3b8; }
+        .demo-form-status{ margin: 0.6em 0; font-size: 0.9em; min-height: 1.2em; }
+        .demo-form-status.ok{ color: #047857; }
+        .demo-form-status.error{ color: #b91c1c; }
         .value-readout pre{
             margin: 0;
             padding: 0.5em 0.7em;
@@ -646,6 +649,8 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
             <summary><span></span>Form Elements</summary>
             <p>These elements are part of the CDNA forms library (<code>lwt-forms.js</code>). Every one of them participates in a native <code>&lt;form&gt;</code> via the ElementInternals API, so a <code>name</code> attribute submits like a regular form control.</p>
             <br/>
+            <form id="demo-form" novalidate>
+
 
             <details>
                 <summary><lwtg-icon icon="app_choices" width="15px" height="15px"></lwtg-icon> Choices (radio / checkbox group)</summary>
@@ -681,8 +686,8 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
                 <h4>Implementation</h4>
                 <pre><code>&lt;lwtf-color-picker value="#3b82f6" format="hex" mode="hsl"&gt;&lt;/lwtf-color-picker&gt;</code></pre>
                 
-                <lwtf-color-picker label="color picker" value="#3b82f6" format="hex" mode="hsl"></lwtf-color-picker>
-                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>value</code> &mdash; initial color (hex, rgb()/rgba(), or hsl()/hsla()); read once on connect.</li><li><code>format</code> &mdash; 'hex' | 'rgb' | 'hsl' &mdash; controls what .value returns (default 'hex').</li><li><code>mode</code> &mdash; initial interactive mode, read once on connect: 'hsl-wheel' | 'rgb' | 'hsl' (default) | 'cmyk'. Drive changes afterward via .mode, not by re-setting this attribute.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>value, hex, rgba, hsla, cmyk, mode</code> &mdash; get/set &mdash; .value is a string in the chosen format; .rgba/.hsla/.cmyk are plain objects; .mode switches the active panel.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-input</code> &mdash; fires continuously while dragging/typing; detail: { value, hex, rgba, hsla, cmyk }.</li><li><code>lwt-change</code> &mdash; fires once when a drag ends or a field is committed; same detail shape.</li></ul>
+                <lwtf-color-picker label="color picker" name="brand_color" value="#3b82f6" format="hex" mode="hsl"></lwtf-color-picker>
+                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>value</code> &mdash; initial color (hex, rgb()/rgba(), or hsl()/hsla()); read once on connect.</li><li><code>format</code> &mdash; 'hex' | 'rgb' | 'hsl' &mdash; controls what .value returns (default 'hex').</li><li><code>mode</code> &mdash; initial interactive mode, read once on connect: 'hsl-wheel' | 'rgb' | 'hsl' (default) | 'cmyk'. Drive changes afterward via .mode, not by re-setting this attribute.</li><li><code>name</code> &mdash; form field name; inside a &lt;form&gt; the color (in the current format) is submitted and included in new FormData(form).</li><li><code>disabled</code> &mdash; greys out the picker and leaves it out of the submitted data (a disabled &lt;fieldset&gt; does the same).</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>value, hex, rgba, hsla, cmyk, mode</code> &mdash; get/set &mdash; .value is a string in the chosen format; .rgba/.hsla/.cmyk are plain objects; .mode switches the active panel.</li><li><code>form, name</code> &mdash; the owning &lt;form&gt; and field name. form.reset() restores the original value attribute.</li><li><code>checkValidity(), reportValidity()</code> &mdash; standard helpers.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-input</code> &mdash; fires continuously while dragging/typing; detail: { value, hex, rgba, hsla, cmyk }.</li><li><code>lwt-change</code> &mdash; fires once when a drag ends or a field is committed; same detail shape.</li></ul>
             </details>
 
             <details>
@@ -692,7 +697,7 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
                 <pre><code>&lt;lwtf-date-range label="Stay dates" months="2"
     value="2026-11-06,2026-11-22" min="2026-01-01" max="2026-12-31"&gt;&lt;/lwtf-date-range&gt;</code></pre>
                 
-                <lwtf-date-range label="Stay dates" months="2"
+                <lwtf-date-range label="Stay dates" name="stay_dates" months="2"
     value="2026-11-06,2026-11-22" min="2026-01-01" max="2026-12-31"></lwtf-date-range>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label, helper, error, placeholder</code> &mdash; display / form basics.</li><li><code>value</code> &mdash; initial "start,end" ISO date pair (or ISO datetimes when <code>time</code> is set); read once at connect, use .value after.</li><li><code>name</code> &mdash; form field name.</li><li><code>months</code> &mdash; how many side-by-side calendars to show (default 2).</li><li><code>time</code> &mdash; boolean; adds a 00:00&ndash;23:59 time-of-day range slider per end.</li><li><code>min, max</code> &mdash; ISO date bounds; days/navigation outside this range are disabled.</li><li><code>presets</code> &mdash; comma list overriding which preset shortcuts show, from: today, yesterday, last7, last15, lastmonth, custom.</li><li><code>no-presets</code> &mdash; boolean; hides the preset sidebar entirely.</li><li><code>required, disabled, readonly</code> &mdash; standard form states.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>value</code> &mdash; get/set array [start, end] (empty array if unset).</li><li><code>valueAsDates</code> &mdash; read-only [Date, Date] or [null, null].</li></ul><p><strong>Methods:</strong></p><ul><li><code>setRange(start, end)</code> &mdash; programmatic set; Date objects or ISO strings. {silent:true} to skip events.</li><li><code>clear() / open() / close() / toggle()</code> &mdash; popup and value control.</li><li><code>checkValidity() / reportValidity() / focus() / blur()</code> &mdash; standard form helpers, proxied to the trigger field.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-input</code> &mdash; every draft change while the popup is open; detail: { value } (in-progress draft).</li><li><code>lwt-change</code> &mdash; Apply pressed, or .value/.setRange() called; detail: { value }.</li><li><code>lwt-preset</code> &mdash; a preset shortcut was picked; detail: { preset, value }.</li><li><code>lwt-open / lwt-close</code> &mdash; popup opened/closed.</li></ul><p><strong>Form participation:</strong> uses ElementInternals &mdash; submits two form entries under <code>name</code> (start and end). <code>required</code> is satisfied only once both ends are set.</p>
             </details>
@@ -705,9 +710,9 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
 &lt;lwtf-input type="number" label="Quantity" min="1" max="10" step="1" value="1"&gt;&lt;/lwtf-input&gt;
 &lt;lwtf-input type="date" label="Start date"&gt;&lt;/lwtf-input&gt;</code></pre>
                 
-                <lwtf-input label="Full name" placeholder="Jane Doe" required></lwtf-input>
-<lwtf-input type="number" label="Quantity" min="1" max="10" step="1" value="1"></lwtf-input>
-<lwtf-input type="date" label="Start date"></lwtf-input>
+                <lwtf-input label="Full name" name="full_name" placeholder="Jane Doe" required></lwtf-input>
+<lwtf-input type="number" label="Quantity" name="quantity" min="1" max="10" step="1" value="1"></lwtf-input>
+<lwtf-input type="date" label="Start date" name="start_date"></lwtf-input>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label, helper, error, placeholder, name</code> &mdash; display / form basics.</li><li><code>value</code> &mdash; initial value; read once at connect (use .value after).</li><li><code>type</code> &mdash; "text" (default), "email", "tel", "url", "search", "password" (gets a show/hide toggle), "number", "date", "month", "week", "time". Not radio/checkbox/file/color &mdash; those have their own elements.</li><li><code>required, disabled, readonly</code> &mdash; standard form states.</li><li><code>pattern, minlength, maxlength</code> &mdash; native validation; text-like types only.</li><li><code>min, max, step</code> &mdash; native range for number/date/month/week/time.</li><li><code>autocomplete</code> &mdash; passes through to the native input when options aren&apos;t set (forced "off" when they are).</li><li><code>strict</code> &mdash; boolean; combobox only &mdash; value must match one of the options, else reverts on blur.</li><li><code>max-visible</code> &mdash; max option rows visible before the dropdown scrolls (default 8).</li><li><code>show-counter</code> &mdash; boolean; force the "N / max" counter to show even without maxlength.</li></ul><p><strong>Slots:</strong></p><ul><li><code>icon-leading</code> &mdash; anything (SVG, emoji) shown at the field&apos;s left edge.</li><li><code>icon-trailing</code> &mdash; same, shown at the right, next to any built-in controls.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>value</code> &mdash; get/set the current string.</li><li><code>options</code> &mdash; get/set a lookup array of strings or {value,label,html?,disabled?} to turn the field into a combobox (text-like types only) &mdash; e.g. <code>el.options = ['Apple', 'Banana', 'Cherry']</code>.</li></ul><p><strong>Methods:</strong></p><ul><li><code>checkValidity() / reportValidity()</code> &mdash; matches native form control validity.</li><li><code>clear() / focus() / blur()</code> &mdash; standard helpers.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-input</code> &mdash; every keystroke; detail: { value }.</li><li><code>lwt-change</code> &mdash; commit (blur / Enter); detail: { value }.</li><li><code>lwt-select</code> &mdash; option picked from a combobox dropdown; detail: { value, option }.</li><li><code>lwt-clear</code> &mdash; clear button pressed.</li></ul><p><strong>Form participation:</strong> uses ElementInternals, so <code>name="&hellip;"</code> submits like a native &lt;input&gt;, including required/pattern/minlength/maxlength/min/max/step validity.</p>
             </details>
 
@@ -717,7 +722,7 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
                 <h4>Implementation</h4>
                 <pre><code>&lt;lwtf-otp label="Verify" helper="Your code was sent to you via email" length="6"&gt;&lt;/lwtf-otp&gt;</code></pre>
                 
-                <lwtf-otp label="Verify" helper="Your code was sent to you via email" length="6"></lwtf-otp>
+                <lwtf-otp label="Verify" name="verify_code" helper="Your code was sent to you via email" length="6"></lwtf-otp>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label, helper, error</code> &mdash; display / form basics.</li><li><code>value</code> &mdash; initial code; read once at connect.</li><li><code>length</code> &mdash; number of boxes (default 6).</li><li><code>type</code> &mdash; "numeric" (default, numeric keypad) | "alphanumeric".</li><li><code>name, required, disabled, readonly</code> &mdash; standard form states.</li><li><code>auto-focus</code> &mdash; boolean; focuses the first empty box as soon as the element connects.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>value</code> &mdash; get/set the code as a plain string; get returns whatever is filled even if incomplete.</li></ul><p><strong>Methods:</strong></p><ul><li><code>clear()</code> &mdash; empties every box (fires lwt-input).</li><li><code>focus() / blur() / checkValidity() / reportValidity()</code> &mdash; standard helpers.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-input</code> &mdash; every box change; detail: { value }.</li><li><code>lwt-change</code> &mdash; a box loses focus after a change; detail: { value }.</li><li><code>lwt-complete</code> &mdash; fires the instant every box becomes filled (and again if cleared/refilled); detail: { value }.</li></ul><p><strong>Form participation:</strong> uses ElementInternals; <code>required</code> is satisfied only once every box is filled.</p>
             </details>
 
@@ -731,13 +736,13 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
     &lt;lwtf-select-option value="ath" disabled&gt;Athens&lt;/lwtf-select-option&gt;
 &lt;/lwtf-select&gt;</code></pre>
                 
-                <lwtf-select label="City (multiple)" placeholder="Search cities&hellip;" multiple>
+                <lwtf-select label="City (multiple)" name="cities" placeholder="Search cities&hellip;" multiple>
                     <lwtf-select-option value="ams">Amsterdam</lwtf-select-option>
                     <lwtf-select-option value="ber">Berlin</lwtf-select-option>
                     <lwtf-select-option value="ath" disabled>Athens</lwtf-select-option>
                 </lwtf-select>
 
-                <lwtf-select label="City (single)" placeholder="Search cities&hellip;">
+                <lwtf-select label="City (single)" name="city" placeholder="Search cities&hellip;">
                     <lwtf-select-option value="ams">Amsterdam</lwtf-select-option>
                     <lwtf-select-option value="ber">Berlin</lwtf-select-option>
                     <lwtf-select-option value="ath" disabled>Athens</lwtf-select-option>
@@ -751,7 +756,7 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
                 <h4>Implementation</h4>
                 <pre><code>&lt;lwtf-signature label="Sign here" fonts="Dancing Script;Pacifico;Satisfy;Caveat"&gt;&lt;/lwtf-signature&gt;</code></pre>
                 
-                <lwtf-signature label="Sign here" fonts="arial;cursive;fantasy;monospace"></lwtf-signature>
+                <lwtf-signature label="Sign here" name="signature" fonts="arial;cursive;fantasy;monospace"></lwtf-signature>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label, helper, error</code> &mdash; display / form basics.</li><li><code>name, required, disabled, readonly</code> &mdash; standard form states.</li><li><code>mode</code> &mdash; "type" (default) | "draw" &mdash; which panel is active on connect.</li><li><code>no-draw</code> &mdash; boolean; hides the Type/Draw tabs and removes draw mode entirely.</li><li><code>fonts</code> &mdash; semicolon-separated CSS font-family list offered in type mode. Load real script fonts yourself (e.g. a Google Fonts &lt;link&gt;) &mdash; this element only offers them, it doesn&apos;t fetch any.</li><li><code>pen-color</code> &mdash; stroke color for draw mode (default: currentColor, falls back to #111827).</li><li><code>value</code> &mdash; initial typed name; read once at connect, type mode only.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>value</code> &mdash; get/set; get returns { mode, text, font } (type) or { mode, dataUrl } (draw).</li><li><code>mode</code> &mdash; get/set "type" | "draw".</li></ul><p><strong>Methods:</strong></p><ul><li><code>toDataURL()</code> &mdash; PNG data URL of the current signature either way.</li><li><code>isEmpty()</code> &mdash; true if nothing is typed/drawn.</li><li><code>clear() / checkValidity() / reportValidity()</code> &mdash; standard helpers.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-input</code> &mdash; every keystroke/stroke; detail: { value }.</li><li><code>lwt-change</code> &mdash; commit (blur, or pointerup after a stroke); detail: { value }.</li><li><code>lwt-mode-change</code> &mdash; the Type/Draw tab changed; detail: { mode }.</li></ul><p><strong>Form participation:</strong> uses ElementInternals; the submitted form value is always the rendered PNG via .toDataURL(). <code>required</code> is satisfied once .isEmpty() is false.</p>
             </details>
 
@@ -763,9 +768,9 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
 &lt;lwtf-slider label="Price range" min="0" max="500" step="10" value="100,350" ticks tooltip="hover" unit-prefix="$"&gt;&lt;/lwtf-slider&gt;
 &lt;lwtf-slider label="Trip length" min="1" max="30" value="7" ticks tooltip="always" unit-suffix=" days"&gt;&lt;/lwtf-slider&gt;</code></pre>
                 
-                <lwtf-slider label="Volume" value="40"></lwtf-slider>
-<lwtf-slider label="Price range" min="0" max="500" step="10" value="100,350,400" ticks tooltip="hover" unit-prefix="$"></lwtf-slider>
-<lwtf-slider label="Trip length" min="1" max="30" value="7" ticks tooltip="always" unit-suffix=" days"></lwtf-slider>
+                <lwtf-slider label="Volume" name="volume" value="40"></lwtf-slider>
+<lwtf-slider label="Price range" name="price_range" min="0" max="500" step="10" value="100,350,400" ticks tooltip="hover" unit-prefix="$"></lwtf-slider>
+<lwtf-slider label="Trip length" name="trip_length" min="1" max="30" value="7" ticks tooltip="always" unit-suffix=" days"></lwtf-slider>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label, helper, error</code> &mdash; display / form basics.</li><li><code>min, max, step</code> &mdash; numeric range (defaults 0, 100, 1).</li><li><code>value</code> &mdash; initial "v1,v2,&hellip;" pair; handle count follows the count of values given. Read once at connect, use .value after.</li><li><code>name, required, disabled, readonly</code> &mdash; standard form states.</li><li><code>ticks</code> &mdash; boolean; draws tick marks (and labels) along the track.</li><li><code>tick-step</code> &mdash; spacing between ticks, in value units.</li><li><code>label-format</code> &mdash; "" (default, plain number with optional unit prefix/suffix) | "time" (minutes-since-midnight, formatted "9 AM" style).</li><li><code>unit-prefix</code> &mdash; string placed before plain-number labels, e.g. "$".</li><li><code>unit-suffix</code> &mdash; string placed after plain-number labels, e.g. "%" or " days" (include the space if you want one).</li><li><code>unit</code> &mdash; alias for <code>unit-suffix</code>.</li><li><code>tooltip</code> &mdash; "none" (default) | "hover" | "always".</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>value</code> &mdash; get/set array of numbers, one per handle; setting a longer/shorter array changes the handle count.</li><li><code>formatLabel</code> &mdash; assignable function(value) -&gt; string; overrides label-format for both ticks and tooltips.</li></ul><p><strong>Methods:</strong></p><ul><li><code>focus() / blur() / checkValidity() / reportValidity()</code> &mdash; standard helpers; focus/blur proxy to the first handle.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-input</code> &mdash; every value change while dragging/stepping; detail: { value, index }.</li><li><code>lwt-change</code> &mdash; a drag/keyboard interaction ends with a changed value, or .value was set; detail: { value }.</li></ul><p><strong>Form participation:</strong> uses ElementInternals &mdash; submits one form entry per handle under <code>name</code>.</p>
             </details>
 
@@ -788,6 +793,40 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
 </lwtf-transfer-list>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label, helper, error, name</code> &mdash; display / form basics.</li><li><code>available-label</code> &mdash; left column heading (default "Available").</li><li><code>selected-label</code> &mdash; right column heading (default "Selected").</li><li><code>sortable</code> &mdash; boolean; shows Move Up / Move Down buttons for reordering the right column.</li><li><code>size</code> &mdash; visible row count of each listbox (default 8).</li><li><code>required</code> &mdash; boolean; at least one item must end up in the selected column.</li><li><code>disabled</code> &mdash; boolean; disables the whole control.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>value</code> &mdash; get/set array of selected values, in right-column order.</li><li><code>options</code> &mdash; get/set the full item list as [{value, label, selected}]; setter replaces the entire universe of items.</li></ul><p><strong>Methods:</strong></p><ul><li><code>setValue(newValues, opts)</code> &mdash; {silent:true} to skip the lwt-change emit.</li><li><code>addOption(opt) / updateOption(value, patch) / removeOption(value)</code> &mdash; build items from JS: {value, label, selected?}.</li><li><code>clear() / checkValidity() / reportValidity()</code> &mdash; standard helpers.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-change</code> &mdash; fires on Add, Remove, -All, +All, Move Up/Down, double-click, or a non-silent value/API change; detail: { value: [...] }.</li></ul><p><strong>Form participation:</strong> uses ElementInternals, so <code>name="&hellip;"</code> submits one entry per selected value, in right-column order.</p>
             </details>
+
+            <details id="demo-form-panel">
+                <summary><lwtg-icon icon="app_input" width="15px" height="15px"></lwtg-icon> Save &amp; Preview (whole form)</summary>
+                <p>Every demo in this section sits inside one native <code>&lt;form novalidate&gt;</code>. Save runs <code>checkValidity()</code> on each field; if any fail, it opens that field&apos;s panel and shows its error. Otherwise it collects every named field into one data object. No <code>lwtf-form</code> wrapper is needed &mdash; the elements are form-associated, so <code>form.elements</code> and <code>new FormData(form)</code> already include them.</p>
+                <h4>Implementation</h4>
+                <pre><code>&lt;form id="demo-form" novalidate&gt;
+    &lt;lwtf-input label="Full name" name="full_name" required&gt;&lt;/lwtf-input&gt;
+    &lt;lwtf-slider label="Volume" name="volume" value="40"&gt;&lt;/lwtf-slider&gt;
+    &hellip;
+&lt;/form&gt;
+
+form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var fields = Array.from(form.elements).filter(function (el) { return el.getAttribute('name'); });
+    var invalid = fields.filter(function (el) { return el.checkValidity &amp;&amp; !el.checkValidity(); });
+    if (invalid.length) { invalid[0].reportValidity(); return; }
+    var data = {};
+    fields.forEach(function (el) { data[el.getAttribute('name')] = el.value; }); // typed: arrays, numbers&hellip;
+});</code></pre>
+
+                <lwtg-button id="demo-form-save" label="Save"></lwtg-button>
+                <p id="demo-form-status" class="demo-form-status" role="status" aria-live="polite"></p>
+
+                <div class="value-readout">
+                    <div class="vr-head"><span>Data object (each field&apos;s .value)</span></div>
+                    <pre id="demo-form-data">Press Save to collect the form data.</pre>
+                </div>
+                <div class="value-readout">
+                    <div class="vr-head"><span>FormData (what a normal submit would send)</span></div>
+                    <pre id="demo-form-formdata">Press Save to collect the form data.</pre>
+                </div>
+            </details>
+
+            </form>
 
         </details>
 
@@ -1067,6 +1106,83 @@ chart.data = {
 
             if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
             else init();
+        })();
+    </script>
+    <script>
+        // Whole-form demo: Save validates every field, then shows the data.
+        (function () {
+            var form = document.getElementById('demo-form');
+            var statusEl = document.getElementById('demo-form-status');
+            var dataEl = document.getElementById('demo-form-data');
+            var fdEl = document.getElementById('demo-form-formdata');
+            var panel = document.getElementById('demo-form-panel');
+
+            // Signature values are long data: URLs -- shorten them for display.
+            function shorten(key, val) {
+                if (typeof val === 'string' && val.indexOf('data:') === 0 && val.length > 80) {
+                    return val.slice(0, 60) + '... (' + val.length + ' chars)';
+                }
+                return val;
+            }
+            // Not every lwtf- element has a .name property, so read the attribute.
+            function nameOf(el) { return el.getAttribute('name') || el.name || ''; }
+            function labelOf(el) {
+                return el.getAttribute('label') || el.getAttribute('aria-label') || nameOf(el);
+            }
+
+            document.getElementById('demo-form-save').addEventListener('click', function () {
+                form.requestSubmit();
+            });
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var fields = Array.prototype.filter.call(form.elements, function (el) {
+                    return nameOf(el) && !el.matches(':disabled');
+                });
+
+                var invalid = fields.filter(function (el) {
+                    return typeof el.checkValidity === 'function' && !el.checkValidity();
+                });
+                if (invalid.length) {
+                    statusEl.className = 'demo-form-status error';
+                    statusEl.textContent = invalid.length + (invalid.length === 1 ? ' field needs' : ' fields need') +
+                        ' attention: ' + invalid.map(labelOf).join(', ') + '.';
+                    // The page only keeps one panel open, so open the first
+                    // invalid field's panel before asking it to show its error.
+                    var first = invalid[0];
+                    var holder = first.closest('details');
+                    if (holder) holder.open = true;
+                    requestAnimationFrame(function () {
+                        first.scrollIntoView({ block: 'center' });
+                        first.reportValidity();
+                    });
+                    return;
+                }
+
+                var data = {};
+                fields.forEach(function (el) {
+                    var val = el.localName.indexOf('lwtf-') === 0 ? el.value
+                        : (el.type === 'checkbox' || el.type === 'radio') ? (el.checked ? el.value : undefined)
+                        : el.value;
+                    if (val === undefined) return;
+                    var key = nameOf(el);
+                    if (key in data) data[key] = [].concat(data[key], val);
+                    else data[key] = val;
+                });
+
+                var fd = [];
+                new FormData(form).forEach(function (value, key) {
+                    fd.push([key, typeof value === 'string' ? shorten('', value) : '[File] ' + value.name]);
+                });
+
+                dataEl.textContent = JSON.stringify(data, shorten, 2);
+                fdEl.textContent = fd.length
+                    ? fd.map(function (pair) { return pair[0] + ' = ' + pair[1]; }).join('\n')
+                    : '(no named fields)';
+                statusEl.className = 'demo-form-status ok';
+                statusEl.textContent = 'Saved ' + Object.keys(data).length + ' fields at ' + new Date().toLocaleTimeString() + '.';
+                panel.open = true;
+            });
         })();
     </script>
 </body>

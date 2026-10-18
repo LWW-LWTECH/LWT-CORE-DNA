@@ -1,7 +1,7 @@
 /*!
  * LWT Form Elements
  * Developer: Lee W Winter
- * Last Generated: 2026-10-17T18:52:25.371Z
+ * Last Generated: 2026-10-17T19:01:44.825Z
  * Requires lwt-core.js to be loaded first.
  */
 
@@ -913,16 +913,26 @@
  * attribute sync afterward. Use .value / .mode (or .hex/.rgba/.hsla/.cmyk)
  * to read/write live state.
  *
+ * Forms: form-associated, so it works inside a plain <form> like a native
+ * input. Give it a `name` and the color (in the current `format`) is
+ * included in submit / new FormData(form). form.reset() restores the
+ * original `value` attribute, and a `disabled` attribute or a disabled
+ * <fieldset> greys it out and leaves it out of the submitted data.
+ *   <form>
+ *     <lwtf-color-picker name="brand" value="#3b82f6"></lwtf-color-picker>
+ *   </form>
+ * Also: .form, .name, .checkValidity(), .reportValidity().
+ *
  * Events: lwtf-input (fires continuously while dragging/typing), lwt-change
  * (fires once when a drag ends or a field is committed). Both carry
  * detail: { value, hex, rgba, hsla, cmyk }.
  *
- * This component deliberately does not declare `static observedAttributes`
- * — all of its state lives in JS instance fields and is driven by user
- * interaction, not by re-reading attributes, so attributeChangedCallback
- * never needs to fire (and never should: a square/slider/wheel being
- * dragged can't afford a full shadow-DOM rebuild on every pixel of
- * movement). Mode switching therefore works by toggling a `mode`
+ * The only observed attributes are `name` and `format`, and changing them
+ * just updates the submitted form value -- attributeChangedCallback is
+ * overridden so it never triggers the base class's shadow-DOM rebuild.
+ * All other state lives in JS instance fields and is driven by user
+ * interaction (a square/slider/wheel being dragged can't afford a full
+ * rebuild on every pixel of movement). Mode switching therefore works by toggling a `mode`
  * attribute on the host and letting CSS attribute selectors show/hide
  * the right panel — no re-render needed for that either. The one shared
  * saturation/lightness square is re-parented (not rebuilt) between
@@ -1239,6 +1249,7 @@
       background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
     }
     .swatch { position: absolute; inset: 0; }
+    .picker[inert] { opacity: 0.55; cursor: not-allowed; }
     .eyedropper {
       flex-shrink: 0;
       width: 2.4rem;
@@ -1389,9 +1400,23 @@
     [data-channel="hex"] { text-transform: uppercase; }
   `;
 
+  var supportsInternals = typeof HTMLElement.prototype.attachInternals === 'function';
+
   class LWTColorPicker extends window.LWT.Element {
+    static get formAssociated() { return true; }
+
+    // Only attributes that affect the submitted form value. See the note
+    // in the header: these must not trigger a re-render.
+    static get observedAttributes() { return ['name', 'format']; }
+
     constructor() {
       super();
+      this._internals = null;
+      if (supportsInternals) {
+        try { this._internals = this.attachInternals(); }
+        catch (e) { this._internals = null; }
+      }
+      this._defaultValue = null;
       this._h = 0; this._s = 0; this._l = 100; this._a = 1;
       this._lastDrawnHue = null;
       this._initialized = false;
@@ -1431,6 +1456,7 @@
       if (!this._initialized) {
         this._initialized = true;
         var initial = this.getAttribute('value');
+        this._defaultValue = initial;
         if (initial) {
           var parsed = Color.parse(initial);
           if (parsed) { this._h = parsed.h; this._s = parsed.s; this._l = parsed.l; this._a = parsed.a; }
@@ -1442,6 +1468,8 @@
       }
 
       if (window.EyeDropper) this._eyedropperBtn.hidden = false;
+      // render() rebuilt the shadow DOM, so re-apply a disabled state.
+      this.formDisabledCallback(this.matches(':disabled'));
       this._syncUI();
     }
 
@@ -1449,6 +1477,7 @@
       this._renderShadow(TEMPLATE, CSS);
       var root = this._root;
 
+      this._picker = root.querySelector('.picker');
       this._modeSelect = root.querySelector('.mode-select');
       this._squareWrap = this._genhtml({ type: 'div' }); // built once, re-parented on mode switch (see _placeSquare)
       this._squareWrap.className = 'square';
@@ -1640,6 +1669,7 @@
     }
 
     _syncUI() {
+      this._reportValue();
       var rgb = Color.hslToRgb(this._h, this._s, this._l);
       var cmyk = Color.rgbToCmyk(rgb.r, rgb.g, rgb.b);
 
@@ -1912,6 +1942,51 @@
       var channel = event.target && event.target.dataset ? event.target.dataset.channel : null;
       if (!channel) return;
       this.emit('change', this._detail());
+    }
+
+    // Form integration -------------------------------------------------
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      // Deliberately no super call: the base class re-renders on every
+      // attribute change, which this element must avoid.
+      if (oldValue === newValue) return;
+      this._reportValue();
+    }
+
+    get form() { return this._internals ? this._internals.form : null; }
+    get name() { return this._strAttr('name', ''); }
+    set name(v) { this.setAttribute('name', v); }
+
+    checkValidity() { return this._internals ? this._internals.checkValidity() : true; }
+    reportValidity() { return this._internals ? this._internals.reportValidity() : true; }
+
+    // A color is always set, so there is no "missing" state to report;
+    // the browser simply leaves the field out when it has no name.
+    _reportValue() {
+      if (!this._internals || !this._initialized) return;
+      this._internals.setFormValue(this.value);
+    }
+
+    // form.reset(): back to the value attribute the page started with
+    // (white if there was none). Like native inputs, fires no events.
+    formResetCallback() {
+      var parsed = this._defaultValue ? Color.parse(this._defaultValue) : null;
+      if (!parsed) parsed = { h: 0, s: 0, l: 100, a: 1 };
+      this._h = parsed.h; this._s = parsed.s; this._l = parsed.l; this._a = parsed.a;
+      if (this._picker) this._syncUI();
+    }
+
+    // Called for the element's own `disabled` attribute and for a
+    // disabled ancestor <fieldset>.
+    formDisabledCallback(disabled) {
+      if (this._picker) this._picker.inert = disabled;
+      if (disabled) this.setAttribute('aria-disabled', 'true');
+      else this.removeAttribute('aria-disabled');
+    }
+
+    // Back/forward cache and autofill restore.
+    formStateRestoreCallback(state) {
+      if (typeof state === 'string') this.setValue(state, { silent: true });
     }
 
     _onEyedropperClick() {
