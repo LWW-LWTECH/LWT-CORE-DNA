@@ -52,6 +52,11 @@
  * (only for the arc's position — an out-of-range value still shows its
  * literal text but the arc caps visually at 0% or 100%).
  *
+ * Custom palette (`palette` attribute, `.palette` property,
+ * --lwt-chart-palette or LWT.chart.palette): zones without a `color` take
+ * the palette colors in order; with no zones the arc uses the first one.
+ * An explicit `color` attribute still wins.
+ *
  * Theming: --lwt-gauge-bg (default transparent), --lwt-gauge-track-color,
  * --lwt-gauge-color (default blue, used when no zones/no explicit color),
  * --lwt-gauge-value-color, --lwt-gauge-label-color, --lwt-gauge-tick-color,
@@ -118,11 +123,11 @@
 
   class LWTGauge extends window.LWT.Element {
     static get observedAttributes() {
-      return ['title', 'value', 'min', 'max', 'label', 'unit', 'color', 'thickness', 'sweep'];
+      return ['title', 'value', 'min', 'max', 'label', 'unit', 'color', 'thickness', 'sweep', 'palette'];
     }
 
     static get observedProps() {
-      return ['data'];
+      return ['data', 'palette'];
     }
 
     constructor() {
@@ -157,6 +162,13 @@
       sweep = Math.min(sweep, 359.99);
 
       var zones = (this._data && Array.isArray(this._data.zones)) ? this._data.zones : [];
+      // Custom palette: zones without their own color take palette colors in
+      // order; with no zones, the arc uses the first palette color.
+      var pal = window.LWT.chart.resolve(this, null);
+      if (pal.custom) {
+        zones = zones.map(function (z, i) { return z.color ? z : Object.assign({}, z, { color: pal[i % pal.length].stroke }); });
+        if (!explicitColor && !zones.length) explicitColor = pal[0].stroke;
+      }
 
       var VBW = 300, VBH = 300, PAD = 20;
       var titleH = title ? 26 : 0;
@@ -238,5 +250,6 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTGauge);
   window.LWT.define('lwtd-gauge', LWTGauge);
 })();

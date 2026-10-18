@@ -41,6 +41,10 @@
  * multi-series support (one line per element), single data point renders
  * as an empty line (nothing to draw a trend between).
  *
+ * Custom palette (`palette` attribute, `.palette` property,
+ * --lwt-chart-palette or LWT.chart.palette): the first color is the line;
+ * with `trend` the first three are up, down, flat. `color` still wins.
+ *
  * Theming: --lwt-sparkline-width (120px), --lwt-sparkline-height (32px),
  * --lwt-sparkline-color (default blue, #3b82f6), --lwt-sparkline-up-color
  * (#22c55e), --lwt-sparkline-down-color (#ef4444), --lwt-sparkline-flat-color
@@ -76,7 +80,7 @@
 
   class LWTSparkline extends window.LWT.Element {
     static get observedAttributes() {
-      return ['data', 'color', 'trend', 'no-fill', 'line-width', 'label'];
+      return ['data', 'color', 'trend', 'no-fill', 'line-width', 'label', 'palette'];
     }
 
     render() {
@@ -141,6 +145,7 @@
       // overridable; an explicit `color` is used as-is since it's already
       // a specific, final value.
       var strokeStyle, stopColor;
+      var pal = window.LWT.chart.resolve(this, null);
       if (explicitColor) {
         strokeStyle = 'stroke: ' + explicitColor + ';';
         stopColor = explicitColor;
@@ -155,6 +160,13 @@
         else { varName = '--lwt-sparkline-down-color'; fallback = 'var(--lwt-color-danger, #ef4444)'; }
         strokeStyle = 'stroke: var(' + varName + ', ' + fallback + ');';
         stopColor = 'var(' + varName + ', ' + fallback + ')';
+        if (pal.custom) {
+          var pc = pal[varName === '--lwt-sparkline-up-color' ? 0 : varName === '--lwt-sparkline-down-color' ? 1 : 2];
+          if (pc) { strokeStyle = 'stroke: ' + pc.stroke + ';'; stopColor = pc.stroke; }
+        }
+      } else if (pal.custom) {
+        strokeStyle = 'stroke: ' + pal[0].stroke + ';';
+        stopColor = pal[0].stroke;
       } else {
         strokeStyle = 'stroke: var(--lwt-sparkline-color, var(--lwt-color-primary, #3b82f6));';
         stopColor = 'var(--lwt-sparkline-color, var(--lwt-color-primary, #3b82f6))';
@@ -184,5 +196,6 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTSparkline);
   window.LWT.define('lwtd-sparkline', LWTSparkline);
 })();

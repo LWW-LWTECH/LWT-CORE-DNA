@@ -1,7 +1,7 @@
 /*!
  * LWT Dashboard Elements
  * Developer: Lee W Winter
- * Last Generated: 2026-10-18T19:13:56.036Z
+ * Last Generated: 2026-10-18T21:24:55.311Z
  * Requires lwt-core.js to be loaded first.
  */
 
@@ -58,6 +58,12 @@
  * drawn on bars, no negative values, legend text isn't wrapped (assumes
  * it fits on one row for top/bottom), long category labels aren't
  * rotated. All fixable later, just not included in this first version.
+ *
+ * Custom palette: `palette` attribute (comma-separated CSS colors), the
+ * `.palette` property (array of colors or { stroke, fill }), the inherited
+ * --lwt-chart-palette CSS variable, or page-wide LWT.chart.palette. A plain
+ * color is the strong color; the light fill is mixed from it. Per-dataset
+ * colors in the data still win. See LWT.chart in lwt-core.js.
  *
  * Theming: --lwt-chart-bg (default transparent — inherits its container
  * like the rest of the library), --lwt-chart-grid, --lwt-chart-border,
@@ -162,11 +168,11 @@
 
   class LWTBarChart extends window.LWT.Element {
     static get observedAttributes() {
-      return ['title', 'orientation', 'stacked', 'legend-position', 'grid', 'x-label', 'y-label'];
+      return ['title', 'orientation', 'stacked', 'legend-position', 'grid', 'x-label', 'y-label', 'palette'];
     }
 
     static get observedProps() {
-      return ['data'];
+      return ['data', 'palette'];
     }
 
     constructor() {
@@ -215,8 +221,9 @@
       var xLabel = this._strAttr('x-label', '');
       var yLabel = this._strAttr('y-label', '');
 
+      var pal = window.LWT.chart.resolve(this, PALETTE);
       var colors = datasets.map(function (ds, i) {
-        var p = PALETTE[i % PALETTE.length];
+        var p = pal[i % pal.length];
         return { fill: ds.backgroundColor || p.fill, stroke: ds.borderColor || p.stroke };
       });
 
@@ -425,6 +432,7 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTBarChart);
   window.LWT.define('lwtd-bar-chart', LWTBarChart);
 })();
 
@@ -476,6 +484,12 @@
  * aren't clamped away from the plot edges (a large bubble near an axis
  * extreme can visually extend past the border, same as Chart.js's
  * default), legend text isn't wrapped.
+ *
+ * Custom palette: `palette` attribute (comma-separated CSS colors), the
+ * `.palette` property (array of colors or { stroke, fill }), the inherited
+ * --lwt-chart-palette CSS variable, or page-wide LWT.chart.palette. A plain
+ * color is the strong color; the light fill is mixed from it. Per-dataset
+ * colors in the data still win. See LWT.chart in lwt-core.js.
  *
  * Theming: --lwt-chart-bg (default transparent), --lwt-chart-grid,
  * --lwt-chart-border, --lwt-chart-tick-color, --lwt-chart-label-color,
@@ -573,11 +587,11 @@
 
   class LWTBubbleChart extends window.LWT.Element {
     static get observedAttributes() {
-      return ['title', 'bubble-scale', 'legend-position', 'grid', 'x-label', 'y-label'];
+      return ['title', 'bubble-scale', 'legend-position', 'grid', 'x-label', 'y-label', 'palette'];
     }
 
     static get observedProps() {
-      return ['data'];
+      return ['data', 'palette'];
     }
 
     constructor() {
@@ -622,8 +636,9 @@
       var xLabel = this._strAttr('x-label', '');
       var yLabel = this._strAttr('y-label', '');
 
+      var pal = window.LWT.chart.resolve(this, PALETTE);
       var series = datasets.map(function (ds, i) {
-        var p = PALETTE[i % PALETTE.length];
+        var p = pal[i % pal.length];
         return {
           label: ds.label || ('Series ' + (i + 1)),
           points: ds.data || [],
@@ -749,6 +764,7 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTBubbleChart);
   window.LWT.define('lwtd-bubble-chart', LWTBubbleChart);
 })();
 
@@ -782,6 +798,12 @@
  * Known scope limits: no slice value/percentage labels, no hover/click
  * interactivity, no exploded slices, legend text isn't wrapped, no text
  * rendered in the center hole.
+ *
+ * Custom palette: `palette` attribute (comma-separated CSS colors), the
+ * `.palette` property (array of colors or { stroke, fill }), the inherited
+ * --lwt-chart-palette CSS variable, or page-wide LWT.chart.palette. A plain
+ * color is the strong color; the light fill is mixed from it. backgroundColor / borderColor
+ * colors in the data still win. See LWT.chart in lwt-core.js.
  *
  * Theming: --lwt-chart-bg (default transparent), --lwt-chart-border,
  * --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-empty,
@@ -843,8 +865,9 @@
       ' Z';
   }
 
-  function sliceColor(dataset, index) {
-    var p = PALETTE[index % PALETTE.length];
+  function sliceColor(dataset, index, pal) {
+    pal = pal || PALETTE;
+    var p = pal[index % pal.length];
     var fill = p.fill, stroke = p.stroke;
     if (dataset) {
       if (Array.isArray(dataset.backgroundColor)) { if (dataset.backgroundColor[index]) fill = dataset.backgroundColor[index]; }
@@ -875,11 +898,11 @@
 
   class LWTDoughnutChart extends window.LWT.Element {
     static get observedAttributes() {
-      return ['title', 'legend-position', 'inner-radius'];
+      return ['title', 'legend-position', 'inner-radius', 'palette'];
     }
 
     static get observedProps() {
-      return ['data'];
+      return ['data', 'palette'];
     }
 
     constructor() {
@@ -922,7 +945,8 @@
       var legendPos = this._strAttr('legend-position', 'right');
       var innerRadiusPct = clamp(parseFloat(this._strAttr('inner-radius', '60')) || 0, 0, 95);
 
-      var colors = labels.map(function (_, i) { return sliceColor(dataset, i); });
+      var pal = window.LWT.chart.resolve(this, PALETTE);
+      var colors = labels.map(function (_, i) { return sliceColor(dataset, i, pal); });
 
       var total = 0;
       values.forEach(function (v) { total += Number(v) || 0; });
@@ -1003,6 +1027,7 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTDoughnutChart);
   window.LWT.define('lwtd-doughnut-chart', LWTDoughnutChart);
 })();
 
@@ -1060,6 +1085,11 @@
  * transitions between values, value isn't clamped to min/max for display
  * (only for the arc's position — an out-of-range value still shows its
  * literal text but the arc caps visually at 0% or 100%).
+ *
+ * Custom palette (`palette` attribute, `.palette` property,
+ * --lwt-chart-palette or LWT.chart.palette): zones without a `color` take
+ * the palette colors in order; with no zones the arc uses the first one.
+ * An explicit `color` attribute still wins.
  *
  * Theming: --lwt-gauge-bg (default transparent), --lwt-gauge-track-color,
  * --lwt-gauge-color (default blue, used when no zones/no explicit color),
@@ -1127,11 +1157,11 @@
 
   class LWTGauge extends window.LWT.Element {
     static get observedAttributes() {
-      return ['title', 'value', 'min', 'max', 'label', 'unit', 'color', 'thickness', 'sweep'];
+      return ['title', 'value', 'min', 'max', 'label', 'unit', 'color', 'thickness', 'sweep', 'palette'];
     }
 
     static get observedProps() {
-      return ['data'];
+      return ['data', 'palette'];
     }
 
     constructor() {
@@ -1166,6 +1196,13 @@
       sweep = Math.min(sweep, 359.99);
 
       var zones = (this._data && Array.isArray(this._data.zones)) ? this._data.zones : [];
+      // Custom palette: zones without their own color take palette colors in
+      // order; with no zones, the arc uses the first palette color.
+      var pal = window.LWT.chart.resolve(this, null);
+      if (pal.custom) {
+        zones = zones.map(function (z, i) { return z.color ? z : Object.assign({}, z, { color: pal[i % pal.length].stroke }); });
+        if (!explicitColor && !zones.length) explicitColor = pal[0].stroke;
+      }
 
       var VBW = 300, VBH = 300, PAD = 20;
       var titleH = title ? 26 : 0;
@@ -1247,6 +1284,7 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTGauge);
   window.LWT.define('lwtd-gauge', LWTGauge);
 })();
 
@@ -1302,6 +1340,12 @@
  *
  * Known scope limits: no hover/tooltip, no smoothing/curved lines
  * (straight segments only), no negative values, legend text isn't wrapped.
+ *
+ * Custom palette: `palette` attribute (comma-separated CSS colors), the
+ * `.palette` property (array of colors or { stroke, fill }), the inherited
+ * --lwt-chart-palette CSS variable, or page-wide LWT.chart.palette. A plain
+ * color is the strong color; the light fill is mixed from it. Per-dataset
+ * colors in the data still win. See LWT.chart in lwt-core.js.
  *
  * Theming: --lwt-chart-bg (default transparent), --lwt-chart-grid,
  * --lwt-chart-border, --lwt-chart-tick-color, --lwt-chart-label-color,
@@ -1411,11 +1455,11 @@
 
   class LWTLineChart extends window.LWT.Element {
     static get observedAttributes() {
-      return ['title', 'stacked', 'fill', 'line-width', 'point-radius', 'legend-position', 'grid', 'x-label', 'y-label'];
+      return ['title', 'stacked', 'fill', 'line-width', 'point-radius', 'legend-position', 'grid', 'x-label', 'y-label', 'palette'];
     }
 
     static get observedProps() {
-      return ['data'];
+      return ['data', 'palette'];
     }
 
     constructor() {
@@ -1465,14 +1509,15 @@
       var xLabel = this._strAttr('x-label', '');
       var yLabel = this._strAttr('y-label', '');
 
+      var pal = window.LWT.chart.resolve(this, PALETTE);
       var series = datasets.map(function (ds, i) {
-        var p = PALETTE[i % PALETTE.length];
+        var p = pal[i % pal.length];
         var fillOn = typeof ds.fill === 'boolean' ? ds.fill : defaultFill;
         return {
           label: ds.label || ('Series ' + (i + 1)),
           data: ds.data || [],
           line: ds.borderColor || p.stroke,
-          area: ds.backgroundColor || hexToRgba(p.fill, 0.5),
+          area: ds.backgroundColor || (/^#/.test(p.fill) ? hexToRgba(p.fill, 0.5) : p.fill),
           fillOn: fillOn,
           lineWidth: typeof ds.borderWidth === 'number' ? ds.borderWidth : defaultLineWidth,
           pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : defaultPointRadius
@@ -1608,6 +1653,7 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTLineChart);
   window.LWT.define('lwtd-line-chart', LWTLineChart);
 })();
 
@@ -1654,6 +1700,11 @@
  * <svg> or null), .render() (re-render now), .fit() (pan-zoom: fit view),
  * .toggleFullscreen(force) / .isFullscreen
  * Events: lwt-render { svg }, lwt-error { message }, lwt-fullscreen { active }
+ *
+ * Custom palette (`palette` attribute, `.palette` property,
+ * --lwt-chart-palette or LWT.chart.palette; theme="lwt" only): the first
+ * color styles the nodes, and the colors in order are used by pie charts,
+ * journeys, timelines, mindmaps and git graphs.
  *
  * Theming: --lwt-mermaid-bg, --lwt-mermaid-node-bg, --lwt-mermaid-node-border,
  * --lwt-mermaid-text, --lwt-mermaid-line, --lwt-mermaid-font-size,
@@ -1842,7 +1893,7 @@
 
   class LWTMermaid extends window.LWT.Element {
     static get observedAttributes() {
-      return ['label', 'theme', 'pan-zoom', 'download', 'fullscreen', 'mermaid-src', 'filename', 'direction'];
+      return ['label', 'theme', 'pan-zoom', 'download', 'fullscreen', 'mermaid-src', 'filename', 'direction', 'palette'];
     }
 
     constructor() {
@@ -1895,7 +1946,7 @@
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue || !this._canvas) return;
       this._syncChrome();
-      if (name === 'theme' || name === 'mermaid-src' || name === 'pan-zoom' || name === 'direction') this._requestRender();
+      if (name === 'theme' || name === 'mermaid-src' || name === 'pan-zoom' || name === 'direction' || name === 'palette') this._requestRender();
     }
 
     render() {
@@ -1993,6 +2044,12 @@
       var line = this._color('var(--lwt-mermaid-line, var(--lwt-color-text-muted, #6b7280))', [107, 114, 128]);
       var nodeBg = this._color('var(--lwt-mermaid-node-bg, transparent)', null);
       if (!nodeBg || getComputedStyle(this._probe).color.indexOf('rgba(0, 0, 0, 0)') === 0) nodeBg = mix(primary, surface, 0.12);
+      // Custom palette: the first color styles the nodes; the rest feed the
+      // multi-color diagrams (pie, journey, timeline, mindmap, git...).
+      var pal = window.LWT.chart.resolve(this, null);
+      var self = this;
+      var palRgb = pal.custom ? pal.map(function (p) { return self._color(p.stroke, null); }).filter(Boolean) : [];
+      if (palRgb.length) { primary = palRgb[0]; nodeBg = mix(primary, surface, 0.12); }
       var border = this._color('var(--lwt-border-color, #e5e7eb)', [229, 231, 235]);
       base.theme = 'base';
       base.themeVariables = {
@@ -2005,6 +2062,16 @@
         clusterBkg: hex(mix(primary, surface, 0.05)), clusterBorder: hex(border),
         edgeLabelBackground: hex(surface), titleColor: hex(text)
       };
+      var tv = base.themeVariables;
+      palRgb.forEach(function (c, i) {
+        if (i < 12) {
+          tv['pie' + (i + 1)] = hex(c);
+          tv['cScale' + i] = hex(mix(c, surface, 0.35));
+          tv['cScalePeer' + i] = hex(c);
+          tv['cScaleLabel' + i] = hex(text);
+        }
+        if (i < 8) { tv['git' + i] = hex(c); tv['gitBranchLabel' + i] = hex(surface); }
+      });
       return base;
     }
 
@@ -2368,6 +2435,11 @@
     }
   }
 
+  Object.defineProperty(LWTMermaid.prototype, 'palette', {
+    configurable: true,
+    get: function () { return this._palette || null; },
+    set: function (value) { this._palette = value || null; if (this._canvas) this._requestRender(); }
+  });
   window.LWT.define('lwtd-mermaid', LWTMermaid);
 })();
 
@@ -2398,6 +2470,12 @@
  *
  * Known scope limits: no slice value/percentage labels, no hover/click
  * interactivity, no exploded slices, legend text isn't wrapped.
+ *
+ * Custom palette: `palette` attribute (comma-separated CSS colors), the
+ * `.palette` property (array of colors or { stroke, fill }), the inherited
+ * --lwt-chart-palette CSS variable, or page-wide LWT.chart.palette. A plain
+ * color is the strong color; the light fill is mixed from it. backgroundColor / borderColor
+ * colors in the data still win. See LWT.chart in lwt-core.js.
  *
  * Theming: --lwt-chart-bg (default transparent), --lwt-chart-border,
  * --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-empty,
@@ -2459,8 +2537,9 @@
       ' Z';
   }
 
-  function sliceColor(dataset, index) {
-    var p = PALETTE[index % PALETTE.length];
+  function sliceColor(dataset, index, pal) {
+    pal = pal || PALETTE;
+    var p = pal[index % pal.length];
     var fill = p.fill, stroke = p.stroke;
     if (dataset) {
       if (Array.isArray(dataset.backgroundColor)) { if (dataset.backgroundColor[index]) fill = dataset.backgroundColor[index]; }
@@ -2491,11 +2570,11 @@
 
   class LWTPieChart extends window.LWT.Element {
     static get observedAttributes() {
-      return ['title', 'legend-position'];
+      return ['title', 'legend-position', 'palette'];
     }
 
     static get observedProps() {
-      return ['data'];
+      return ['data', 'palette'];
     }
 
     constructor() {
@@ -2545,7 +2624,8 @@
       var title = this._strAttr('title', '');
       var legendPos = this._strAttr('legend-position', 'right');
 
-      var colors = labels.map(function (_, i) { return sliceColor(dataset, i); });
+      var pal = window.LWT.chart.resolve(this, PALETTE);
+      var colors = labels.map(function (_, i) { return sliceColor(dataset, i, pal); });
 
       var total = 0;
       values.forEach(function (v) { total += Number(v) || 0; });
@@ -2626,6 +2706,7 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTPieChart);
   window.LWT.define('lwtd-pie-chart', LWTPieChart);
 })();
 
@@ -2681,6 +2762,12 @@
  * convention — showing them on every spoke gets cluttered fast), legend
  * text isn't wrapped, needs at least 3 labels to look like a proper
  * polygon (works with fewer, just looks like a line/point).
+ *
+ * Custom palette: `palette` attribute (comma-separated CSS colors), the
+ * `.palette` property (array of colors or { stroke, fill }), the inherited
+ * --lwt-chart-palette CSS variable, or page-wide LWT.chart.palette. A plain
+ * color is the strong color; the light fill is mixed from it. Per-dataset
+ * colors in the data still win. See LWT.chart in lwt-core.js.
  *
  * Theming: --lwt-chart-bg (default transparent), --lwt-chart-grid,
  * --lwt-chart-tick-color, --lwt-chart-label-color, --lwt-chart-title-color,
@@ -2781,11 +2868,11 @@
 
   class LWTRadarChart extends window.LWT.Element {
     static get observedAttributes() {
-      return ['title', 'legend-position', 'grid', 'line-width', 'point-radius', 'fill-opacity'];
+      return ['title', 'legend-position', 'grid', 'line-width', 'point-radius', 'fill-opacity', 'palette'];
     }
 
     static get observedProps() {
-      return ['data'];
+      return ['data', 'palette'];
     }
 
     constructor() {
@@ -2833,8 +2920,9 @@
       var defaultFillOpacity = parseFloat(this._strAttr('fill-opacity', '0.25'));
       if (isNaN(defaultFillOpacity)) defaultFillOpacity = 0.25;
 
+      var pal = window.LWT.chart.resolve(this, PALETTE);
       var series = datasets.map(function (ds, i) {
-        var p = PALETTE[i % PALETTE.length];
+        var p = pal[i % pal.length];
         var fillOpacity = typeof ds.fillOpacity === 'number' ? ds.fillOpacity : defaultFillOpacity;
         var fillBase = ds.backgroundColor || p.fill;
         var fill = /^#/.test(fillBase) ? hexToRgba(fillBase, fillOpacity) : fillBase;
@@ -2976,7 +3064,617 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTRadarChart);
   window.LWT.define('lwtd-radar-chart', LWTRadarChart);
+})();
+
+/* ---- lwt-dsh-scatter.js ---- */
+/*!
+ * <lwtd-scatter>
+ * A scatter plot: one dot per data point on two numeric axes, grouped into
+ * series. Same conventions as the other lwtd- charts (data from JS, inline
+ * SVG, full redraw on every change). Data follows Chart.js's scatter shape;
+ * a point can also carry its own `label` (shown in the hover tooltip):
+ *
+ *   var chart = document.querySelector('lwtd-scatter');
+ *   chart.data = {
+ *     datasets: [
+ *       { label: 'Team A', data: [{ x: 3, y: 62, label: 'Alice' }, { x: 5, y: 71 }, { x: 8, y: 80 }] },
+ *       { label: 'Team B', data: [{ x: 2, y: 55 }, { x: 6, y: 68 }] }
+ *     ]
+ *   };
+ *
+ * Median lines (attribute `median`):
+ *   median            — (no value) or "y": a horizontal line at the median y
+ *   median="x"        — a vertical line at the median x
+ *   median="both"     — both lines (splits the plot into quadrants)
+ *   median-scope      — "all" (default: one median over every point) |
+ *                       "series" (one dashed line per series, in its color)
+ *
+ * Trend line (attribute `trend`) — a least-squares straight line of best fit:
+ *   trend             — draws the trend line, labelled with its R² (how
+ *                       closely the dots follow it, 0–1)
+ *   trend-scope       — "all" (default: one line through every point) |
+ *                       "series" (one line per series, in its color)
+ *   The fitted numbers are available from JS: chart.trendStats ->
+ *   [{ series, slope, intercept, r2, n }] (series is null for "all").
+ *
+ * Hovering (or touching) near a dot shows a tooltip with the point's label
+ * and series, plus the x and y values under their axis titles
+ * (x-label / y-label, or "X" / "Y" when not set).
+ *
+ * Attributes (all re-render on change):
+ *   title             — chart title text
+ *   legend-position   — "top" (default) | "bottom" | "left" | "right" | "none"
+ *   grid              — "both" (default) | "horizontal" | "vertical" | "none"
+ *   x-label, y-label  — axis titles (also used in the tooltip)
+ *   x-prefix, x-suffix, y-prefix, y-suffix — text around the numbers,
+ *                       e.g. y-prefix="$" or x-suffix=" yrs"
+ *   x-min, x-max, y-min, y-max — fix an axis end (otherwise it auto-fits
+ *                       "nice" numbers around the data, not forced to 0)
+ *   point-size        — dot radius in px (default 5)
+ *   shapes            — boolean; each series gets its own marker shape
+ *                       (circle, square, triangle, diamond…) as well as
+ *                       its color, so series stay distinct without color
+ *
+ * Colors: `palette` attribute (comma-separated CSS colors), the `.palette`
+ * property, the inherited --lwt-chart-palette CSS variable, or page-wide
+ * LWT.chart.palette; one color per series, in order. Per dataset,
+ * backgroundColor / borderColor (one color for the series) still win.
+ *
+ * Screen readers get a data table (series, point, x, y) and the median
+ * values in the chart's name.
+ *
+ * Theming: --lwt-scatter-median-color (default --lwt-color-text-strong),
+ * --lwt-scatter-trend-color (default --lwt-primary),
+ * plus the shared --lwt-chart-bg, --lwt-chart-grid, --lwt-chart-border,
+ * --lwt-chart-tick-color, --lwt-chart-label-color, --lwt-chart-title-color,
+ * --lwt-chart-legend-color, --lwt-chart-aspect-ratio (default 8/5).
+ *
+ * Requires lwt-core.js to be loaded first.
+ */
+(function () {
+  'use strict';
+
+  if (!window.LWT || !window.LWT.Element) {
+    throw new Error('lwt-dsh-scatter.js requires lwt-core.js to be loaded first.');
+  }
+
+  // Same palette as the other lwtd- charts.
+  var PALETTE = [
+    { fill: '#b8f3e0', stroke: '#2ec4b6' }, // mint aqua
+    { fill: '#ffd6e8', stroke: '#ff5c8a' }, // candy rose
+    { fill: '#fef7c3', stroke: '#f2c94c' }, // soft gold
+    { fill: '#e3d7ff', stroke: '#9b5de5' }, // lavender purple
+    { fill: '#d9f2ff', stroke: '#4ea8de' }, // ice blue
+    { fill: '#ffe8cc', stroke: '#ff7f11' }, // warm apricot
+    { fill: '#c9f7d4', stroke: '#34c759' }, // fresh green
+    { fill: '#ffe4f2', stroke: '#ff2e63' }  // neon pink
+  ];
+  var SHAPES = ['circle', 'square', 'triangle', 'diamond', 'triangle-down', 'cross', 'circle', 'square'];
+  var MINUS = '−';
+  var HIT_RADIUS = 18; // viewBox units around a dot that count as "on" it
+
+  function niceNumber(range, round) {
+    if (range <= 0) return 1;
+    var exponent = Math.floor(Math.log(range) / Math.LN10);
+    var fraction = range / Math.pow(10, exponent);
+    var nice;
+    if (round) nice = fraction < 1.5 ? 1 : fraction < 3 ? 2 : fraction < 7 ? 5 : 10;
+    else nice = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10;
+    return nice * Math.pow(10, exponent);
+  }
+
+  // "Nice" min/max around the data (not zero-based). fixedMin/fixedMax win.
+  function computeRange(dataMin, dataMax, tickTarget, fixedMin, fixedMax) {
+    if (fixedMin != null) dataMin = fixedMin;
+    if (fixedMax != null) dataMax = fixedMax;
+    if (dataMin === dataMax) { dataMin -= 1; dataMax += 1; }
+    var pad = (dataMax - dataMin) * 0.08;
+    var lo = fixedMin != null ? fixedMin : dataMin - pad;
+    var hi = fixedMax != null ? fixedMax : dataMax + pad;
+    var step = niceNumber(niceNumber(hi - lo, false) / (tickTarget - 1), true);
+    var min = fixedMin != null ? fixedMin : Math.floor(lo / step) * step;
+    var max = fixedMax != null ? fixedMax : Math.ceil(hi / step) * step;
+    var ticks = [];
+    var first = Math.ceil(min / step - 1e-9) * step;
+    for (var v = first; v <= max + step / 1000; v += step) ticks.push(Math.round(v * 1e6) / 1e6);
+    return { min: min, max: max, ticks: ticks };
+  }
+
+  function median(values) {
+    if (!values.length) return null;
+    var s = values.slice().sort(function (a, b) { return a - b; });
+    var m = Math.floor(s.length / 2);
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  }
+
+  // Least-squares fit y = slope * x + intercept. Needs 2+ distinct x values.
+  function linearFit(points) {
+    var n = points.length;
+    if (n < 2) return null;
+    var sx = 0, sy = 0;
+    points.forEach(function (p) { sx += p.x; sy += p.y; });
+    var mx = sx / n, my = sy / n, sxx = 0, sxy = 0, syy = 0;
+    points.forEach(function (p) {
+      var dx = p.x - mx, dy = p.y - my;
+      sxx += dx * dx; sxy += dx * dy; syy += dy * dy;
+    });
+    if (sxx === 0) return null;
+    var slope = sxy / sxx;
+    var xs = points.map(function (p) { return p.x; });
+    return {
+      slope: slope,
+      intercept: my - slope * mx,
+      r2: syy === 0 ? 1 : (sxy * sxy) / (sxx * syy),
+      n: n,
+      xMin: Math.min.apply(null, xs),
+      xMax: Math.max.apply(null, xs)
+    };
+  }
+
+  function escapeXml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  var nf = null;
+  function fmtNumber(n) {
+    if (!nf) {
+      try { nf = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }); }
+      catch (e) { nf = { format: function (x) { return String(Math.round(x * 100) / 100); } }; }
+    }
+    return nf.format(n);
+  }
+
+  function numAttr(el, name) {
+    if (!el.hasAttribute(name)) return null;
+    var v = parseFloat(el.getAttribute(name));
+    return isNaN(v) ? null : v;
+  }
+
+  // SVG for one marker, centred on (x, y) with radius r.
+  function markerSvg(shape, x, y, r, attrs) {
+    var f = function (n) { return n.toFixed(2); };
+    switch (shape) {
+      case 'square':
+        var s = r * 0.9;
+        return '<rect x="' + f(x - s) + '" y="' + f(y - s) + '" width="' + f(s * 2) + '" height="' + f(s * 2) + '" rx="1"' + attrs + '></rect>';
+      case 'triangle':
+      case 'triangle-down':
+        var t = r * 1.2, d = shape === 'triangle' ? 1 : -1;
+        return '<polygon points="' + f(x) + ',' + f(y - t * d) + ' ' + f(x + t) + ',' + f(y + t * 0.8 * d) + ' ' + f(x - t) + ',' + f(y + t * 0.8 * d) + '"' + attrs + '></polygon>';
+      case 'diamond':
+        var q = r * 1.25;
+        return '<polygon points="' + f(x) + ',' + f(y - q) + ' ' + f(x + q) + ',' + f(y) + ' ' + f(x) + ',' + f(y + q) + ' ' + f(x - q) + ',' + f(y) + '"' + attrs + '></polygon>';
+      case 'cross':
+        var c = r * 1.1, w = r * 0.45;
+        return '<path d="M' + f(x - w) + ' ' + f(y - c) + 'H' + f(x + w) + 'V' + f(y - w) + 'H' + f(x + c) + 'V' + f(y + w) + 'H' + f(x + w) + 'V' + f(y + c) +
+          'H' + f(x - w) + 'V' + f(y + w) + 'H' + f(x - c) + 'V' + f(y - w) + 'H' + f(x - w) + 'Z"' + attrs + '></path>';
+      default:
+        return '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(r) + '"' + attrs + '></circle>';
+    }
+  }
+
+  var CSS = `
+    :host {
+      display: block;
+      position: relative;
+      width: 100%;
+      aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5);
+      font-family: inherit;
+      background: var(--lwt-chart-bg, transparent);
+      --sc-surface: var(--lwt-chart-bg, var(--lwt-color-surface, #fff));
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    svg { touch-action: pan-y; }
+    .grid-line { stroke: var(--lwt-chart-grid, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; }
+    .plot-border { stroke: var(--lwt-chart-border, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; fill: none; }
+    .axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }
+    .axis-title { fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151)); font-size: 12px; font-weight: 600; }
+    .chart-title { fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }
+    .legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+    .dot { stroke: var(--sc-surface); stroke-width: 1.5; transition: opacity 120ms ease; }
+    .median { stroke: var(--lwt-scatter-median-color, var(--lwt-color-text-strong, #1f2937)); stroke-width: 1.5; stroke-dasharray: 6 4; }
+    .median.series { stroke-width: 1.5; }
+    .median-text {
+      fill: var(--lwt-scatter-median-color, var(--lwt-color-text-strong, #1f2937));
+      font-size: 10.5px;
+      font-weight: 600;
+      paint-order: stroke;
+      stroke: var(--sc-surface);
+      stroke-width: 3px;
+      stroke-linejoin: round;
+    }
+    .trend { stroke: var(--lwt-scatter-trend-color, var(--lwt-primary, #3b82f6)); stroke-width: 2; stroke-linecap: round; fill: none; }
+    .trend-text {
+      fill: var(--lwt-scatter-trend-color, var(--lwt-primary, #3b82f6));
+      font-size: 10.5px;
+      font-weight: 600;
+      paint-order: stroke;
+      stroke: var(--sc-surface);
+      stroke-width: 3px;
+      stroke-linejoin: round;
+    }
+    .trend-text.series { fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151)); }
+    svg.hovering .dot:not(.hover):not(.legend-dot) { opacity: 0.35; }
+    .dot.hover { stroke: var(--lwt-color-text-strong, #111827); stroke-width: 2; }
+    .guide { stroke: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #9ca3af)); stroke-width: 1; stroke-dasharray: 2 3; pointer-events: none; }
+    .guide[hidden] { display: none; }
+    .tip {
+      position: absolute;
+      z-index: 2;
+      pointer-events: none;
+      padding: 0.4rem 0.55rem;
+      border-radius: var(--lwt-border-radius, 6px);
+      background: var(--lwt-color-text-strong, #111827);
+      color: var(--lwt-color-surface, #fff);
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+      transform: translate(-50%, calc(-100% - 10px));
+    }
+    .tip[hidden] { display: none; }
+    .tip strong { display: block; }
+    .tip .series { display: flex; align-items: center; gap: 0.35rem; opacity: 0.85; }
+    .tip .swatch { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+    @media (prefers-reduced-motion: reduce) { .dot { transition: none; } }
+  `;
+
+  class LWTScatter extends window.LWT.Element {
+    static get observedAttributes() {
+      return ['title', 'legend-position', 'grid', 'x-label', 'y-label', 'x-prefix', 'x-suffix', 'y-prefix', 'y-suffix',
+              'x-min', 'x-max', 'y-min', 'y-max', 'point-size', 'shapes', 'median', 'median-scope',
+              'trend', 'trend-scope', 'palette'];
+    }
+
+    static get observedProps() { return ['data', 'palette']; }
+
+    constructor() {
+      super();
+      this._data = null;
+      this._pts = [];
+      var self = this;
+      // Listeners on the shadow root / host survive every re-render.
+      this._root.addEventListener('pointermove', function (e) { self._onHover(e); });
+      this._root.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse') self._onHover(e); });
+      this.addEventListener('pointerleave', function () { self._hideTip(); });
+    }
+
+    // Fitted trend line(s): [{ series, slope, intercept, r2, n }] (series is
+    // the series label, or null for the all-points line). Empty when off.
+    get trendStats() {
+      var self = this;
+      return (this._trends || []).map(function (t) {
+        return { series: t.series === null ? null : self._seriesCache[t.series].label,
+          slope: t.fit.slope, intercept: t.fit.intercept, r2: t.fit.r2, n: t.fit.n };
+      });
+    }
+
+    get data() { return this._data; }
+    set data(value) {
+      this._data = value;
+      if (this._root) this.render();
+    }
+
+    _fmt(axis, n) {
+      return (n < 0 ? MINUS : '') + this._strAttr(axis + '-prefix', '') + fmtNumber(Math.abs(n)) + this._strAttr(axis + '-suffix', '');
+    }
+
+    _series() {
+      var datasets = (this._data && Array.isArray(this._data.datasets)) ? this._data.datasets : [];
+      var pal = window.LWT.chart.resolve(this, PALETTE);
+      return datasets.map(function (ds, i) {
+        var p = pal[i % pal.length];
+        var color = (typeof ds.borderColor === 'string' && ds.borderColor) || (typeof ds.backgroundColor === 'string' && ds.backgroundColor) || p.stroke;
+        var points = (ds.data || []).filter(function (pt) {
+          return pt && pt.x !== null && pt.y !== null && pt.x !== '' && pt.y !== '' && isFinite(Number(pt.x)) && isFinite(Number(pt.y));
+        }).map(function (pt) { return { x: Number(pt.x), y: Number(pt.y), label: pt.label == null ? '' : String(pt.label) }; });
+        return { label: ds.label || ('Series ' + (i + 1)), color: color, shape: SHAPES[i % SHAPES.length], points: points };
+      });
+    }
+
+    // Which median lines to draw: { x: bool, y: bool }.
+    _medianAxes() {
+      if (!this.hasAttribute('median')) return { x: false, y: false };
+      var v = (this.getAttribute('median') || 'y').toLowerCase();
+      if (v === 'false' || v === 'none') return { x: false, y: false };
+      return { x: v === 'x' || v === 'both', y: v !== 'x' };
+    }
+
+    render() {
+      var a11y = window.LWT.a11y;
+      var self = this;
+      this._seriesCache = this._series();
+      var all = [];
+      this._seriesCache.forEach(function (s) { all = all.concat(s.points); });
+      var med = this._medianAxes();
+      var scope = this._strAttr('median-scope', 'all') === 'series' ? 'series' : 'all';
+      this._medians = { x: med.x, y: med.y, scope: scope, all: { x: median(all.map(function (p) { return p.x; })), y: median(all.map(function (p) { return p.y; })) } };
+      this._seriesCache.forEach(function (s) {
+        s.median = { x: median(s.points.map(function (p) { return p.x; })), y: median(s.points.map(function (p) { return p.y; })) };
+      });
+
+      // trend lines
+      var trendOn = this.hasAttribute('trend') && !/^(false|none)$/i.test(this.getAttribute('trend') || '');
+      var trendScope = this._strAttr('trend-scope', 'all') === 'series' ? 'series' : 'all';
+      this._trends = [];
+      if (trendOn) {
+        if (trendScope === 'all') {
+          var fit = linearFit(all);
+          if (fit) this._trends.push({ series: null, fit: fit });
+        } else {
+          this._seriesCache.forEach(function (s, i) {
+            var f = linearFit(s.points);
+            if (f) self._trends.push({ series: i, fit: f });
+          });
+        }
+      }
+
+      var name = this._a11yName([this._strAttr('title', '')], 'Scatter plot', 'Add a title attribute');
+      var medText = '';
+      if (all.length && (med.x || med.y)) {
+        var parts = [];
+        if (scope === 'all') {
+          if (med.x) parts.push('median ' + this._axisName('x') + ' ' + this._fmt('x', this._medians.all.x));
+          if (med.y) parts.push('median ' + this._axisName('y') + ' ' + this._fmt('y', this._medians.all.y));
+        } else {
+          this._seriesCache.forEach(function (s) {
+            if (!s.points.length) return;
+            if (med.x) parts.push(s.label + ' median ' + self._axisName('x') + ' ' + self._fmt('x', s.median.x));
+            if (med.y) parts.push(s.label + ' median ' + self._axisName('y') + ' ' + self._fmt('y', s.median.y));
+          });
+        }
+        medText = ', ' + parts.join(', ');
+      }
+      this._trends.forEach(function (t) {
+        var f = t.fit;
+        medText += ', ' + (t.series === null ? '' : self._seriesCache[t.series].label + ' ') + 'trend: ' + self._axisName('y') +
+          (f.slope >= 0 ? ' rises ' : ' falls ') + fmtNumber(Math.abs(f.slope)) + ' per 1 ' + self._axisName('x') +
+          ' (R squared ' + f.r2.toFixed(2) + ')';
+      });
+      this._chartName = name;
+      var rows = [];
+      this._seriesCache.forEach(function (s) {
+        s.points.forEach(function (p) { rows.push([s.label, p.label, self._fmt('x', p.x), self._fmt('y', p.y)]); });
+      });
+      var table = rows.length ? a11y.dataTableHtml(name + medText, ['Series', 'Point', this._axisName('x'), this._axisName('y')], rows) : '';
+      this._hasTable = !!table;
+      this._ariaExtra = medText;
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' +
+        '<div class="tip" part="tooltip" hidden></div>', CSS + a11y.SR_ONLY_CSS);
+      this._svg = this._root.querySelector('svg');
+      this._tip = this._root.querySelector('.tip');
+    }
+
+    _axisName(axis) { return this._strAttr(axis + '-label', '') || axis.toUpperCase(); }
+
+    _measureText(text, fontSize) {
+      if (!LWTScatter._ctx) LWTScatter._ctx = document.createElement('canvas').getContext('2d');
+      LWTScatter._ctx.font = fontSize + 'px sans-serif';
+      return LWTScatter._ctx.measureText(String(text)).width;
+    }
+
+    _buildSvg() {
+      var self = this;
+      var series = this._seriesCache;
+      var title = this._strAttr('title', '');
+      var legendPos = this._strAttr('legend-position', 'top');
+      var grid = this._strAttr('grid', 'both');
+      var xLabel = this._strAttr('x-label', ''), yLabel = this._strAttr('y-label', '');
+      var size = parseFloat(this._strAttr('point-size', '5'));
+      if (!(size > 0)) size = 5;
+      var useShapes = this._boolAttr('shapes');
+      var med = this._medians;
+
+      var xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
+      series.forEach(function (s) {
+        s.points.forEach(function (p) {
+          xMin = Math.min(xMin, p.x); xMax = Math.max(xMax, p.x);
+          yMin = Math.min(yMin, p.y); yMax = Math.max(yMax, p.y);
+        });
+      });
+      if (!isFinite(xMin)) { xMin = 0; xMax = 10; yMin = 0; yMax = 10; }
+      var xr = computeRange(xMin, xMax, 8, numAttr(this, 'x-min'), numAttr(this, 'x-max'));
+      var yr = computeRange(yMin, yMax, 7, numAttr(this, 'y-min'), numAttr(this, 'y-max'));
+
+      var VBW = 640, VBH = 400, PAD = 14;
+      var titleH = title ? 30 : 0;
+      var maxYTickW = 0;
+      yr.ticks.forEach(function (t) { maxYTickW = Math.max(maxYTickW, self._measureText(self._fmt('y', t), 11)); });
+      var legendItemW = series.map(function (s) { return 18 + self._measureText(s.label, 11) + 16; });
+      var legendRowH = 22;
+      var side = legendPos === 'left' || legendPos === 'right';
+      var legendColW = side && series.length ? Math.max.apply(null, legendItemW) + 10 : 0;
+
+      var left = PAD + (yLabel ? 16 : 0) + maxYTickW + 10 + (legendPos === 'left' ? legendColW : 0);
+      var right = PAD + 6 + (legendPos === 'right' ? legendColW : 0);
+      var top = PAD + titleH + (legendPos === 'top' && series.length ? legendRowH : 0) + 4;
+      var bottom = PAD + 18 + (xLabel ? 18 : 0) + (legendPos === 'bottom' && series.length ? legendRowH : 0);
+
+      var plotLeft = left, plotTop = top, plotRight = VBW - right, plotBottom = VBH - bottom;
+      var plotW = Math.max(10, plotRight - plotLeft), plotH = Math.max(10, plotBottom - plotTop);
+      var X = function (v) { return plotLeft + (v - xr.min) / (xr.max - xr.min) * plotW; };
+      var Y = function (v) { return plotBottom - (v - yr.min) / (yr.max - yr.min) * plotH; };
+      this._geom = { plotLeft: plotLeft, plotTop: plotTop, plotRight: plotRight, plotBottom: plotBottom };
+
+      var gridSvg = '', tickSvg = '';
+      yr.ticks.forEach(function (t) {
+        var y = Y(t);
+        if (grid === 'both' || grid === 'horizontal') gridSvg += '<line class="grid-line" x1="' + plotLeft + '" y1="' + y.toFixed(2) + '" x2="' + plotRight + '" y2="' + y.toFixed(2) + '"></line>';
+        tickSvg += '<text class="axis-text" x="' + (plotLeft - 8) + '" y="' + (y + 4).toFixed(2) + '" text-anchor="end">' + escapeXml(self._fmt('y', t)) + '</text>';
+      });
+      xr.ticks.forEach(function (t) {
+        var x = X(t);
+        if (grid === 'both' || grid === 'vertical') gridSvg += '<line class="grid-line" x1="' + x.toFixed(2) + '" y1="' + plotTop + '" x2="' + x.toFixed(2) + '" y2="' + plotBottom + '"></line>';
+        tickSvg += '<text class="axis-text" x="' + x.toFixed(2) + '" y="' + (plotBottom + 18) + '" text-anchor="middle">' + escapeXml(self._fmt('x', t)) + '</text>';
+      });
+      var borderSvg = '<rect class="plot-border" x="' + plotLeft + '" y="' + plotTop + '" width="' + plotW.toFixed(2) + '" height="' + plotH.toFixed(2) + '"></rect>';
+
+      // dots — remember screen positions for nearest-point hover
+      var dotsSvg = '';
+      this._pts = [];
+      series.forEach(function (s, si) {
+        s.points.forEach(function (p, pi) {
+          var cx = X(p.x), cy = Y(p.y);
+          var idx = self._pts.length;
+          self._pts.push({ cx: cx, cy: cy, s: si, p: pi });
+          dotsSvg += markerSvg(useShapes ? s.shape : 'circle', cx, cy, size,
+            ' class="dot" data-i="' + idx + '" style="fill:' + escapeXml(s.color) + '"');
+        });
+      });
+
+      // median lines (drawn over the grid, under the dots' hover state)
+      var medSvg = '';
+      var clampX = function (v) { return Math.max(plotLeft, Math.min(plotRight, v)); };
+      var clampY = function (v) { return Math.max(plotTop, Math.min(plotBottom, v)); };
+      function hLine(v, cls, style, text) {
+        var y = clampY(Y(v));
+        medSvg += '<line class="median ' + cls + '" x1="' + plotLeft + '" y1="' + y.toFixed(2) + '" x2="' + plotRight + '" y2="' + y.toFixed(2) + '"' + style + '></line>';
+        medSvg += '<text class="median-text" x="' + (plotRight - 4) + '" y="' + (y - 5).toFixed(2) + '" text-anchor="end">' + escapeXml(text) + '</text>';
+      }
+      function vLine(v, cls, style, text) {
+        var x = clampX(X(v));
+        medSvg += '<line class="median ' + cls + '" x1="' + x.toFixed(2) + '" y1="' + plotTop + '" x2="' + x.toFixed(2) + '" y2="' + plotBottom + '"' + style + '></line>';
+        medSvg += '<text class="median-text" x="' + (x + 5).toFixed(2) + '" y="' + (plotTop + 12) + '">' + escapeXml(text) + '</text>';
+      }
+      if (med.x || med.y) {
+        if (med.scope === 'all' && med.all.x != null) {
+          if (med.y) hLine(med.all.y, '', '', 'Median ' + this._fmt('y', med.all.y));
+          if (med.x) vLine(med.all.x, '', '', 'Median ' + this._fmt('x', med.all.x));
+        } else if (med.scope === 'series') {
+          series.forEach(function (s) {
+            if (!s.points.length) return;
+            var st = ' style="stroke:' + escapeXml(s.color) + '"';
+            if (med.y) hLine(s.median.y, 'series', st, s.label + ' ' + self._fmt('y', s.median.y));
+            if (med.x) vLine(s.median.x, 'series', st, s.label + ' ' + self._fmt('x', s.median.x));
+          });
+        }
+      }
+
+      // trend lines: across the fitted points' x range, clipped to the plot
+      var trendSvg = '';
+      this._trends.forEach(function (t) {
+        var f = t.fit, s = t.series === null ? null : series[t.series];
+        var x1 = X(f.xMin), y1 = Y(f.slope * f.xMin + f.intercept);
+        var x2 = X(f.xMax), y2 = Y(f.slope * f.xMax + f.intercept);
+        var st = s ? ' style="stroke:' + escapeXml(s.color) + '"' : '';
+        trendSvg += '<line class="trend" x1="' + x1.toFixed(2) + '" y1="' + y1.toFixed(2) + '" x2="' + x2.toFixed(2) + '" y2="' + y2.toFixed(2) + '"' + st + '></line>';
+        // label just past/above the right end, kept inside the plot
+        var lx = Math.min(x2, plotRight - 4), ly = Math.max(plotTop + 12, Math.min(plotBottom - 4, y2 + (f.slope >= 0 ? -8 : 14)));
+        var txt = (s ? s.label + ' trend' : 'Trend') + ' (R\u00b2 ' + f.r2.toFixed(2) + ')';
+        trendSvg += '<text class="trend-text' + (s ? ' series' : '') + '" x="' + lx.toFixed(2) + '" y="' + ly.toFixed(2) + '" text-anchor="end">' + escapeXml(txt) + '</text>';
+      });
+      var clip = '<clipPath id="plot-clip"><rect x="' + plotLeft + '" y="' + plotTop + '" width="' + plotW.toFixed(2) + '" height="' + plotH.toFixed(2) + '"></rect></clipPath>';
+      trendSvg = trendSvg ? '<g clip-path="url(#plot-clip)">' + trendSvg + '</g>' : '';
+
+      // legend
+      var legendSvg = '';
+      if (legendPos !== 'none' && series.length) {
+        var legendMarker = function (s, x, y) {
+          return markerSvg(useShapes ? s.shape : 'circle', x, y, 5, ' class="dot legend-dot" style="fill:' + escapeXml(s.color) + '"');
+        };
+        if (!side) {
+          var ly = legendPos === 'top' ? PAD + titleH + 14 : VBH - PAD - 4;
+          var lx = (VBW - legendItemW.reduce(function (a, b) { return a + b; }, 0)) / 2;
+          series.forEach(function (s, i) {
+            legendSvg += legendMarker(s, lx + 6, ly - 4);
+            legendSvg += '<text class="legend-text" x="' + (lx + 16).toFixed(2) + '" y="' + ly + '">' + escapeXml(s.label) + '</text>';
+            lx += legendItemW[i];
+          });
+        } else {
+          var colX = legendPos === 'left' ? PAD : VBW - PAD - legendColW + 10;
+          series.forEach(function (s, i) {
+            var iy = plotTop + 10 + i * legendRowH;
+            legendSvg += legendMarker(s, colX + 6, iy - 4);
+            legendSvg += '<text class="legend-text" x="' + (colX + 16).toFixed(2) + '" y="' + iy + '">' + escapeXml(s.label) + '</text>';
+          });
+        }
+      }
+
+      var titleSvg = title ? '<text class="chart-title" x="' + (VBW / 2) + '" y="' + (PAD + 20) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
+      var xLabelSvg = xLabel ? '<text class="axis-title" x="' + ((plotLeft + plotRight) / 2) + '" y="' + (VBH - PAD - (legendPos === 'bottom' && series.length ? legendRowH : 0)) + '" text-anchor="middle">' + escapeXml(xLabel) + '</text>' : '';
+      var yLabelSvg = yLabel ? '<text class="axis-title" x="0" y="0" text-anchor="middle" transform="translate(' + (PAD + 10) + ',' + ((plotTop + plotBottom) / 2) + ') rotate(-90)">' + escapeXml(yLabel) + '</text>' : '';
+      var guides = '<line class="guide gx" hidden></line><line class="guide gy" hidden></line>';
+
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' +
+        escapeXml(this._chartName + (this._ariaExtra || '') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
+        '<defs>' + clip + '</defs>' + titleSvg + legendSvg + gridSvg + borderSvg + guides + medSvg + trendSvg + dotsSvg + tickSvg + xLabelSvg + yLabelSvg +
+        '</svg>';
+    }
+
+    // ---- hover: nearest dot within HIT_RADIUS ----
+    _onHover(e) {
+      if (!this._svg || !this._pts.length) return;
+      var ctm = this._svg.getScreenCTM();
+      if (!ctm) return;
+      var pt = this._svg.createSVGPoint();
+      pt.x = e.clientX; pt.y = e.clientY;
+      var v = pt.matrixTransform(ctm.inverse());
+      var best = null, bestD = HIT_RADIUS * HIT_RADIUS;
+      this._pts.forEach(function (p, i) {
+        var dx = p.cx - v.x, dy = p.cy - v.y, d = dx * dx + dy * dy;
+        if (d <= bestD) { bestD = d; best = i; }
+      });
+      if (best === null) { this._hideTip(); return; }
+      this._showTip(best);
+    }
+
+    _showTip(i) {
+      if (this._hoverI === i && !this._tip.hidden) return;
+      this._hoverI = i;
+      var rec = this._pts[i];
+      var s = this._seriesCache[rec.s], p = s.points[rec.p];
+      var esc = window.LWT.a11y.escape;
+      var svg = this._svg;
+      svg.classList.add('hovering');
+      Array.prototype.forEach.call(svg.querySelectorAll('.dot.hover'), function (d) { d.classList.remove('hover'); });
+      var dot = svg.querySelector('.dot[data-i="' + i + '"]');
+      if (dot) { dot.classList.add('hover'); dot.parentNode.appendChild(dot); } // bring to front
+      // dotted guides from the dot to each axis
+      var g = this._geom;
+      var gx = svg.querySelector('.gx'), gy = svg.querySelector('.gy');
+      gx.setAttribute('x1', rec.cx); gx.setAttribute('x2', rec.cx); gx.setAttribute('y1', rec.cy); gx.setAttribute('y2', g.plotBottom); gx.removeAttribute('hidden');
+      gy.setAttribute('x1', g.plotLeft); gy.setAttribute('x2', rec.cx); gy.setAttribute('y1', rec.cy); gy.setAttribute('y2', rec.cy); gy.removeAttribute('hidden');
+
+      var multi = this._seriesCache.length > 1;
+      var head = p.label ? '<strong>' + esc(p.label) + '</strong>' : '';
+      var seriesLine = (multi || !p.label) ? '<span class="series"><span class="swatch" style="background:' + esc(s.color) + '"></span>' + esc(s.label) + '</span>' : '';
+      this._tip.innerHTML = head + seriesLine +
+        esc(this._axisName('x')) + ': ' + esc(this._fmt('x', p.x)) + '<br>' +
+        esc(this._axisName('y')) + ': ' + esc(this._fmt('y', p.y));
+      this._tip.hidden = false;
+
+      var host = this.getBoundingClientRect();
+      var r = (dot || svg).getBoundingClientRect();
+      var x = r.left + r.width / 2 - host.left;
+      var half = this._tip.offsetWidth / 2;
+      x = Math.max(half + 4, Math.min(host.width - half - 4, x));
+      var top = r.top - host.top;
+      // Not enough room above: flip below the dot.
+      if (top - this._tip.offsetHeight - 12 < 0) {
+        this._tip.style.transform = 'translate(-50%, 10px)';
+        top = r.bottom - host.top;
+      } else {
+        this._tip.style.transform = '';
+      }
+      this._tip.style.left = x + 'px';
+      this._tip.style.top = top + 'px';
+    }
+
+    _hideTip() {
+      this._hoverI = null;
+      if (this._tip) this._tip.hidden = true;
+      if (this._svg) {
+        this._svg.classList.remove('hovering');
+        Array.prototype.forEach.call(this._svg.querySelectorAll('.dot.hover'), function (d) { d.classList.remove('hover'); });
+        Array.prototype.forEach.call(this._svg.querySelectorAll('.guide'), function (g) { g.setAttribute('hidden', ''); });
+      }
+    }
+  }
+
+  window.LWT.chart.withPalette(LWTScatter);
+  window.LWT.define('lwtd-scatter', LWTScatter);
 })();
 
 /* ---- lwt-dsh-sparkline.js ---- */
@@ -3023,6 +3721,10 @@
  * multi-series support (one line per element), single data point renders
  * as an empty line (nothing to draw a trend between).
  *
+ * Custom palette (`palette` attribute, `.palette` property,
+ * --lwt-chart-palette or LWT.chart.palette): the first color is the line;
+ * with `trend` the first three are up, down, flat. `color` still wins.
+ *
  * Theming: --lwt-sparkline-width (120px), --lwt-sparkline-height (32px),
  * --lwt-sparkline-color (default blue, #3b82f6), --lwt-sparkline-up-color
  * (#22c55e), --lwt-sparkline-down-color (#ef4444), --lwt-sparkline-flat-color
@@ -3058,7 +3760,7 @@
 
   class LWTSparkline extends window.LWT.Element {
     static get observedAttributes() {
-      return ['data', 'color', 'trend', 'no-fill', 'line-width', 'label'];
+      return ['data', 'color', 'trend', 'no-fill', 'line-width', 'label', 'palette'];
     }
 
     render() {
@@ -3123,6 +3825,7 @@
       // overridable; an explicit `color` is used as-is since it's already
       // a specific, final value.
       var strokeStyle, stopColor;
+      var pal = window.LWT.chart.resolve(this, null);
       if (explicitColor) {
         strokeStyle = 'stroke: ' + explicitColor + ';';
         stopColor = explicitColor;
@@ -3137,6 +3840,13 @@
         else { varName = '--lwt-sparkline-down-color'; fallback = 'var(--lwt-color-danger, #ef4444)'; }
         strokeStyle = 'stroke: var(' + varName + ', ' + fallback + ');';
         stopColor = 'var(' + varName + ', ' + fallback + ')';
+        if (pal.custom) {
+          var pc = pal[varName === '--lwt-sparkline-up-color' ? 0 : varName === '--lwt-sparkline-down-color' ? 1 : 2];
+          if (pc) { strokeStyle = 'stroke: ' + pc.stroke + ';'; stopColor = pc.stroke; }
+        }
+      } else if (pal.custom) {
+        strokeStyle = 'stroke: ' + pal[0].stroke + ';';
+        stopColor = pal[0].stroke;
       } else {
         strokeStyle = 'stroke: var(--lwt-sparkline-color, var(--lwt-color-primary, #3b82f6));';
         stopColor = 'var(--lwt-sparkline-color, var(--lwt-color-primary, #3b82f6))';
@@ -3166,6 +3876,7 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTSparkline);
   window.LWT.define('lwtd-sparkline', LWTSparkline);
 })();
 
@@ -3214,6 +3925,11 @@
  *
  * Known scope limits: no built-in number formatting/animation/counting-up
  * effect, no click interactivity.
+ *
+ * Custom palette (`palette` attribute, `.palette` property,
+ * --lwt-chart-palette or LWT.chart.palette): delta colors, in order up,
+ * down, neutral. A chart in the `chart` slot picks up an inherited
+ * --lwt-chart-palette too.
  *
  * Theming: --lwt-stat-bg, --lwt-stat-border, --lwt-stat-label-color,
  * --lwt-stat-value-color, --lwt-stat-icon-bg, --lwt-sparkline-up-color,
@@ -3301,7 +4017,7 @@
 
   class LWTStatCard extends window.LWT.Element {
     static get observedAttributes() {
-      return ['label', 'value', 'delta', 'trend'];
+      return ['label', 'value', 'delta', 'trend', 'palette'];
     }
 
     render() {
@@ -3331,6 +4047,10 @@
         ? '<span aria-hidden="true">' + arrow + '</span><span class="lwt-sr-only">' + spoken + '</span>' + window.LWT.a11y.escape(delta)
         : '';
       deltaEl.className = 'delta delta-' + trend;
+      // Custom palette: [up, down, neutral] delta colors.
+      var pal = window.LWT.chart.resolve(this, null);
+      var pc = pal.custom ? pal[trend === 'up' ? 0 : trend === 'down' ? 1 : 2] : null;
+      deltaEl.style.color = pc ? pc.stroke : '';
       deltaEl.style.display = delta ? '' : 'none';
 
       var iconSlot = root.querySelector('slot[name="icon"]');
@@ -3351,6 +4071,880 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTStatCard);
   window.LWT.define('lwtd-stat-card', LWTStatCard);
+})();
+
+/* ---- lwt-dsh-treemap.js ---- */
+/*!
+ * <lwtd-treemap>
+ * A treemap: each item is a rectangle sized by its value, so the biggest
+ * parts of a whole stand out at a glance (budget by department, disk use,
+ * sales by region and product). Items can be grouped: a group is drawn as
+ * a labelled box holding its children, and every group gets its own color.
+ * Inline SVG, redrawn on every data / attribute change, like the other
+ * lwtd- charts. Uses the "squarified" layout, so tiles stay close to square.
+ *
+ *   var tm = document.querySelector('lwtd-treemap');
+ *   tm.data = {
+ *     items: [
+ *       { label: 'Engineering', children: [
+ *           { label: 'Salaries', value: 820 },
+ *           { label: 'Cloud', value: 240 },
+ *           { label: 'Tools', value: 60 } ] },
+ *       { label: 'Sales', children: [
+ *           { label: 'Salaries', value: 410 },
+ *           { label: 'Travel', value: 95 } ] },
+ *       { label: 'Office', value: 150 }          // a plain item works too
+ *     ]
+ *   };
+ *
+ * Items: { label, value } or { label, children: [...] } (a group's value is
+ * the sum of its children; groups can nest). Optional `color` on any item
+ * overrides the palette for it (and its children). Items with a value of 0
+ * or less are left out. Chart.js-style flat data also works:
+ * { labels: [...], datasets: [{ data: [...] }] }.
+ *
+ * Attributes (all re-render on change):
+ *   title            — chart title text
+ *   legend-position  — "top" | "bottom" | "none". Default: "top" when there
+ *                      are groups, "none" for a flat list (tiles are labelled)
+ *   color-by         — "group" (default with groups: each top-level group a
+ *                      color), "item" (each top-level tile its own color,
+ *                      default for flat data), "value" (one color, darker =
+ *                      bigger)
+ *   hide-values      — boolean; no values on the tiles
+ *   value-prefix, value-suffix — text around numbers, e.g. "$" and "k"
+ *   palette          — custom colors (see below)
+ *
+ * Tiles show their label and value when they fit (small tiles stay blank
+ * -- hover them). Hovering a tile shows its path (Group > Item), value,
+ * share of the total and share of its group.
+ *
+ * Custom palette: `palette` attribute (comma-separated CSS colors), the
+ * `.palette` property (array of colors or { stroke, fill }), the inherited
+ * --lwt-chart-palette CSS variable, or page-wide LWT.chart.palette.
+ *
+ * Screen readers get a data table (group, item, value, share).
+ *
+ * Theming: --lwt-treemap-gap (px between tiles, default 2),
+ * --lwt-treemap-text-color, --lwt-treemap-group-bg, plus --lwt-chart-bg,
+ * --lwt-chart-title-color, --lwt-chart-legend-color,
+ * --lwt-chart-aspect-ratio (default 8/5). Parts: wrap, tooltip.
+ *
+ * Requires lwt-core.js to be loaded first.
+ */
+(function () {
+  'use strict';
+
+  if (!window.LWT || !window.LWT.Element || !window.LWT.chart) {
+    throw new Error('lwt-dsh-treemap.js requires lwt-core.js to be loaded first.');
+  }
+
+  // Same built-in palette as the other lwtd- charts.
+  var PALETTE = [
+    { fill: '#b8f3e0', stroke: '#2ec4b6' }, // mint aqua
+    { fill: '#ffd6e8', stroke: '#ff5c8a' }, // candy rose
+    { fill: '#fef7c3', stroke: '#f2c94c' }, // soft gold
+    { fill: '#e3d7ff', stroke: '#9b5de5' }, // lavender purple
+    { fill: '#d9f2ff', stroke: '#4ea8de' }, // ice blue
+    { fill: '#ffe8cc', stroke: '#ff7f11' }, // warm apricot
+    { fill: '#c9f7d4', stroke: '#34c759' }, // fresh green
+    { fill: '#ffe4f2', stroke: '#ff2e63' }  // neon pink
+  ];
+
+  var HEADER_H = 18;   // group label band
+  var GROUP_PAD = 3;   // inside a group box
+
+  function escapeXml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  var nf = null;
+  function fmtNumber(n) {
+    if (!nf) {
+      try { nf = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }); }
+      catch (e) { nf = { format: function (x) { return String(Math.round(x * 100) / 100); } }; }
+    }
+    return nf.format(n);
+  }
+
+  function pct(part, whole) {
+    if (!whole) return '0%';
+    var p = part / whole * 100;
+    return (p >= 10 || p === 0 ? Math.round(p) : Math.round(p * 10) / 10) + '%';
+  }
+
+  // ---- squarified layout (Bruls, Huizing, van Wijk) ----
+  // nodes: [{ value }], sorted descending. Sets x, y, w, h on each.
+  function squarify(nodes, x, y, w, h) {
+    var total = nodes.reduce(function (a, n) { return a + n.value; }, 0);
+    if (!total || w <= 0 || h <= 0) {
+      nodes.forEach(function (n) { n.x = x; n.y = y; n.w = 0; n.h = 0; });
+      return;
+    }
+    var scale = (w * h) / total;
+    var items = nodes.map(function (n) { return { node: n, area: n.value * scale }; });
+    var row = [];
+    var rect = { x: x, y: y, w: w, h: h };
+
+    function worst(r, side) {
+      if (!r.length) return Infinity;
+      var s = 0, mx = 0, mn = Infinity;
+      r.forEach(function (it) { s += it.area; mx = Math.max(mx, it.area); mn = Math.min(mn, it.area); });
+      var s2 = s * s, side2 = side * side;
+      return Math.max(side2 * mx / s2, s2 / (side2 * mn));
+    }
+
+    function layoutRow(r) {
+      var s = r.reduce(function (a, it) { return a + it.area; }, 0);
+      if (rect.w >= rect.h) {
+        // a column on the left
+        var cw = rect.h ? s / rect.h : 0, cy = rect.y;
+        r.forEach(function (it) {
+          var ih = cw ? it.area / cw : 0;
+          it.node.x = rect.x; it.node.y = cy; it.node.w = cw; it.node.h = ih;
+          cy += ih;
+        });
+        rect.x += cw; rect.w -= cw;
+      } else {
+        // a row along the top
+        var rh = rect.w ? s / rect.w : 0, cx = rect.x;
+        r.forEach(function (it) {
+          var iw = rh ? it.area / rh : 0;
+          it.node.x = cx; it.node.y = rect.y; it.node.w = iw; it.node.h = rh;
+          cx += iw;
+        });
+        rect.y += rh; rect.h -= rh;
+      }
+    }
+
+    var i = 0;
+    while (i < items.length) {
+      var side = Math.min(rect.w, rect.h);
+      var it = items[i];
+      if (!row.length || worst(row.concat([it]), side) <= worst(row, side)) {
+        row.push(it);
+        i++;
+      } else {
+        layoutRow(row);
+        row = [];
+      }
+    }
+    if (row.length) layoutRow(row);
+  }
+
+  var CSS = `
+    :host {
+      display: block;
+      position: relative;
+      width: 100%;
+      aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5);
+      font-family: inherit;
+      background: var(--lwt-chart-bg, transparent);
+      --tm-surface: var(--lwt-chart-bg, var(--lwt-color-surface, #fff));
+      --tm-text: var(--lwt-treemap-text-color, var(--lwt-color-text-strong, #1f2937));
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .chart-title { fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }
+    .legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+    .group-box { fill: var(--lwt-treemap-group-bg, var(--tm-surface)); stroke-width: 1.5; }
+    .group-label { fill: var(--tm-text); font-size: 11.5px; font-weight: 700; }
+    .group-value { fill: var(--tm-text); font-size: 11px; opacity: 0.75; }
+    .tile { stroke-width: 1; transition: opacity 120ms ease; }
+    .tile-label { fill: var(--tm-text); font-size: 12px; font-weight: 600; pointer-events: none; }
+    .tile-value { fill: var(--tm-text); font-size: 11px; opacity: 0.8; pointer-events: none; }
+    svg.hovering .tile:not(.hover) { opacity: 0.55; }
+    .tile.hover { stroke: var(--lwt-color-text-strong, #111827) !important; stroke-width: 2; }
+    .empty { fill: var(--lwt-color-text-muted, #6b7280); font-size: 13px; }
+    .tip {
+      position: absolute;
+      z-index: 2;
+      pointer-events: none;
+      padding: 0.4rem 0.55rem;
+      border-radius: var(--lwt-border-radius, 6px);
+      background: var(--lwt-color-text-strong, #111827);
+      color: var(--lwt-color-surface, #fff);
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+      transform: translate(-50%, calc(-100% - 8px));
+    }
+    .tip[hidden] { display: none; }
+    .tip strong { display: block; }
+    .tip .muted { opacity: 0.8; }
+    @media (prefers-reduced-motion: reduce) { .tile { transition: none; } }
+  `;
+
+  class LWTTreemap extends window.LWT.Element {
+    static get observedAttributes() {
+      return ['title', 'legend-position', 'color-by', 'hide-values', 'value-prefix', 'value-suffix', 'palette'];
+    }
+
+    static get observedProps() { return ['data', 'palette']; }
+
+    constructor() {
+      super();
+      this._data = null;
+      this._leaves = [];
+      var self = this;
+      this._root.addEventListener('pointermove', function (e) { self._onHover(e); });
+      this._root.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse') self._onHover(e); });
+      this.addEventListener('pointerleave', function () { self._hideTip(); });
+    }
+
+    get data() { return this._data; }
+    set data(value) {
+      this._data = value;
+      if (this._root) this.render();
+    }
+
+    _fmt(n) {
+      return (n < 0 ? '−' : '') + this._strAttr('value-prefix', '') + fmtNumber(Math.abs(n)) + this._strAttr('value-suffix', '');
+    }
+
+    // Data -> tree of { label, value, color, children, parent, depth }.
+    _tree() {
+      var d = this._data || {};
+      var items;
+      if (Array.isArray(d.items)) items = d.items;
+      else if (Array.isArray(d.labels)) {
+        var vals = (d.datasets && d.datasets[0] && d.datasets[0].data) || [];
+        items = d.labels.map(function (l, i) { return { label: l, value: vals[i] }; });
+      } else items = [];
+
+      function build(list, parent, depth) {
+        var out = [];
+        (list || []).forEach(function (it) {
+          if (!it) return;
+          var node = { label: it.label == null ? '' : String(it.label), color: it.color || null, parent: parent, depth: depth };
+          if (Array.isArray(it.children) && it.children.length) {
+            node.children = build(it.children, node, depth + 1);
+            node.value = node.children.reduce(function (a, c) { return a + c.value; }, 0);
+          } else {
+            var v = Number(it.value);
+            node.value = isFinite(v) ? v : 0;
+          }
+          if (node.value > 0) out.push(node);
+        });
+        out.sort(function (a, b) { return b.value - a.value; });
+        return out;
+      }
+      return build(items, null, 0);
+    }
+
+    render() {
+      var a11y = window.LWT.a11y;
+      var self = this;
+      this._nodes = this._tree();
+      this._total = this._nodes.reduce(function (a, n) { return a + n.value; }, 0);
+      this._grouped = this._nodes.some(function (n) { return n.children; });
+      this._chartName = this._a11yName([this._strAttr('title', '')], 'Treemap', 'Add a title attribute');
+
+      var rows = [];
+      (function walk(list) {
+        list.forEach(function (n) {
+          if (n.children) { walk(n.children); return; }
+          rows.push([self._path(n.parent) || n.label, n.parent ? n.label : '', self._fmt(n.value), pct(n.value, self._total)]);
+        });
+      })(this._nodes);
+      var table = rows.length ? a11y.dataTableHtml(this._chartName, ['Group', 'Item', 'Value', 'Share of total'], rows) : '';
+      this._hasTable = !!table;
+
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' +
+        '<div class="tip" part="tooltip" hidden></div>', CSS + a11y.SR_ONLY_CSS);
+      this._svg = this._root.querySelector('svg');
+      this._tip = this._root.querySelector('.tip');
+    }
+
+    _path(node) {
+      var parts = [];
+      for (var n = node; n; n = n.parent) parts.unshift(n.label);
+      return parts.join(' › ');
+    }
+
+    _measureText(text, fontSize, weight) {
+      if (!LWTTreemap._ctx) LWTTreemap._ctx = document.createElement('canvas').getContext('2d');
+      LWTTreemap._ctx.font = (weight || 400) + ' ' + fontSize + 'px sans-serif';
+      return LWTTreemap._ctx.measureText(String(text)).width;
+    }
+
+    // Text that fits maxW (ellipsised), or '' if not even 3 chars fit.
+    _fit(text, maxW, size, weight) {
+      if (this._measureText(text, size, weight) <= maxW) return text;
+      var t = text;
+      while (t.length > 1 && this._measureText(t + '…', size, weight) > maxW) t = t.slice(0, -1);
+      return t.length >= 3 ? t + '…' : '';
+    }
+
+    _buildSvg() {
+      var self = this;
+      var nodes = this._nodes;
+      var title = this._strAttr('title', '');
+      var colorBy = this._strAttr('color-by', this._grouped ? 'group' : 'item');
+      // One color by value has nothing to key, so no legend then.
+      var legendPos = colorBy === 'value' ? 'none' : this._strAttr('legend-position', this._grouped ? 'top' : 'none');
+      var showValues = !this._boolAttr('hide-values');
+      var pal = window.LWT.chart.resolve(this, PALETTE);
+      var gap = parseFloat(getComputedStyle(this).getPropertyValue('--lwt-treemap-gap'));
+      if (!(gap >= 0)) gap = 2;
+
+      var VBW = 640, VBH = 400, PAD = 4;
+      var titleH = title ? 32 : 0;
+      var showLegend = (legendPos === 'top' || legendPos === 'bottom') && nodes.length > 0;
+      var legendH = showLegend ? 22 : 0;
+      var plot = {
+        x: PAD,
+        y: PAD + titleH + (legendPos === 'top' ? legendH : 0),
+        w: VBW - PAD * 2,
+        h: VBH - PAD * 2 - titleH - legendH
+      };
+
+      // colors: top-level index -> palette entry (or a custom color)
+      var maxLeaf = 0;
+      (function walk(list) { list.forEach(function (n) { if (n.children) walk(n.children); else maxLeaf = Math.max(maxLeaf, n.value); }); })(nodes);
+      var tint = window.LWT.chart.tint;
+      function topOf(n) { while (n.parent) n = n.parent; return n; }
+      function colorFor(n) {
+        for (var p = n; p; p = p.parent) {
+          if (p.color) { var c = window.LWT.chart.normalize(p.color, self); if (c) return c; }
+        }
+        if (colorBy === 'value') {
+          var base = pal[0];
+          var t = 0.15 + 0.55 * (maxLeaf ? n.value / maxLeaf : 0); // keep dark text readable
+          return { stroke: base.stroke, fill: tint(base.stroke, self, t) };
+        }
+        var top = topOf(n);
+        return pal[nodes.indexOf(top) % pal.length];
+      }
+
+      var groupSvg = '', tileSvg = '', textSvg = '';
+      this._leaves = [];
+
+      function place(list, r) {
+        squarify(list, r.x, r.y, r.w, r.h);
+        list.forEach(function (n) {
+          var x = n.x + gap / 2, y = n.y + gap / 2, w = Math.max(0, n.w - gap), h = Math.max(0, n.h - gap);
+          if (n.children) {
+            var c = colorFor(n);
+            groupSvg += '<rect class="group-box" x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" width="' + w.toFixed(2) + '" height="' + h.toFixed(2) +
+              '" rx="3" style="stroke:' + escapeXml(c.stroke) + '"></rect>';
+            var hasHeader = h > HEADER_H + 14 && w > 30;
+            if (hasHeader) {
+              var lbl = self._fit(n.label, w - 10, 11.5, 700);
+              if (lbl) {
+                textSvg += '<text class="group-label" x="' + (x + 6).toFixed(2) + '" y="' + (y + 13).toFixed(2) + '">' + escapeXml(lbl) + '</text>';
+                var vText = showValues ? self._fmt(n.value) : '';
+                var used = self._measureText(lbl, 11.5, 700) + 6;
+                if (vText && used + self._measureText(vText, 11) + 18 < w) {
+                  textSvg += '<text class="group-value" x="' + (x + w - 6).toFixed(2) + '" y="' + (y + 13).toFixed(2) + '" text-anchor="end">' + escapeXml(vText) + '</text>';
+                }
+              }
+            }
+            var top = hasHeader ? HEADER_H : GROUP_PAD;
+            place(n.children, { x: x + GROUP_PAD, y: y + top, w: w - GROUP_PAD * 2, h: h - top - GROUP_PAD });
+            return;
+          }
+          if (w < 0.5 || h < 0.5) return;
+          var col = colorFor(n);
+          var idx = self._leaves.length;
+          self._leaves.push(n);
+          tileSvg += '<rect class="tile" data-i="' + idx + '" x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" width="' + w.toFixed(2) + '" height="' + h.toFixed(2) +
+            '" rx="2" style="fill:' + escapeXml(col.fill) + ';stroke:' + escapeXml(col.stroke) + '"></rect>';
+          // label + value when they fit
+          if (w >= 34 && h >= 20) {
+            var name = self._fit(n.label, w - 10, 12, 600);
+            if (name) {
+              var twoLines = showValues && h >= 36;
+              var ty = twoLines ? y + 17 : y + Math.min(17, h / 2 + 4);
+              textSvg += '<text class="tile-label" x="' + (x + 6).toFixed(2) + '" y="' + ty.toFixed(2) + '">' + escapeXml(name) + '</text>';
+              if (twoLines) {
+                var val = self._fit(self._fmt(n.value), w - 10, 11);
+                if (val) textSvg += '<text class="tile-value" x="' + (x + 6).toFixed(2) + '" y="' + (ty + 15).toFixed(2) + '">' + escapeXml(val) + '</text>';
+              }
+            }
+          }
+        });
+      }
+      if (nodes.length) place(nodes, plot);
+
+      // legend: top-level items (only meaningful when colored per group / item)
+      var legendSvg = '';
+      if (showLegend) {
+        var entries = nodes.map(function (n) { return { label: n.label, c: colorFor(n) }; });
+        var widths = entries.map(function (e) { return 18 + self._measureText(e.label, 11) + 16; });
+        var totalW = widths.reduce(function (a, b) { return a + b; }, 0);
+        var lx = Math.max(PAD, (VBW - totalW) / 2);
+        var ly = legendPos === 'top' ? PAD + titleH + 14 : VBH - PAD - 6;
+        entries.forEach(function (e, i) {
+          if (lx + widths[i] > VBW) return; // no room: drop the rest (tiles are labelled)
+          legendSvg += '<rect x="' + lx.toFixed(2) + '" y="' + (ly - 10) + '" width="12" height="12" rx="2" style="fill:' + escapeXml(e.c.fill) + ';stroke:' + escapeXml(e.c.stroke) + '"></rect>';
+          legendSvg += '<text class="legend-text" x="' + (lx + 17).toFixed(2) + '" y="' + ly + '">' + escapeXml(e.label) + '</text>';
+          lx += widths[i];
+        });
+      }
+
+      var titleSvg = title ? '<text class="chart-title" x="' + (VBW / 2) + '" y="' + (PAD + 21) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
+      var emptySvg = nodes.length ? '' : '<text class="empty" x="' + (VBW / 2) + '" y="' + (VBH / 2) + '" text-anchor="middle">No data</text>';
+
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' +
+        escapeXml(this._chartName + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
+        titleSvg + legendSvg + groupSvg + tileSvg + textSvg + emptySvg + '</svg>';
+    }
+
+    // ---- hover ----
+    _onHover(e) {
+      var t = e.target && e.target.closest ? e.target.closest('.tile') : null;
+      if (!t || !this._svg) { this._hideTip(); return; }
+      var i = +t.getAttribute('data-i');
+      if (this._hoverI === i && !this._tip.hidden) return;
+      this._hoverI = i;
+      var n = this._leaves[i];
+      if (!n) return;
+      var esc = window.LWT.a11y.escape;
+      this._svg.classList.add('hovering');
+      Array.prototype.forEach.call(this._svg.querySelectorAll('.tile.hover'), function (el) { el.classList.remove('hover'); });
+      t.classList.add('hover');
+      var html = '<strong>' + esc(this._path(n)) + '</strong>' + esc(this._fmt(n.value)) +
+        ' <span class="muted">(' + pct(n.value, this._total) + ' of total)</span>';
+      if (n.parent) html += '<br><span class="muted">' + pct(n.value, n.parent.value) + ' of ' + esc(n.parent.label) + '</span>';
+      this._tip.innerHTML = html;
+      this._tip.hidden = false;
+
+      var host = this.getBoundingClientRect();
+      var r = t.getBoundingClientRect();
+      var x = r.left + r.width / 2 - host.left;
+      var half = this._tip.offsetWidth / 2;
+      x = Math.max(half + 4, Math.min(host.width - half - 4, x));
+      var top = r.top - host.top;
+      if (top - this._tip.offsetHeight - 10 < 0) {
+        // no room above the tile: show it inside the tile's top edge instead
+        this._tip.style.transform = 'translate(-50%, 6px)';
+      } else {
+        this._tip.style.transform = '';
+      }
+      this._tip.style.left = x + 'px';
+      this._tip.style.top = top + 'px';
+    }
+
+    _hideTip() {
+      this._hoverI = null;
+      if (this._tip) this._tip.hidden = true;
+      if (this._svg) {
+        this._svg.classList.remove('hovering');
+        Array.prototype.forEach.call(this._svg.querySelectorAll('.tile.hover'), function (el) { el.classList.remove('hover'); });
+      }
+    }
+  }
+
+  window.LWT.chart.withPalette(LWTTreemap);
+  window.LWT.define('lwtd-treemap', LWTTreemap);
+})();
+
+/* ---- lwt-dsh-waterfall.js ---- */
+/*!
+ * <lwtd-waterfall>
+ * A waterfall chart: a starting value, the increases and decreases that
+ * change it, and the running total they add up to -- e.g. revenue bridge,
+ * budget vs. actual, headcount change. Rendered as inline SVG, redrawn on
+ * every data / attribute change (same approach as <lwtd-bar-chart>).
+ *
+ *   var chart = document.querySelector('lwtd-waterfall');
+ *   chart.data = {
+ *     items: [
+ *       { label: 'Q1 revenue',    value: 1200, type: 'total' },  // absolute bar from 0
+ *       { label: 'New customers', value: 300 },                  // +300
+ *       { label: 'Upsells',       value: 120 },
+ *       { label: 'Churn',         value: -180 },                 // -180
+ *       { label: 'Q2 revenue',    type: 'total' }                // running total (1440)
+ *     ]
+ *   };
+ *
+ * Items:
+ *   { label, value }                 — a change, added to the running total
+ *   { label, value, type: 'total' }  — sets the running total to `value` and
+ *                                      draws it from zero (a start / reset)
+ *   { label, type: 'total' }         — draws the current running total from
+ *                                      zero (a subtotal or end bar)
+ *   Optional per item: color (overrides that bar's color).
+ *
+ * Chart.js-style data also works: { labels: [...], datasets: [{ data: [...] }],
+ * totals: [0, 4] } -- indexes in `totals` are total bars (a null/undefined
+ * value there means "show the running total").
+ *
+ * Style attributes (all re-render on change):
+ *   title             — chart title text
+ *   legend-position   — "top" (default) | "bottom" | "none"
+ *   grid              — "horizontal" (default) | "none"
+ *   x-label, y-label  — axis titles
+ *   hide-values       — boolean; no value labels on the bars (shown by default)
+ *   no-connectors     — boolean; no dashed lines joining the bars
+ *   value-prefix      — text before numbers, e.g. "$"
+ *   value-suffix      — text after numbers, e.g. "k" or " pts"
+ *   increase-label, decrease-label, total-label — legend text
+ *                       (default "Increase", "Decrease", "Total")
+ *
+ * Hovering a bar shows its change and the running total. Screen readers
+ * get a data table with the same numbers (step, change, running total).
+ *
+ * Custom palette (`palette` attribute, `.palette` property,
+ * --lwt-chart-palette or LWT.chart.palette): three colors, in order
+ * increase, decrease, total -- e.g. palette="#0d9488, #e11d48, #4f46e5".
+ *
+ * Theming: --lwt-waterfall-increase-color (default --lwt-success),
+ * --lwt-waterfall-decrease-color (default --lwt-danger),
+ * --lwt-waterfall-total-color (default --lwt-primary), plus the shared
+ * --lwt-chart-* variables (bg, grid, border, tick-color, label-color,
+ * title-color, legend-color, aspect-ratio).
+ *
+ * Requires lwt-core.js to be loaded first.
+ */
+(function () {
+  'use strict';
+
+  if (!window.LWT || !window.LWT.Element) {
+    throw new Error('lwt-dsh-waterfall.js requires lwt-core.js to be loaded first.');
+  }
+
+  var MINUS = '−';
+
+  function niceNumber(range, round) {
+    if (range <= 0) return 1;
+    var exponent = Math.floor(Math.log(range) / Math.LN10);
+    var fraction = range / Math.pow(10, exponent);
+    var nice;
+    if (round) nice = fraction < 1.5 ? 1 : fraction < 3 ? 2 : fraction < 7 ? 5 : 10;
+    else nice = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10;
+    return nice * Math.pow(10, exponent);
+  }
+
+  // Nice ticks covering [min, max], always including 0.
+  function computeScale(min, max, tickTarget) {
+    min = Math.min(0, min);
+    max = Math.max(0, max);
+    if (max === min) max = min + 1;
+    var step = niceNumber(niceNumber(max - min, false) / (tickTarget - 1), true);
+    var niceMin = Math.floor(min / step) * step;
+    var niceMax = Math.ceil(max / step) * step;
+    var ticks = [];
+    for (var v = niceMin; v <= niceMax + step / 2; v += step) ticks.push(Math.round(v * 1000) / 1000);
+    return { min: niceMin, max: niceMax, ticks: ticks };
+  }
+
+  function escapeXml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  var nf = null;
+  function fmtNumber(n) {
+    if (!nf) {
+      try { nf = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }); }
+      catch (e) { nf = { format: function (x) { return String(Math.round(x * 100) / 100); } }; }
+    }
+    return nf.format(n);
+  }
+
+  var CSS = `
+    :host {
+      display: block;
+      position: relative;
+      width: 100%;
+      aspect-ratio: var(--lwt-chart-aspect-ratio, 8 / 5);
+      font-family: inherit;
+      background: var(--lwt-chart-bg, transparent);
+      --wf-up: var(--lwt-waterfall-increase-color, var(--lwt-success, #10b981));
+      --wf-down: var(--lwt-waterfall-decrease-color, var(--lwt-danger, #ef4444));
+      --wf-total: var(--lwt-waterfall-total-color, var(--lwt-primary, #3b82f6));
+      --wf-surface: var(--lwt-chart-bg, var(--lwt-color-surface, #fff));
+    }
+    .chart-wrap, svg { display: block; width: 100%; height: 100%; }
+    .grid-line { stroke: var(--lwt-chart-grid, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; }
+    .zero-line { stroke: var(--lwt-chart-border, var(--lwt-color-text-muted, #9ca3af)); stroke-width: 1; }
+    .plot-border { stroke: var(--lwt-chart-border, var(--lwt-border-color, #e5e7eb)); stroke-width: 1; fill: none; }
+    .axis-text { fill: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #6b7280)); font-size: 11px; }
+    .axis-title { fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151)); font-size: 12px; font-weight: 600; }
+    .chart-title { fill: var(--lwt-chart-title-color, var(--lwt-color-text-strong, #1f2937)); font-size: 15px; font-weight: 700; }
+    .legend-text { fill: var(--lwt-chart-legend-color, var(--lwt-color-text, #374151)); font-size: 11px; }
+    .value-text { fill: var(--lwt-chart-label-color, var(--lwt-color-text, #374151)); font-size: 11px; font-weight: 600; }
+    .connector { stroke: var(--lwt-chart-tick-color, var(--lwt-color-text-muted, #9ca3af)); stroke-width: 1; stroke-dasharray: 3 3; }
+    .bar { stroke-width: 1.5; transition: opacity 120ms ease; }
+    .bar.up    { fill: color-mix(in srgb, var(--wf-up) 35%, var(--wf-surface));    stroke: var(--wf-up); }
+    .bar.down  { fill: color-mix(in srgb, var(--wf-down) 35%, var(--wf-surface));  stroke: var(--wf-down); }
+    .bar.total { fill: color-mix(in srgb, var(--wf-total) 35%, var(--wf-surface)); stroke: var(--wf-total); }
+    svg.hovering .bar:not(.hover) { opacity: 0.45; }
+    .hit { fill: transparent; cursor: default; }
+    .tip {
+      position: absolute;
+      z-index: 2;
+      pointer-events: none;
+      padding: 0.4rem 0.55rem;
+      border-radius: var(--lwt-border-radius, 6px);
+      background: var(--lwt-color-text-strong, #111827);
+      color: var(--lwt-color-surface, #fff);
+      font-size: 12px;
+      line-height: 1.4;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+      transform: translate(-50%, calc(-100% - 8px));
+    }
+    .tip[hidden] { display: none; }
+    .tip strong { display: block; }
+    @media (prefers-reduced-motion: reduce) { .bar { transition: none; } }
+  `;
+
+  class LWTWaterfall extends window.LWT.Element {
+    static get observedAttributes() {
+      return ['title', 'legend-position', 'grid', 'x-label', 'y-label', 'hide-values', 'no-connectors',
+              'value-prefix', 'value-suffix', 'increase-label', 'decrease-label', 'total-label', 'palette'];
+    }
+
+    static get observedProps() { return ['data', 'palette']; }
+
+    constructor() {
+      super();
+      this._data = null;
+      var self = this;
+      // One set of listeners on the shadow root survives every re-render.
+      this._root.addEventListener('pointermove', function (e) { self._onHover(e); });
+      this.addEventListener('pointerleave', function () { self._hideTip(); });
+    }
+
+    get data() { return this._data; }
+    set data(value) {
+      this._data = value;
+      if (this._root) this.render();
+    }
+
+    // Normalise either data shape into [{ label, kind, start, end, change, total, color }].
+    _steps() {
+      var d = this._data || {};
+      var items;
+      if (Array.isArray(d.items)) {
+        items = d.items;
+      } else if (Array.isArray(d.labels)) {
+        var values = (d.datasets && d.datasets[0] && d.datasets[0].data) || [];
+        var totals = Array.isArray(d.totals) ? d.totals : [];
+        items = d.labels.map(function (label, i) {
+          var it = { label: label, value: values[i] };
+          if (totals.indexOf(i) !== -1) it.type = 'total';
+          return it;
+        });
+      } else {
+        items = [];
+      }
+      var running = 0;
+      return items.map(function (it) {
+        var isTotal = it.type === 'total' || it.type === 'subtotal';
+        var hasValue = it.value !== undefined && it.value !== null && it.value !== '' && !isNaN(Number(it.value));
+        var v = hasValue ? Number(it.value) : 0;
+        if (isTotal) {
+          if (hasValue) running = v;
+          return { label: it.label == null ? '' : String(it.label), kind: 'total', start: 0, end: running, change: null, total: running, color: it.color };
+        }
+        var start = running;
+        running += v;
+        return { label: it.label == null ? '' : String(it.label), kind: v >= 0 ? 'up' : 'down', start: start, end: running, change: v, total: running, color: it.color };
+      });
+    }
+
+    _fmt(n, signed) {
+      var pre = this._strAttr('value-prefix', ''), suf = this._strAttr('value-suffix', '');
+      var sign = signed ? (n > 0 ? '+' : n < 0 ? MINUS : '') : (n < 0 ? MINUS : '');
+      return sign + pre + fmtNumber(Math.abs(n)) + suf;
+    }
+
+    render() {
+      var a11y = window.LWT.a11y;
+      this._chartName = this._a11yName([this._strAttr('title', '')], 'Waterfall chart', 'Add a title attribute');
+      this._stepsCache = this._steps();
+      var self = this;
+      var rows = this._stepsCache.map(function (s) {
+        return [s.label || '', s.kind === 'total' ? self._labelFor('total') : self._fmt(s.change, true), self._fmt(s.total, false)];
+      });
+      var table = rows.length ? a11y.dataTableHtml(this._chartName, ['Step', 'Change', 'Running total'], rows) : '';
+      this._hasTable = !!table;
+      // Custom palette: [increase, decrease, total].
+      var pal = window.LWT.chart.resolve(this, null), palCss = '';
+      if (pal.custom) {
+        ['--wf-up', '--wf-down', '--wf-total'].forEach(function (v, i) { if (pal[i]) palCss += v + ':' + pal[i].stroke + ';'; });
+        palCss = '<style>:host{' + palCss + '}</style>';
+      }
+      this._renderShadow(palCss + '<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' +
+        '<div class="tip" part="tooltip" hidden></div>', CSS + a11y.SR_ONLY_CSS);
+      this._svg = this._root.querySelector('svg');
+      this._tip = this._root.querySelector('.tip');
+    }
+
+    _labelFor(kind) {
+      if (kind === 'up') return this._strAttr('increase-label', 'Increase');
+      if (kind === 'down') return this._strAttr('decrease-label', 'Decrease');
+      return this._strAttr('total-label', 'Total');
+    }
+
+    _measureText(text, fontSize) {
+      if (!LWTWaterfall._ctx) LWTWaterfall._ctx = document.createElement('canvas').getContext('2d');
+      LWTWaterfall._ctx.font = fontSize + 'px sans-serif';
+      return LWTWaterfall._ctx.measureText(String(text)).width;
+    }
+
+    // Up to two lines that fit `maxW`; the rest is ellipsised.
+    _wrap(text, maxW) {
+      var self = this;
+      if (this._measureText(text, 11) <= maxW) return [text];
+      var words = text.split(/\s+/), lines = [''];
+      words.forEach(function (w) {
+        var cur = lines[lines.length - 1];
+        var next = cur ? cur + ' ' + w : w;
+        if (self._measureText(next, 11) <= maxW || !cur) lines[lines.length - 1] = next;
+        else lines.push(w);
+      });
+      if (lines.length > 2) lines = [lines[0], lines.slice(1).join(' ')];
+      return lines.map(function (l) {
+        if (self._measureText(l, 11) <= maxW) return l;
+        while (l.length > 1 && self._measureText(l + '…', 11) > maxW) l = l.slice(0, -1);
+        return l + '…';
+      });
+    }
+
+    _buildSvg() {
+      var self = this;
+      var steps = this._stepsCache;
+      var title = this._strAttr('title', '');
+      var legendPos = this._strAttr('legend-position', 'top');
+      var grid = this._strAttr('grid', 'horizontal');
+      var xLabel = this._strAttr('x-label', ''), yLabel = this._strAttr('y-label', '');
+      var showValues = !this._boolAttr('hide-values');
+      var connectors = !this._boolAttr('no-connectors');
+
+      var lo = 0, hi = 0;
+      steps.forEach(function (s) { lo = Math.min(lo, s.start, s.end); hi = Math.max(hi, s.start, s.end); });
+      var scale = computeScale(lo, hi, 7);
+
+      var VBW = 640, VBH = 400, PAD = 14;
+      var titleH = title ? 30 : 0;
+      var legendH = legendPos === 'top' || legendPos === 'bottom' ? 22 : 0;
+      var maxTickW = 0;
+      scale.ticks.forEach(function (t) { maxTickW = Math.max(maxTickW, self._measureText(self._fmt(t, false), 11)); });
+
+      var n = steps.length;
+      var left = PAD + (yLabel ? 16 : 0) + maxTickW + 10;
+      var right = PAD;
+      var top = PAD + titleH + (legendPos === 'top' ? legendH : 0) + (showValues ? 14 : 4);
+      // Category labels may wrap onto 2 lines.
+      var band0 = n ? (VBW - left - right) / n : 0;
+      var wrapped = steps.map(function (s) { return self._wrap(s.label, Math.max(24, band0 - 6)); });
+      var labelLines = wrapped.reduce(function (m, l) { return Math.max(m, l.length); }, 1);
+      var bottom = PAD + 6 + labelLines * 13 + (xLabel ? 18 : 0) + (legendPos === 'bottom' ? legendH : 0);
+
+      var plotLeft = left, plotTop = top, plotRight = VBW - right, plotBottom = VBH - bottom;
+      var plotW = Math.max(10, plotRight - plotLeft), plotH = Math.max(10, plotBottom - plotTop);
+      var band = n ? plotW / n : 0;
+      var barW = band * 0.62, barPad = (band - barW) / 2;
+      var y = function (v) { return plotBottom - (v - scale.min) / (scale.max - scale.min) * plotH; };
+
+      // grid + ticks
+      var gridSvg = '', tickSvg = '';
+      scale.ticks.forEach(function (t) {
+        var ty = y(t);
+        if (grid !== 'none') gridSvg += '<line class="' + (t === 0 ? 'zero-line' : 'grid-line') + '" x1="' + plotLeft + '" y1="' + ty.toFixed(2) + '" x2="' + plotRight + '" y2="' + ty.toFixed(2) + '"></line>';
+        tickSvg += '<text class="axis-text" x="' + (plotLeft - 8) + '" y="' + (ty + 4).toFixed(2) + '" text-anchor="end">' + escapeXml(self._fmt(t, false)) + '</text>';
+      });
+      if (grid === 'none' && scale.min < 0) {
+        gridSvg += '<line class="zero-line" x1="' + plotLeft + '" y1="' + y(0).toFixed(2) + '" x2="' + plotRight + '" y2="' + y(0).toFixed(2) + '"></line>';
+      }
+      wrapped.forEach(function (lines, i) {
+        var cx = plotLeft + band * (i + 0.5);
+        lines.forEach(function (l, li) {
+          tickSvg += '<text class="axis-text" x="' + cx.toFixed(2) + '" y="' + (plotBottom + 16 + li * 13) + '" text-anchor="middle">' + escapeXml(l) + '</text>';
+        });
+      });
+
+      // bars, connectors, values, hit areas
+      var barsSvg = '', connSvg = '', valSvg = '', hitSvg = '';
+      steps.forEach(function (s, i) {
+        var x = plotLeft + band * i + barPad;
+        var y1 = y(Math.max(s.start, s.end)), y2 = y(Math.min(s.start, s.end));
+        var h = Math.max(1, y2 - y1); // a zero change still shows a hairline
+        var style = s.color ? ' style="stroke:' + escapeXml(s.color) + ';fill:color-mix(in srgb, ' + escapeXml(s.color) + ' 35%, var(--wf-surface))"' : '';
+        barsSvg += '<rect class="bar ' + s.kind + '" data-i="' + i + '" x="' + x.toFixed(2) + '" y="' + y1.toFixed(2) + '" width="' + barW.toFixed(2) +
+          '" height="' + h.toFixed(2) + '" rx="2"' + style + '></rect>';
+        hitSvg += '<rect class="hit" data-i="' + i + '" x="' + (plotLeft + band * i).toFixed(2) + '" y="' + plotTop + '" width="' + band.toFixed(2) + '" height="' + plotH.toFixed(2) + '"></rect>';
+        if (connectors && i < n - 1) {
+          var cy = y(s.end);
+          connSvg += '<line class="connector" x1="' + (x + barW).toFixed(2) + '" y1="' + cy.toFixed(2) + '" x2="' + (x + band).toFixed(2) + '" y2="' + cy.toFixed(2) + '"></line>';
+        }
+        if (showValues) {
+          var text = s.kind === 'total' ? self._fmt(s.total, false) : self._fmt(s.change, true);
+          // Above the bar, or below it when the bar hangs below zero.
+          var below = (s.kind === 'down' && s.end < 0) || (s.kind === 'total' && s.total < 0);
+          var ty = below ? y2 + 13 : y1 - 5;
+          valSvg += '<text class="value-text" x="' + (x + barW / 2).toFixed(2) + '" y="' + ty.toFixed(2) + '" text-anchor="middle">' + escapeXml(text) + '</text>';
+        }
+      });
+
+      var borderSvg = '<rect class="plot-border" x="' + plotLeft + '" y="' + plotTop + '" width="' + plotW.toFixed(2) + '" height="' + plotH.toFixed(2) + '"></rect>';
+
+      // legend: only the kinds actually present
+      var legendSvg = '';
+      if (legendH && n) {
+        var kinds = ['up', 'down', 'total'].filter(function (k) { return steps.some(function (s) { return s.kind === k; }); });
+        var widths = kinds.map(function (k) { return 18 + self._measureText(self._labelFor(k), 11) + 18; });
+        var lx = (VBW - widths.reduce(function (a, b) { return a + b; }, 0)) / 2;
+        var ly = legendPos === 'top' ? PAD + titleH + 14 : VBH - PAD - 4;
+        kinds.forEach(function (k, i) {
+          legendSvg += '<rect class="bar ' + k + '" x="' + lx.toFixed(2) + '" y="' + (ly - 10) + '" width="12" height="12" rx="2"></rect>';
+          legendSvg += '<text class="legend-text" x="' + (lx + 18).toFixed(2) + '" y="' + ly + '">' + escapeXml(self._labelFor(k)) + '</text>';
+          lx += widths[i];
+        });
+      }
+
+      var titleSvg = title ? '<text class="chart-title" x="' + (VBW / 2) + '" y="' + (PAD + 20) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
+      var xLabelSvg = xLabel ? '<text class="axis-title" x="' + ((plotLeft + plotRight) / 2) + '" y="' + (VBH - PAD - (legendPos === 'bottom' ? legendH : 0)) + '" text-anchor="middle">' + escapeXml(xLabel) + '</text>' : '';
+      var yLabelSvg = yLabel ? '<text class="axis-title" x="0" y="0" text-anchor="middle" transform="translate(' + (PAD + 10) + ',' + ((plotTop + plotBottom) / 2) + ') rotate(-90)">' + escapeXml(yLabel) + '</text>' : '';
+
+      return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' +
+        escapeXml((this._chartName || 'Waterfall chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
+        titleSvg + legendSvg + gridSvg + borderSvg + connSvg + barsSvg + valSvg + tickSvg + xLabelSvg + yLabelSvg + hitSvg +
+        '</svg>';
+    }
+
+    // ---- hover tooltip ----
+    _onHover(e) {
+      var hit = e.target && e.target.closest ? e.target.closest('.hit') : null;
+      if (!hit || !this._svg) { this._hideTip(); return; }
+      var i = +hit.getAttribute('data-i');
+      var s = this._stepsCache[i];
+      if (!s) return;
+      var bar = this._svg.querySelector('.bar[data-i="' + i + '"]');
+      this._svg.classList.add('hovering');
+      Array.prototype.forEach.call(this._svg.querySelectorAll('.bar.hover'), function (b) { b.classList.remove('hover'); });
+      if (bar) bar.classList.add('hover');
+      var esc = window.LWT.a11y.escape;
+      this._tip.innerHTML = '<strong>' + esc(s.label) + '</strong>' +
+        (s.kind === 'total'
+          ? esc(this._labelFor('total')) + ': ' + esc(this._fmt(s.total, false))
+          : esc(this._labelFor(s.kind)) + ': ' + esc(this._fmt(s.change, true)) + '<br>Running total: ' + esc(this._fmt(s.total, false)));
+      this._tip.hidden = false;
+      var host = this.getBoundingClientRect();
+      var r = (bar || hit).getBoundingClientRect();
+      var x = r.left + r.width / 2 - host.left;
+      var half = this._tip.offsetWidth / 2;
+      x = Math.max(half + 4, Math.min(host.width - half - 4, x)); // keep it inside the chart
+      this._tip.style.left = x + 'px';
+      this._tip.style.top = Math.max(this._tip.offsetHeight + 12, r.top - host.top) + 'px';
+    }
+
+    _hideTip() {
+      if (this._tip) this._tip.hidden = true;
+      if (this._svg) {
+        this._svg.classList.remove('hovering');
+        Array.prototype.forEach.call(this._svg.querySelectorAll('.bar.hover'), function (b) { b.classList.remove('hover'); });
+      }
+    }
+  }
+
+  window.LWT.chart.withPalette(LWTWaterfall);
+  window.LWT.define('lwtd-waterfall', LWTWaterfall);
 })();
 

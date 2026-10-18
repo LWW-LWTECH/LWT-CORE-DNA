@@ -158,6 +158,133 @@
     return a11y.dataTableHtml(caption, headers, rows);
   };
 
+  // ---------------------------------------------------------------------
+  // Chart color palettes (shared by the lwtd- dashboard elements)
+  //
+  // Every chart accepts a custom palette. First one found wins:
+  //   1. JS property:  chart.palette = ['#2563eb', '#dc2626', { stroke: '#16a34a', fill: '#dcfce7' }]
+  //   2. Attribute:    <lwtd-bar-chart palette="#2563eb, #dc2626, #16a34a">
+  //   3. CSS (inherits, so it can theme a whole page or section):
+  //                    .reports { --lwt-chart-palette: #2563eb, #dc2626, #16a34a; }
+  //   4. Page-wide JS: LWT.chart.palette = ['#2563eb', '#dc2626', '#16a34a'];
+  //   5. The chart's built-in palette.
+  // A plain color is the strong (line / border / dot) color, and the light
+  // fill is mixed from it automatically (LWT.chart.fillMix of the color over
+  // white, default 0.35). Use { stroke, fill } to set both yourself. Any CSS
+  // color works, including var(--brand-blue). Per-dataset backgroundColor /
+  // borderColor in the data still win over the palette.
+  // ---------------------------------------------------------------------
+  var chart = namespace.chart = namespace.chart || {};
+  if (typeof chart.fillMix !== 'number') chart.fillMix = 0.35;
+
+  // Splits "a, rgb(1, 2, 3), b" on top-level commas only.
+  function splitColorList(str) {
+    var out = [], depth = 0, cur = '';
+    String(str).split('').forEach(function (ch) {
+      if (ch === '(') depth++;
+      if (ch === ')') depth = Math.max(0, depth - 1);
+      if (ch === ',' && depth === 0) { out.push(cur); cur = ''; } else cur += ch;
+    });
+    out.push(cur);
+    return out.map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+  chart.splitColorList = splitColorList;
+
+  var colorCtx = null;
+  // Any CSS color (named, hex, rgb, hsl, var(--x, fallback)) -> { r, g, b, a } or null.
+  function toRgb(color, el, depth) {
+    color = String(color || '').trim();
+    var m = /^var\(\s*(--[\w-]+)\s*(?:,\s*([\s\S]+))?\)$/.exec(color);
+    if (m) {
+      if ((depth || 0) > 5) return null;
+      var v = el ? getComputedStyle(el).getPropertyValue(m[1]).trim() : '';
+      return toRgb(v || m[2] || '', el, (depth || 0) + 1);
+    }
+    if (!color) return null;
+    if (!colorCtx) colorCtx = document.createElement('canvas').getContext('2d');
+    // Two different sentinels: an invalid color leaves either one in place.
+    colorCtx.fillStyle = '#010203'; colorCtx.fillStyle = color; var a1 = colorCtx.fillStyle;
+    colorCtx.fillStyle = '#030201'; colorCtx.fillStyle = color; var a2 = colorCtx.fillStyle;
+    if (a1 !== a2) return null;
+    if (a1.charAt(0) === '#') {
+      return { r: parseInt(a1.slice(1, 3), 16), g: parseInt(a1.slice(3, 5), 16), b: parseInt(a1.slice(5, 7), 16), a: 1 };
+    }
+    var n = a1.match(/[\d.]+/g);
+    return n ? { r: +n[0], g: +n[1], b: +n[2], a: n[3] != null ? +n[3] : 1 } : null;
+  }
+  chart.toRgb = toRgb;
+
+  function rgbToCss(c) {
+    if (c.a < 1) return 'rgba(' + c.r + ', ' + c.g + ', ' + c.b + ', ' + c.a + ')';
+    return '#' + [c.r, c.g, c.b].map(function (v) { return ('0' + Math.round(v).toString(16)).slice(-2); }).join('');
+  }
+
+  // A light fill mixed from `color` over white (amount: share of the color).
+  chart.tint = function (color, el, amount) {
+    var c = typeof color === 'object' ? color : toRgb(color, el);
+    if (!c) return color;
+    var t = typeof amount === 'number' ? amount : chart.fillMix;
+    return rgbToCss({ r: c.r * t + 255 * (1 - t), g: c.g * t + 255 * (1 - t), b: c.b * t + 255 * (1 - t), a: 1 });
+  };
+
+  // One palette entry (string or object) -> { stroke, fill } as hex/rgba.
+  chart.normalize = function (entry, el) {
+    if (!entry) return null;
+    if (typeof entry === 'string') {
+      var c = toRgb(entry, el);
+      if (!c) return null;
+      return { stroke: rgbToCss(c), fill: chart.tint(c) };
+    }
+    var strokeSrc = entry.stroke || entry.color || entry.borderColor || entry.fill || entry.backgroundColor;
+    var sc = strokeSrc ? toRgb(strokeSrc, el) : null;
+    if (!sc) return null;
+    var fillSrc = entry.fill || entry.backgroundColor;
+    var fc = fillSrc && fillSrc !== strokeSrc ? toRgb(fillSrc, el) : null;
+    return { stroke: rgbToCss(sc), fill: fc ? rgbToCss(fc) : chart.tint(sc) };
+  };
+
+  // Raw palette value (array, comma list string, or null) -> array of entries.
+  function paletteList(value) {
+    if (!value) return null;
+    if (typeof value === 'string') value = splitColorList(value);
+    return Array.isArray(value) && value.length ? value : null;
+  }
+
+  // The palette an element should use: [{ stroke, fill }, ...], or
+  // `defaults` when nothing custom is set. The result has `.custom = true`
+  // when it came from the element, the CSS variable or LWT.chart.palette.
+  chart.resolve = function (el, defaults) {
+    var sources = [
+      el && el._palette,
+      el && el.getAttribute && el.getAttribute('palette'),
+      el && el.isConnected ? getComputedStyle(el).getPropertyValue('--lwt-chart-palette').trim() : '',
+      chart.palette
+    ];
+    for (var i = 0; i < sources.length; i++) {
+      var list = paletteList(sources[i]);
+      if (!list) continue;
+      var out = list.map(function (e) { return chart.normalize(e, el); }).filter(Boolean);
+      if (out.length) { out.custom = true; return out; }
+    }
+    var d = (defaults || []).slice();
+    d.custom = false;
+    return d;
+  };
+
+  // Adds a `palette` property (get/set, re-renders) to a chart class.
+  // Add 'palette' to the class's observedAttributes and observedProps too.
+  chart.withPalette = function (ElementClass) {
+    Object.defineProperty(ElementClass.prototype, 'palette', {
+      configurable: true,
+      get: function () { return this._palette || null; },
+      set: function (value) {
+        this._palette = value || null;
+        if (this._root && this.isConnected) this.render();
+      }
+    });
+    return ElementClass;
+  };
+
   class LWTElement extends HTMLElement {
     constructor() {
       super();

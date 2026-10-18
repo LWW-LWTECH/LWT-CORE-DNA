@@ -25,6 +25,12 @@
  * Known scope limits: no slice value/percentage labels, no hover/click
  * interactivity, no exploded slices, legend text isn't wrapped.
  *
+ * Custom palette: `palette` attribute (comma-separated CSS colors), the
+ * `.palette` property (array of colors or { stroke, fill }), the inherited
+ * --lwt-chart-palette CSS variable, or page-wide LWT.chart.palette. A plain
+ * color is the strong color; the light fill is mixed from it. backgroundColor / borderColor
+ * colors in the data still win. See LWT.chart in lwt-core.js.
+ *
  * Theming: --lwt-chart-bg (default transparent), --lwt-chart-border,
  * --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-empty,
  * --lwt-chart-aspect-ratio (default 8/5).
@@ -85,8 +91,9 @@
       ' Z';
   }
 
-  function sliceColor(dataset, index) {
-    var p = PALETTE[index % PALETTE.length];
+  function sliceColor(dataset, index, pal) {
+    pal = pal || PALETTE;
+    var p = pal[index % pal.length];
     var fill = p.fill, stroke = p.stroke;
     if (dataset) {
       if (Array.isArray(dataset.backgroundColor)) { if (dataset.backgroundColor[index]) fill = dataset.backgroundColor[index]; }
@@ -117,11 +124,11 @@
 
   class LWTPieChart extends window.LWT.Element {
     static get observedAttributes() {
-      return ['title', 'legend-position'];
+      return ['title', 'legend-position', 'palette'];
     }
 
     static get observedProps() {
-      return ['data'];
+      return ['data', 'palette'];
     }
 
     constructor() {
@@ -171,7 +178,8 @@
       var title = this._strAttr('title', '');
       var legendPos = this._strAttr('legend-position', 'right');
 
-      var colors = labels.map(function (_, i) { return sliceColor(dataset, i); });
+      var pal = window.LWT.chart.resolve(this, PALETTE);
+      var colors = labels.map(function (_, i) { return sliceColor(dataset, i, pal); });
 
       var total = 0;
       values.forEach(function (v) { total += Number(v) || 0; });
@@ -252,5 +260,6 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTPieChart);
   window.LWT.define('lwtd-pie-chart', LWTPieChart);
 })();

@@ -112,7 +112,7 @@
 <body>
 
     <section>
-        <details open class="accordion-section">
+        <details class="accordion-section">
             <summary><lwtg-icon icon="cdna_lwtlogo" width="15px" height="15px"></lwtg-icon> LWT Core: DNA</summary>
 
             <h4>Overview</h4>
@@ -996,6 +996,7 @@ chart.data = {
   };
 </script>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; chart title text.</li><li><code>orientation</code> &mdash; "vertical" (default) | "horizontal".</li><li><code>stacked</code> &mdash; boolean; stacks datasets instead of grouping them.</li><li><code>legend-position</code> &mdash; "top" (default) | "bottom" | "left" | "right" | "none".</li><li><code>grid</code> &mdash; "both" (default) | "horizontal" | "vertical" | "none".</li><li><code>x-label / y-label</code> &mdash; category / value axis titles.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; set only &mdash; { labels: [...], datasets: [{ label, data, backgroundColor?, borderColor? }], targetLine?: {label,value,color?}, targetLines?: [...] }. Colors cycle through a built-in pastel palette when omitted.</li></ul><p><strong>Theming:</strong> --lwt-chart-bg, --lwt-chart-grid, --lwt-chart-border, --lwt-chart-tick-color, --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-target-color, --lwt-chart-aspect-ratio (default 8/5).</p>
+                <p><strong>Palette:</strong> <code>palette="#2563eb, #dc2626, #16a34a"</code> (or <code>.palette</code>, <code>--lwt-chart-palette</code>, <code>LWT.chart.palette</code>) &mdash; one color per dataset, in order; a light fill is mixed from each. Per-dataset <code>backgroundColor</code> / <code>borderColor</code> still win. See <em>Color Palettes</em>.</p>
             </details>
 
             <details>
@@ -1020,6 +1021,33 @@ chart.data = {
   };
 </script>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; chart title text.</li><li><code>bubble-scale</code> &mdash; multiplier applied to every point&apos;s r (default 1).</li><li><code>legend-position</code> &mdash; "top" (default) | "bottom" | "left" | "right" | "none".</li><li><code>grid</code> &mdash; "both" (default) | "horizontal" | "vertical" | "none".</li><li><code>x-label / y-label</code> &mdash; axis titles.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; set only &mdash; { datasets: [{ label, data: [{x, y, r}], backgroundColor?, borderColor? }] }. <code>r</code> is a literal pixel radius (not auto-scaled); tune via <code>bubble-scale</code> or directly in the data.</li></ul><p><strong>Theming:</strong> --lwt-chart-bg, --lwt-chart-grid, --lwt-chart-border, --lwt-chart-tick-color, --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-aspect-ratio.</p>
+                <p><strong>Palette:</strong> <code>palette="#2563eb, #dc2626, #16a34a"</code> (or <code>.palette</code>, <code>--lwt-chart-palette</code>, <code>LWT.chart.palette</code>) &mdash; one color per dataset, in order; a light fill is mixed from each. Per-dataset <code>backgroundColor</code> / <code>borderColor</code> still win. See <em>Color Palettes</em>.</p>
+            </details>
+            <details>
+                <summary><lwtg-icon icon="app_palette" width="15px" height="15px"></lwtg-icon> Color Palettes (all dashboard elements)</summary>
+                <p>Every dashboard element takes a custom color palette. The first one found wins:</p>
+                <ol>
+                    <li><code>chart.palette = ['#2563eb', '#dc2626', { stroke: '#16a34a', fill: '#dcfce7' }]</code> &mdash; JS property.</li>
+                    <li><code>&lt;lwtd-bar-chart palette="#2563eb, #dc2626, #16a34a"&gt;</code> &mdash; attribute, comma-separated.</li>
+                    <li><code>--lwt-chart-palette: #2563eb, #dc2626, #16a34a;</code> &mdash; CSS variable; it inherits, so one rule can theme a whole page, section or dashboard.</li>
+                    <li><code>LWT.chart.palette = [...]</code> &mdash; page-wide default (set it before the charts render).</li>
+                    <li>The element&rsquo;s built-in palette.</li>
+                </ol>
+                <p>Any CSS color works, including names, <code>hsl()</code> and <code>var(--brand-blue)</code>. A plain color is the strong color (lines, borders, dots) and a light fill is mixed from it automatically (<code>LWT.chart.fillMix</code>, default 0.35); pass <code>{ stroke, fill }</code> to choose both. Colors set in the data itself (<code>backgroundColor</code> / <code>borderColor</code>, zone <code>color</code>, item <code>color</code>) still win over the palette.</p>
+                <p>How each element uses it: series charts (bar, line, bubble, radar, scatter, pie, doughnut, treemap) &mdash; one color per dataset / slice / group, in order. Waterfall &mdash; increase, decrease, total. Gauge &mdash; zone colors, or the arc. Sparkline &mdash; the line, or up / down / flat with <code>trend</code>. Stat card &mdash; delta up / down / neutral. Mermaid &mdash; node color plus pie / journey / git colors.</p>
+                <h4>Implementation</h4>
+                <pre><code>&lt;div class="brand-charts" style="--lwt-chart-palette: #0f766e, #b45309, #7c3aed;"&gt;
+  &lt;lwtd-bar-chart title="Theme from the CSS variable"&gt;&lt;/lwtd-bar-chart&gt;
+  &lt;lwtd-doughnut-chart title="Same palette"&gt;&lt;/lwtd-doughnut-chart&gt;
+&lt;/div&gt;</code></pre>
+                <div style="--lwt-chart-palette: #0f766e, #b45309, #7c3aed; display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem; max-width:720px;">
+                    <lwtd-bar-chart id="demo-palette-bar" title="Theme from the CSS variable"></lwtd-bar-chart>
+                    <lwtd-doughnut-chart id="demo-palette-doughnut" title="Same palette" inner-radius="60"></lwtd-doughnut-chart>
+                </div>
+<script>
+  document.getElementById('demo-palette-bar').data = { labels: ['Q1', 'Q2', 'Q3', 'Q4'], datasets: [ { label: 'North', data: [42, 51, 47, 60] }, { label: 'South', data: [35, 39, 44, 41] }, { label: 'West', data: [20, 28, 31, 36] } ] };
+  document.getElementById('demo-palette-doughnut').data = { labels: ['North', 'South', 'West'], datasets: [{ data: [200, 159, 115] }] };
+</script>
             </details>
 
             <details>
@@ -1037,6 +1065,7 @@ chart.data = {
   document.getElementById('demo-lwtd-doughnut-chart').data = { labels: ['Online', 'In-Store', 'Wholesale'], datasets: [{ data: [163, 218, 135] }] };
 </script>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; chart title text.</li><li><code>legend-position</code> &mdash; "right" (default) | "top" | "bottom" | "left" | "none".</li><li><code>inner-radius</code> &mdash; 0&ndash;100, percentage of the outer radius the hole occupies (default 60). 0 behaves like a pie chart.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; set only &mdash; { labels: [...], datasets: [{ data, backgroundColor?: string|array, borderColor?: string|array }] }. Only the first dataset is used.</li></ul><p><strong>Theming:</strong> --lwt-chart-bg, --lwt-chart-border, --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-empty, --lwt-chart-aspect-ratio.</p>
+                <p><strong>Palette:</strong> <code>palette="#2563eb, #dc2626, #16a34a"</code> (or <code>.palette</code>, <code>--lwt-chart-palette</code>, <code>LWT.chart.palette</code>) &mdash; one color per slice, in order; a light fill is mixed from each. Per-dataset <code>backgroundColor</code> / <code>borderColor</code> still win. See <em>Color Palettes</em>.</p>
             </details>
 
             <details>
@@ -1061,6 +1090,7 @@ chart.data = {
   document.getElementById('demo-gauge').data = { zones: [ { from: 0, to: 50, color: '#22c55e' }, { from: 50, to: 80, color: '#f59e0b' }, { from: 80, to: 100, color: '#ef4444' } ] };
 </script>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; small title above the gauge.</li><li><code>value</code> &mdash; current value (also the displayed number, shown verbatim with unit appended &mdash; no number formatting).</li><li><code>min, max</code> &mdash; range (defaults 0, 100).</li><li><code>label</code> &mdash; small caption under the value, inside the ring.</li><li><code>unit</code> &mdash; suffix appended to the displayed value, e.g. "%".</li><li><code>color</code> &mdash; explicit arc color; overrides zone matching entirely.</li><li><code>thickness</code> &mdash; ring stroke width in px (default 24).</li><li><code>sweep</code> &mdash; degrees of arc the gauge spans, gap centered at the bottom (default 270; 180 gives a half-donut).</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; set only, optional &mdash; { zones: [{ from, to, color }] }. Without zones the track is plain grey and the progress arc uses <code>color</code> (or built-in blue). With zones, a small indicator marks the current value on the colored bands instead.</li></ul><p><strong>Theming:</strong> --lwt-gauge-bg, --lwt-gauge-track-color, --lwt-gauge-color, --lwt-gauge-value-color, --lwt-gauge-label-color, --lwt-gauge-tick-color, --lwt-gauge-aspect-ratio.</p>
+                <p><strong>Palette:</strong> zones without a <code>color</code> take the palette colors in order (e.g. <code>palette="#16a34a, #f59e0b, #dc2626"</code> for good / warning / bad); with no zones the arc uses the first color. An explicit <code>color</code> still wins.</p>
             </details>
 
             <details>
@@ -1084,8 +1114,30 @@ chart.data = {
       { label: 'Visitors', data: [4200, 4800, 5100, 4900, 5500, 6200] }
     ]
   };
+let isInitialState = true;
+setInterval(() => {
+  if (isInitialState) {
+    document.getElementById('demo-lwtd-line-chart').data = {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+        datasets: [
+        { label: 'Visitors', data: [1200, 1800, 2100, 1900, 2500, 3200] }
+        ]
+    };
+  } else {
+    document.getElementById('demo-lwtd-line-chart').data = {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+        datasets: [
+        { label: 'Visitors', data: [4200, 4800, 5100, 4900, 5500, 6200] }
+        ]
+    };
+  }
+  
+  // Flip the switch so it does the opposite next time
+  isInitialState = !isInitialState; 
+}, 5000); // 5000 milliseconds = happens every 5 seconds
 </script>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; chart title text.</li><li><code>stacked</code> &mdash; boolean; stacks areas instead of overlapping them.</li><li><code>fill</code> &mdash; boolean; chart-wide default fill mode for datasets that don&apos;t set their own.</li><li><code>line-width</code> &mdash; default stroke width in px (default 2).</li><li><code>point-radius</code> &mdash; default dot radius in px, 0 hides dots (default 3).</li><li><code>legend-position</code> &mdash; "top" (default) | "bottom" | "left" | "right" | "none".</li><li><code>grid</code> &mdash; "horizontal" (default) | "vertical" | "both" | "none".</li><li><code>x-label / y-label</code> &mdash; axis titles.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; set only &mdash; { labels, datasets: [{ label, data, borderColor?, backgroundColor?, fill?, borderWidth?, pointRadius? }] }. Per-dataset fields override the chart-wide attributes above.</li></ul><p><strong>Theming:</strong> --lwt-chart-bg, --lwt-chart-grid, --lwt-chart-border, --lwt-chart-tick-color, --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-aspect-ratio.</p>
+                <p><strong>Palette:</strong> <code>palette="#2563eb, #dc2626, #16a34a"</code> (or <code>.palette</code>, <code>--lwt-chart-palette</code>, <code>LWT.chart.palette</code>) &mdash; one color per dataset, in order; a light fill is mixed from each. Per-dataset <code>backgroundColor</code> / <code>borderColor</code> still win. See <em>Color Palettes</em>.</p>
             </details>
 
             <details>
@@ -1182,6 +1234,7 @@ chart.data = {
 </script>
                 </lwtd-mermaid>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label</code> &mdash; accessible name of the diagram (also used for the download file name).</li><li><code>pan-zoom</code> &mdash; boolean; drag to pan, Ctrl/Cmd + wheel or pinch to zoom, zoom in / out / fit buttons, and arrow keys / + / - / 0 when the diagram is focused.</li><li><code>download</code> &mdash; boolean; &quot;SVG&quot; and &quot;PNG&quot; download buttons.</li><li><code>fullscreen</code> &mdash; boolean; a full-screen button that makes the diagram fill the screen on top of everything (Esc or the button exits). Uses the browser&apos;s full-screen mode, or covers the page where that isn&apos;t available.</li><li><code>filename</code> &mdash; download file name without extension (default: from the label).</li><li><code>direction</code> &mdash; which way the arrows flow: TB / TD (top to bottom), BT, LR (left to right) or RL &mdash; overrides the direction in the text. A tree drawn TB is wide (root at the top, children spread sideways); <code>LR</code> makes it tall (each level is a column, siblings stack vertically). Applies to flowcharts and state / class diagrams.</li><li><code>theme</code> &mdash; &quot;lwt&quot; (default, colors from the --lwt-* variables) or a Mermaid theme: default, neutral, dark, forest.</li><li><code>mermaid-src</code> &mdash; URL of mermaid.min.js (default: <code>window.LWT.mermaidSrc</code>, else jsDelivr mermaid@11.17.2) &mdash; use it to self-host or pin another version.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>definition</code> &mdash; get/set the diagram text (editing the &lt;script&gt; text also re-renders).</li><li><code>svg</code> &mdash; the rendered &lt;svg&gt; element.</li><li><code>render(), fit()</code> &mdash; re-render now / fit the pan-zoom view.</li><li><code>toggleFullscreen(force), isFullscreen</code> &mdash; enter / leave full screen from code.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-render</code> &mdash; detail: { svg }.</li><li><code>lwt-error</code> &mdash; syntax or loading error, also shown inline; detail: { message }.</li><li><code>lwt-fullscreen</code> &mdash; entering / leaving full screen; detail: { active }.</li></ul><p><strong>Accessibility:</strong> flowcharts get a screen-reader outline of the node hierarchy; other diagram types use Mermaid&apos;s own <code>accTitle</code> / <code>accDescr</code> lines.</p><p><strong>Theming:</strong> --lwt-mermaid-bg, --lwt-mermaid-node-bg, --lwt-mermaid-node-border, --lwt-mermaid-text, --lwt-mermaid-line, --lwt-mermaid-font-size, --lwt-mermaid-border, --lwt-mermaid-radius, --lwt-mermaid-padding, --lwt-mermaid-height (pan-zoom viewport, default 420px).</p>
+                <p><strong>Palette:</strong> (with the default <code>theme="lwt"</code>) the first color styles the nodes; the colors in order are used by pie charts, journeys, timelines, mindmaps and git graphs.</p>
             </details>
 
             <details>
@@ -1199,6 +1252,7 @@ chart.data = {
   document.getElementById('demo-lwtd-pie-chart').data = { labels: ['Online', 'In-Store', 'Wholesale'], datasets: [{ data: [163, 218, 135], backgroundColor: ['#93c5fd', '#f9a8d4', '#86efac'] }] };
 </script>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; chart title text.</li><li><code>legend-position</code> &mdash; "right" (default) | "top" | "bottom" | "left" | "none".</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; set only &mdash; { labels: [...], datasets: [{ data, backgroundColor?: string|array, borderColor?: string|array }] }. Only the first dataset is used; colors cycle automatically when omitted.</li></ul><p><strong>Theming:</strong> --lwt-chart-bg, --lwt-chart-border, --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-empty, --lwt-chart-aspect-ratio.</p>
+                <p><strong>Palette:</strong> <code>palette="#2563eb, #dc2626, #16a34a"</code> (or <code>.palette</code>, <code>--lwt-chart-palette</code>, <code>LWT.chart.palette</code>) &mdash; one color per slice, in order; a light fill is mixed from each. Per-dataset <code>backgroundColor</code> / <code>borderColor</code> still win. See <em>Color Palettes</em>.</p>
             </details>
 
             <details>
@@ -1225,6 +1279,45 @@ chart.data = {
   };
 </script>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; chart title text.</li><li><code>legend-position</code> &mdash; "top" (default) | "bottom" | "left" | "right" | "none".</li><li><code>grid</code> &mdash; "both" (default) | "none" &mdash; rings are polygons matching the axis count, not axis-aligned lines.</li><li><code>line-width</code> &mdash; default stroke width in px (default 2).</li><li><code>point-radius</code> &mdash; default dot radius in px, 0 hides dots (default 3).</li><li><code>fill-opacity</code> &mdash; default fill alpha, 0&ndash;1 (default 0.25).</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; set only &mdash; { labels: [...axis names...], datasets: [{ label, data, borderColor?, backgroundColor?, pointRadius?, borderWidth?, fillOpacity? }] }. The radial scale auto-ranges to a "nice" min/max around the actual data (no begin-at-zero option) &mdash; needs at least 3 labels to look like a proper polygon.</li></ul><p><strong>Theming:</strong> --lwt-chart-bg, --lwt-chart-grid, --lwt-chart-tick-color, --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-aspect-ratio.</p>
+                <p><strong>Palette:</strong> <code>palette="#2563eb, #dc2626, #16a34a"</code> (or <code>.palette</code>, <code>--lwt-chart-palette</code>, <code>LWT.chart.palette</code>) &mdash; one color per dataset, in order; a light fill is mixed from each. Per-dataset <code>backgroundColor</code> / <code>borderColor</code> still win. See <em>Color Palettes</em>.</p>
+            </details>
+            <details>
+                <summary><lwtg-icon icon="app_scatter" width="15px" height="15px"></lwtg-icon> Scatter Plot</summary>
+                <p>A scatter plot: one dot per data point on two numeric axes, grouped into series, with an optional trend line (line of best fit) and median lines. Hover (or tap) near a dot to see its label, series and both values under their axis titles.</p>
+                <h4>Implementation</h4>
+                <pre><code>&lt;lwtd-scatter title="Experience vs. salary" x-label="Years of experience" y-label="Salary"
+              y-prefix="$" y-suffix="k" trend median="both"&gt;&lt;/lwtd-scatter&gt;
+
+&lt;script&gt;
+  document.querySelector('lwtd-scatter').data = {
+    datasets: [
+      { label: 'Engineering', data: [{ x: 1, y: 68, label: 'Ana' }, { x: 3, y: 82, label: 'Chen' }, { x: 7, y: 115, label: 'Eli' }] },
+      { label: 'Design', data: [{ x: 1, y: 58, label: 'Hana' }, { x: 4, y: 74, label: 'Jun' }, { x: 8, y: 96, label: 'Lea' }] }
+    ]
+  };
+&lt;/script&gt;</code></pre>
+
+                <lwtd-scatter id="demo-lwtd-scatter" title="Experience vs. salary" x-label="Years of experience" y-label="Salary" y-prefix="$" y-suffix="k" trend median="both" style="max-width:560px;"></lwtd-scatter>
+<script>
+  document.getElementById('demo-lwtd-scatter').data = {
+    datasets: [
+      { label: 'Engineering', data: [{ x: 1, y: 68, label: 'Ana' }, { x: 2, y: 75, label: 'Ben' }, { x: 3, y: 82, label: 'Chen' }, { x: 5, y: 98, label: 'Dev' }, { x: 7, y: 115, label: 'Eli' }, { x: 9, y: 128, label: 'Fay' }, { x: 12, y: 142, label: 'Gus' }] },
+      { label: 'Design', data: [{ x: 1, y: 58, label: 'Hana' }, { x: 3, y: 66, label: 'Ivo' }, { x: 4, y: 74, label: 'Jun' }, { x: 6, y: 85, label: 'Kai' }, { x: 8, y: 96, label: 'Lea' }, { x: 11, y: 104, label: 'Mo' }] }
+    ]
+  };
+</script>
+                <p>A trend line and median per series (<code>trend-scope="series"</code>, <code>median-scope="series"</code>) with a marker shape per series (<code>shapes</code>):</p>
+                <lwtd-scatter id="demo-lwtd-scatter-2" title="Study hours vs. test score" x-label="Study hours" y-label="Score" trend trend-scope="series" median median-scope="series" shapes legend-position="bottom" style="max-width:560px;"></lwtd-scatter>
+<script>
+  document.getElementById('demo-lwtd-scatter-2').data = {
+    datasets: [
+      { label: 'Class A', data: [{ x: 2, y: 55 }, { x: 4, y: 62 }, { x: 5, y: 70 }, { x: 7, y: 78 }, { x: 9, y: 88 }, { x: 10, y: 91 }] },
+      { label: 'Class B', data: [{ x: 1, y: 48 }, { x: 3, y: 60 }, { x: 6, y: 66 }, { x: 8, y: 72 }, { x: 11, y: 84 }] }
+    ]
+  };
+</script>
+                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; chart title.</li><li><code>trend</code> &mdash; boolean; draws a straight least-squares line of best fit across the points' x range, labelled with its R&sup2; (0&ndash;1: how closely the dots follow it).</li><li><code>trend-scope</code> &mdash; <code>"all"</code> (default, one line through every point) or <code>"series"</code> (one line per series, in its color).</li><li><code>median</code> &mdash; draws a dashed median line, labelled with its value: no value or <code>"y"</code> = horizontal line at the median y; <code>"x"</code> = vertical line at the median x; <code>"both"</code> = both (quadrants).</li><li><code>median-scope</code> &mdash; <code>"all"</code> (default, one median over every point) or <code>"series"</code> (one line per series, in its color).</li><li><code>legend-position</code> &mdash; "top" (default), "bottom", "left", "right" or "none".</li><li><code>grid</code> &mdash; "both" (default), "horizontal", "vertical" or "none".</li><li><code>x-label, y-label</code> &mdash; axis titles, also used in the tooltip (falls back to "X" / "Y").</li><li><code>x-prefix, x-suffix, y-prefix, y-suffix</code> &mdash; text around the numbers on the axes, tooltip and median labels, e.g. <code>y-prefix="$"</code>.</li><li><code>x-min, x-max, y-min, y-max</code> &mdash; fix an axis end; otherwise each axis fits "nice" numbers around the data (not forced to 0).</li><li><code>point-size</code> &mdash; dot radius in px (default 5).</li><li><code>shapes</code> &mdash; boolean; each series also gets its own marker shape (circle, square, triangle, diamond&hellip;), so series stay distinct without relying on color.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; <code>{ datasets: [{ label, data: [{ x, y, label }], borderColor }] }</code>. A point's <code>label</code> is optional and heads its tooltip. <code>borderColor</code> / <code>backgroundColor</code> (a single color) overrides the series color. Points with a missing x or y are skipped.</li><li><code>trendStats</code> &mdash; read only &mdash; the fitted line(s): <code>[{ series, slope, intercept, r2, n }]</code> (<code>series</code> is null for the all-points line); empty when <code>trend</code> is off.</li></ul><p>Screen readers get a data table (series, point, x, y) and the trend (rises/falls N per 1 x, R&sup2;) and median values in the chart's name.</p><p><strong>Theming:</strong> --lwt-scatter-trend-color, --lwt-scatter-median-color, plus --lwt-chart-bg, --lwt-chart-grid, --lwt-chart-border, --lwt-chart-tick-color, --lwt-chart-label-color, --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-aspect-ratio. <strong>Parts:</strong> wrap, tooltip.</p>
+                <p><strong>Palette:</strong> <code>palette="#2563eb, #dc2626, #16a34a"</code> (or <code>.palette</code>, <code>--lwt-chart-palette</code>, <code>LWT.chart.palette</code>) &mdash; one color per series, in order; a light fill is mixed from each. Per-dataset <code>backgroundColor</code> / <code>borderColor</code> still win. See <em>Color Palettes</em>.</p>
             </details>
 
             <details>
@@ -1241,6 +1334,7 @@ chart.data = {
     data="10 25 15 40 30 45 35" trend
     style="height: 2rem; width: 160px;"></lwtd-sparkline>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>data</code> &mdash; required; space/comma separated numbers. A normal observed attribute &mdash; setAttribute('data', ...) live-updates it.</li><li><code>label</code> &mdash; accessible label (aria-label on the SVG; not rendered as visible text).</li><li><code>color</code> &mdash; CSS color, overrides everything including trend.</li><li><code>trend</code> &mdash; boolean; auto-color green/red/grey by first-to-last value change (&gt;5% rise/fall, else neutral).</li><li><code>no-fill</code> &mdash; boolean; disables the area fill under the line (on by default).</li><li><code>line-width</code> &mdash; stroke width in viewBox units (default 2).</li></ul><p><strong>Theming:</strong> --lwt-sparkline-width (120px), --lwt-sparkline-height (32px), --lwt-sparkline-color, --lwt-sparkline-up-color, --lwt-sparkline-down-color, --lwt-sparkline-flat-color.</p>
+                <p><strong>Palette:</strong> the first color is the line; with <code>trend</code> the first three are up, down, flat. An explicit <code>color</code> still wins.</p>
             </details>
 
             <details>
@@ -1259,6 +1353,92 @@ chart.data = {
         style="width: 100%; height: 28px;"></lwtd-sparkline>
 </lwtd-stat-card>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label</code> &mdash; small caption above the value.</li><li><code>value</code> &mdash; the big stat text &mdash; plain display string, no number formatting (write "$48,200" exactly as you want it shown).</li><li><code>delta</code> &mdash; change text, e.g. "+12.4%" (omit to hide the delta row).</li><li><code>trend</code> &mdash; "up" | "down" | "neutral" &mdash; overrides inference from delta&apos;s leading character (+/-).</li></ul><p><strong>Slots:</strong></p><ul><li><code>icon</code> &mdash; anything &mdash; an emoji, inline SVG, an &lt;img&gt;. Row disappears automatically when empty.</li><li><code>chart</code> &mdash; typically an &lt;lwtd-sparkline&gt;; size it directly on the sparkline itself via style, not via the card.</li></ul><p><strong>Theming:</strong> --lwt-stat-bg, --lwt-stat-border (shorthand), --lwt-stat-gap, --lwt-stat-padding, --lwt-stat-radius, --lwt-stat-icon-radius, --lwt-stat-label-color, --lwt-stat-value-color, --lwt-stat-icon-bg (shares --lwt-sparkline-up/-down/-flat-color with Sparkline).</p>
+                <p><strong>Palette:</strong> delta colors in order up, down, neutral. A sparkline in the <code>chart</code> slot also picks up an inherited <code>--lwt-chart-palette</code>.</p>
+            </details>
+            <details>
+                <summary><lwtg-icon icon="app_treemap" width="15px" height="15px"></lwtg-icon> Treemap</summary>
+                <p>A treemap: each item is a rectangle sized by its value, so the biggest parts of a whole stand out at a glance. Items can be grouped &mdash; a group is a labelled box holding its children, and each group gets its own palette color. Tiles show their label and value when they fit; hover any tile for its path, value, share of the total and share of its group.</p>
+                <h4>Implementation</h4>
+                <pre><code>&lt;lwtd-treemap title="Annual budget by department" value-prefix="$" value-suffix="k"&gt;&lt;/lwtd-treemap&gt;
+
+&lt;script&gt;
+  document.querySelector('lwtd-treemap').data = {
+    items: [
+      { label: 'Engineering', children: [
+          { label: 'Salaries', value: 820 }, { label: 'Cloud hosting', value: 240 },
+          { label: 'Tools &amp; licenses', value: 60 }, { label: 'Training', value: 25 } ] },
+      { label: 'Sales', children: [ { label: 'Salaries', value: 410 }, { label: 'Travel', value: 95 }, { label: 'Events', value: 70 } ] },
+      { label: 'Marketing', children: [ { label: 'Ads', value: 260 }, { label: 'Content', value: 80 }, { label: 'Brand', value: 40 } ] },
+      { label: 'Operations', children: [ { label: 'Office rent', value: 180 }, { label: 'Utilities', value: 30 } ] },
+      { label: 'Support', value: 120 }
+    ]
+  };
+&lt;/script&gt;</code></pre>
+
+                <lwtd-treemap id="demo-lwtd-treemap" title="Annual budget by department" value-prefix="$" value-suffix="k" style="max-width:640px;"></lwtd-treemap>
+<script>
+  document.getElementById('demo-lwtd-treemap').data = {
+    items: [
+      { label: 'Engineering', children: [ { label: 'Salaries', value: 820 }, { label: 'Cloud hosting', value: 240 }, { label: 'Tools & licenses', value: 60 }, { label: 'Training', value: 25 } ] },
+      { label: 'Sales', children: [ { label: 'Salaries', value: 410 }, { label: 'Travel', value: 95 }, { label: 'Events', value: 70 } ] },
+      { label: 'Marketing', children: [ { label: 'Ads', value: 260 }, { label: 'Content', value: 80 }, { label: 'Brand', value: 40 } ] },
+      { label: 'Operations', children: [ { label: 'Office rent', value: 180 }, { label: 'Utilities', value: 30 } ] },
+      { label: 'Support', value: 120 }
+    ]
+  };
+</script>
+                <p>Flat data with a custom palette (Chart.js-style <code>labels</code> / <code>datasets</code> also works):</p>
+                <lwtd-treemap id="demo-lwtd-treemap-2" title="Browser share" value-suffix="%" palette="#2563eb, #dc2626, #16a34a, #9333ea, #ea580c, #0891b2, #64748b" style="max-width:640px;"></lwtd-treemap>
+<script>
+  document.getElementById('demo-lwtd-treemap-2').data = { labels: ['Chrome', 'Safari', 'Edge', 'Firefox', 'Samsung', 'Opera', 'Other'], datasets: [{ data: [65, 18, 5.5, 3, 2.5, 2, 4] }] };
+</script>
+                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; chart title.</li><li><code>legend-position</code> &mdash; "top", "bottom" or "none". Default "top" with groups, "none" for a flat list (the tiles are labelled).</li><li><code>color-by</code> &mdash; "group" (default with groups: each top-level group a color), "item" (each top-level tile a color; default for flat data) or "value" (one color, deeper = bigger).</li><li><code>hide-values</code> &mdash; boolean; no values on the tiles.</li><li><code>value-prefix, value-suffix</code> &mdash; text around numbers, e.g. "$" and "k".</li><li><code>palette</code> &mdash; custom colors, one per top-level group / item (see <em>Color Palettes</em>).</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; <code>{ items: [{ label, value, color, children }] }</code>. A group&rsquo;s value is the sum of its <code>children</code> (groups can nest). <code>color</code> overrides the palette for that item and its children. Items with a value of 0 or less are left out. Flat Chart.js-style <code>{ labels, datasets: [{ data }] }</code> also works.</li><li><code>palette</code> &mdash; array of colors or <code>{ stroke, fill }</code>.</li></ul><p>Screen readers get a data table (group, item, value, share of total).</p><p><strong>Theming:</strong> --lwt-treemap-gap (px between tiles, default 2), --lwt-treemap-text-color, --lwt-treemap-group-bg, plus --lwt-chart-bg, --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-aspect-ratio. <strong>Parts:</strong> wrap, tooltip.</p>
+            </details>
+            <details>
+                <summary><lwtg-icon icon="app_waterfall" width="15px" height="15px"></lwtg-icon> Waterfall Chart</summary>
+                <p>A waterfall (bridge) chart: a starting value, the increases and decreases that change it, and the running total they add up to &mdash; revenue bridges, budget vs. actual, headcount change. Each change floats from where the previous bar ended, joined by dashed connectors; total bars are drawn from zero.</p>
+                <h4>Implementation</h4>
+                <pre><code>&lt;lwtd-waterfall title="Revenue bridge, Q1 to Q2" value-prefix="$" value-suffix="k" y-label="Revenue"&gt;&lt;/lwtd-waterfall&gt;
+
+&lt;script&gt;
+  document.querySelector('lwtd-waterfall').data = {
+    items: [
+      { label: 'Q1 revenue', value: 1200, type: 'total' }, // start: absolute bar from 0
+      { label: 'New customers', value: 300 },              // +300
+      { label: 'Upsells', value: 120 },
+      { label: 'Price change', value: 60 },
+      { label: 'Churn', value: -180 },                     // -180
+      { label: 'Refunds', value: -45 },
+      { label: 'Q2 revenue', type: 'total' }               // no value: shows the running total
+    ]
+  };
+&lt;/script&gt;</code></pre>
+
+                <lwtd-waterfall id="demo-lwtd-waterfall" title="Revenue bridge, Q1 to Q2" value-prefix="$" value-suffix="k" y-label="Revenue" style="max-width:560px;"></lwtd-waterfall>
+<script>
+  document.getElementById('demo-lwtd-waterfall').data = {
+    items: [
+      { label: 'Q1 revenue', value: 1200, type: 'total' },
+      { label: 'New customers', value: 300 },
+      { label: 'Upsells', value: 120 },
+      { label: 'Price change', value: 60 },
+      { label: 'Churn', value: -180 },
+      { label: 'Refunds', value: -45 },
+      { label: 'Q2 revenue', type: 'total' }
+    ]
+  };
+</script>
+                <p>Values can cross zero &mdash; e.g. a cash-flow bridge (Chart.js-style data with <code>totals</code> indexes):</p>
+                <lwtd-waterfall id="demo-lwtd-waterfall-2" title="Monthly cash flow" value-prefix="$" value-suffix="k" legend-position="bottom" style="max-width:560px;"></lwtd-waterfall>
+<script>
+  document.getElementById('demo-lwtd-waterfall-2').data = {
+    labels: ['Opening', 'Sales', 'Payroll', 'Rent', 'Equipment', 'Subtotal', 'Loan', 'Closing'],
+    datasets: [{ data: [40, 85, -110, -25, -30, null, 60, null] }],
+    totals: [0, 5, 7]
+  };
+</script>
+                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; chart title.</li><li><code>legend-position</code> &mdash; "top" (default), "bottom" or "none". Only the kinds present are listed.</li><li><code>grid</code> &mdash; "horizontal" (default) or "none". A zero line is always drawn when values go negative.</li><li><code>x-label, y-label</code> &mdash; axis titles.</li><li><code>hide-values</code> &mdash; boolean; hides the value labels on the bars (changes show signed, e.g. +300 / &minus;180; totals show the amount).</li><li><code>no-connectors</code> &mdash; boolean; hides the dashed lines joining the bars.</li><li><code>value-prefix, value-suffix</code> &mdash; text around every number, e.g. "$" and "k".</li><li><code>increase-label, decrease-label, total-label</code> &mdash; legend / tooltip text (default "Increase", "Decrease", "Total").</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; <code>{ items: [{ label, value, type, color }] }</code>. A plain item is a change added to the running total. <code>type: 'total'</code> with a value sets the running total to it (a start or reset); without a value it shows the current running total (a subtotal or end bar). <code>color</code> overrides one bar. Chart.js-style <code>{ labels, datasets: [{ data }], totals: [indexes] }</code> also works.</li></ul><p>Hovering a bar shows its change and the running total. Screen readers get a data table (step, change, running total).</p><p><strong>Theming:</strong> --lwt-waterfall-increase-color (default --lwt-success), --lwt-waterfall-decrease-color (default --lwt-danger), --lwt-waterfall-total-color (default --lwt-primary), plus --lwt-chart-bg, --lwt-chart-grid, --lwt-chart-border, --lwt-chart-tick-color, --lwt-chart-label-color, --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-aspect-ratio. <strong>Parts:</strong> wrap, tooltip.</p>
+                <p><strong>Palette:</strong> three colors in order increase, decrease, total, e.g. <code>palette="#0d9488, #e11d48, #4f46e5"</code>.</p>
             </details>
 
         </details>

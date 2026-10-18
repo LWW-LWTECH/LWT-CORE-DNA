@@ -43,6 +43,11 @@
  * Known scope limits: no built-in number formatting/animation/counting-up
  * effect, no click interactivity.
  *
+ * Custom palette (`palette` attribute, `.palette` property,
+ * --lwt-chart-palette or LWT.chart.palette): delta colors, in order up,
+ * down, neutral. A chart in the `chart` slot picks up an inherited
+ * --lwt-chart-palette too.
+ *
  * Theming: --lwt-stat-bg, --lwt-stat-border, --lwt-stat-label-color,
  * --lwt-stat-value-color, --lwt-stat-icon-bg, --lwt-sparkline-up-color,
  * --lwt-sparkline-down-color, --lwt-sparkline-flat-color (shared with
@@ -129,7 +134,7 @@
 
   class LWTStatCard extends window.LWT.Element {
     static get observedAttributes() {
-      return ['label', 'value', 'delta', 'trend'];
+      return ['label', 'value', 'delta', 'trend', 'palette'];
     }
 
     render() {
@@ -159,6 +164,10 @@
         ? '<span aria-hidden="true">' + arrow + '</span><span class="lwt-sr-only">' + spoken + '</span>' + window.LWT.a11y.escape(delta)
         : '';
       deltaEl.className = 'delta delta-' + trend;
+      // Custom palette: [up, down, neutral] delta colors.
+      var pal = window.LWT.chart.resolve(this, null);
+      var pc = pal.custom ? pal[trend === 'up' ? 0 : trend === 'down' ? 1 : 2] : null;
+      deltaEl.style.color = pc ? pc.stroke : '';
       deltaEl.style.display = delta ? '' : 'none';
 
       var iconSlot = root.querySelector('slot[name="icon"]');
@@ -179,5 +188,6 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTStatCard);
   window.LWT.define('lwtd-stat-card', LWTStatCard);
 })();

@@ -41,6 +41,11 @@
  * .toggleFullscreen(force) / .isFullscreen
  * Events: lwt-render { svg }, lwt-error { message }, lwt-fullscreen { active }
  *
+ * Custom palette (`palette` attribute, `.palette` property,
+ * --lwt-chart-palette or LWT.chart.palette; theme="lwt" only): the first
+ * color styles the nodes, and the colors in order are used by pie charts,
+ * journeys, timelines, mindmaps and git graphs.
+ *
  * Theming: --lwt-mermaid-bg, --lwt-mermaid-node-bg, --lwt-mermaid-node-border,
  * --lwt-mermaid-text, --lwt-mermaid-line, --lwt-mermaid-font-size,
  * --lwt-mermaid-border, --lwt-mermaid-radius, --lwt-mermaid-padding,
@@ -228,7 +233,7 @@
 
   class LWTMermaid extends window.LWT.Element {
     static get observedAttributes() {
-      return ['label', 'theme', 'pan-zoom', 'download', 'fullscreen', 'mermaid-src', 'filename', 'direction'];
+      return ['label', 'theme', 'pan-zoom', 'download', 'fullscreen', 'mermaid-src', 'filename', 'direction', 'palette'];
     }
 
     constructor() {
@@ -281,7 +286,7 @@
     attributeChangedCallback(name, oldValue, newValue) {
       if (oldValue === newValue || !this._canvas) return;
       this._syncChrome();
-      if (name === 'theme' || name === 'mermaid-src' || name === 'pan-zoom' || name === 'direction') this._requestRender();
+      if (name === 'theme' || name === 'mermaid-src' || name === 'pan-zoom' || name === 'direction' || name === 'palette') this._requestRender();
     }
 
     render() {
@@ -379,6 +384,12 @@
       var line = this._color('var(--lwt-mermaid-line, var(--lwt-color-text-muted, #6b7280))', [107, 114, 128]);
       var nodeBg = this._color('var(--lwt-mermaid-node-bg, transparent)', null);
       if (!nodeBg || getComputedStyle(this._probe).color.indexOf('rgba(0, 0, 0, 0)') === 0) nodeBg = mix(primary, surface, 0.12);
+      // Custom palette: the first color styles the nodes; the rest feed the
+      // multi-color diagrams (pie, journey, timeline, mindmap, git...).
+      var pal = window.LWT.chart.resolve(this, null);
+      var self = this;
+      var palRgb = pal.custom ? pal.map(function (p) { return self._color(p.stroke, null); }).filter(Boolean) : [];
+      if (palRgb.length) { primary = palRgb[0]; nodeBg = mix(primary, surface, 0.12); }
       var border = this._color('var(--lwt-border-color, #e5e7eb)', [229, 231, 235]);
       base.theme = 'base';
       base.themeVariables = {
@@ -391,6 +402,16 @@
         clusterBkg: hex(mix(primary, surface, 0.05)), clusterBorder: hex(border),
         edgeLabelBackground: hex(surface), titleColor: hex(text)
       };
+      var tv = base.themeVariables;
+      palRgb.forEach(function (c, i) {
+        if (i < 12) {
+          tv['pie' + (i + 1)] = hex(c);
+          tv['cScale' + i] = hex(mix(c, surface, 0.35));
+          tv['cScalePeer' + i] = hex(c);
+          tv['cScaleLabel' + i] = hex(text);
+        }
+        if (i < 8) { tv['git' + i] = hex(c); tv['gitBranchLabel' + i] = hex(surface); }
+      });
       return base;
     }
 
@@ -754,5 +775,10 @@
     }
   }
 
+  Object.defineProperty(LWTMermaid.prototype, 'palette', {
+    configurable: true,
+    get: function () { return this._palette || null; },
+    set: function (value) { this._palette = value || null; if (this._canvas) this._requestRender(); }
+  });
   window.LWT.define('lwtd-mermaid', LWTMermaid);
 })();

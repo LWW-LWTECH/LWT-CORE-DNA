@@ -51,6 +51,12 @@
  * it fits on one row for top/bottom), long category labels aren't
  * rotated. All fixable later, just not included in this first version.
  *
+ * Custom palette: `palette` attribute (comma-separated CSS colors), the
+ * `.palette` property (array of colors or { stroke, fill }), the inherited
+ * --lwt-chart-palette CSS variable, or page-wide LWT.chart.palette. A plain
+ * color is the strong color; the light fill is mixed from it. Per-dataset
+ * colors in the data still win. See LWT.chart in lwt-core.js.
+ *
  * Theming: --lwt-chart-bg (default transparent — inherits its container
  * like the rest of the library), --lwt-chart-grid, --lwt-chart-border,
  * --lwt-chart-tick-color, --lwt-chart-label-color, --lwt-chart-title-color,
@@ -154,11 +160,11 @@
 
   class LWTBarChart extends window.LWT.Element {
     static get observedAttributes() {
-      return ['title', 'orientation', 'stacked', 'legend-position', 'grid', 'x-label', 'y-label'];
+      return ['title', 'orientation', 'stacked', 'legend-position', 'grid', 'x-label', 'y-label', 'palette'];
     }
 
     static get observedProps() {
-      return ['data'];
+      return ['data', 'palette'];
     }
 
     constructor() {
@@ -207,8 +213,9 @@
       var xLabel = this._strAttr('x-label', '');
       var yLabel = this._strAttr('y-label', '');
 
+      var pal = window.LWT.chart.resolve(this, PALETTE);
       var colors = datasets.map(function (ds, i) {
-        var p = PALETTE[i % PALETTE.length];
+        var p = pal[i % pal.length];
         return { fill: ds.backgroundColor || p.fill, stroke: ds.borderColor || p.stroke };
       });
 
@@ -417,5 +424,6 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTBarChart);
   window.LWT.define('lwtd-bar-chart', LWTBarChart);
 })();

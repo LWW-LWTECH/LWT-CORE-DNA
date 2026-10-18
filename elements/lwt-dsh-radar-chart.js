@@ -50,6 +50,12 @@
  * text isn't wrapped, needs at least 3 labels to look like a proper
  * polygon (works with fewer, just looks like a line/point).
  *
+ * Custom palette: `palette` attribute (comma-separated CSS colors), the
+ * `.palette` property (array of colors or { stroke, fill }), the inherited
+ * --lwt-chart-palette CSS variable, or page-wide LWT.chart.palette. A plain
+ * color is the strong color; the light fill is mixed from it. Per-dataset
+ * colors in the data still win. See LWT.chart in lwt-core.js.
+ *
  * Theming: --lwt-chart-bg (default transparent), --lwt-chart-grid,
  * --lwt-chart-tick-color, --lwt-chart-label-color, --lwt-chart-title-color,
  * --lwt-chart-legend-color, --lwt-chart-aspect-ratio (default 8/5).
@@ -149,11 +155,11 @@
 
   class LWTRadarChart extends window.LWT.Element {
     static get observedAttributes() {
-      return ['title', 'legend-position', 'grid', 'line-width', 'point-radius', 'fill-opacity'];
+      return ['title', 'legend-position', 'grid', 'line-width', 'point-radius', 'fill-opacity', 'palette'];
     }
 
     static get observedProps() {
-      return ['data'];
+      return ['data', 'palette'];
     }
 
     constructor() {
@@ -201,8 +207,9 @@
       var defaultFillOpacity = parseFloat(this._strAttr('fill-opacity', '0.25'));
       if (isNaN(defaultFillOpacity)) defaultFillOpacity = 0.25;
 
+      var pal = window.LWT.chart.resolve(this, PALETTE);
       var series = datasets.map(function (ds, i) {
-        var p = PALETTE[i % PALETTE.length];
+        var p = pal[i % pal.length];
         var fillOpacity = typeof ds.fillOpacity === 'number' ? ds.fillOpacity : defaultFillOpacity;
         var fillBase = ds.backgroundColor || p.fill;
         var fill = /^#/.test(fillBase) ? hexToRgba(fillBase, fillOpacity) : fillBase;
@@ -344,5 +351,6 @@
     }
   }
 
+  window.LWT.chart.withPalette(LWTRadarChart);
   window.LWT.define('lwtd-radar-chart', LWTRadarChart);
 })();
