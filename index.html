@@ -1024,6 +1024,53 @@ chart.data = {
                 <p><strong>Palette:</strong> <code>palette="#2563eb, #dc2626, #16a34a"</code> (or <code>.palette</code>, <code>--lwt-chart-palette</code>, <code>LWT.chart.palette</code>) &mdash; one color per dataset, in order; a light fill is mixed from each. Per-dataset <code>backgroundColor</code> / <code>borderColor</code> still win. See <em>Color Palettes</em>.</p>
             </details>
             <details>
+                <summary><lwtg-icon icon="app_bullet" width="15px" height="15px"></lwtg-icon> Bullet Chart</summary>
+                <p>A bullet chart: for each metric, a bar for the actual value, a short line for the target, and shaded bands behind them for the qualitative ranges (e.g. poor / fair / good). A compact alternative to gauges for several metrics side by side. Hover a metric for its value, target (and the difference) and the band it falls in.</p>
+                <h4>Implementation</h4>
+                <pre><code>&lt;lwtd-bullet title="Performance metrics" value-suffix="%" max="100"&gt;&lt;/lwtd-bullet&gt;
+
+&lt;script&gt;
+  document.querySelector('lwtd-bullet').data = {
+    items: [
+      { label: 'Metric A', value: 65, target: 70, ranges: [40, 68, 100] },  // band upper bounds, lowest first
+      { label: 'Metric B', value: 15, target: 25, ranges: [10, 23, 100] },
+      { label: 'Metric C', value: 32, target: 51, ranges: [30, 50, 100] }
+    ]
+  };
+&lt;/script&gt;</code></pre>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; max-width:900px;">
+                    <lwtd-bullet id="demo-lwtd-bullet" title="Performance metrics" value-suffix="%" max="100"></lwtd-bullet>
+                    <lwtd-bullet id="demo-lwtd-bullet-color" title="Performance metrics" band-style="color" value-suffix="%" max="100"></lwtd-bullet>
+                </div>
+<script>
+  (function () {
+    var metrics = { items: [
+      { label: 'Metric A', value: 65, target: 70, ranges: [40, 68, 100] },
+      { label: 'Metric B', value: 15, target: 25, ranges: [10, 23, 100] },
+      { label: 'Metric C', value: 32, target: 51, ranges: [30, 50, 100] }
+    ] };
+    document.getElementById('demo-lwtd-bullet').data = metrics;
+    document.getElementById('demo-lwtd-bullet-color').data = metrics;
+  })();
+</script>
+                <p>Horizontal, with named bands and a scale per row (<code>scale="each"</code>) for metrics in different units:</p>
+                <lwtd-bullet id="demo-lwtd-bullet-h" title="Q3 scorecard" orientation="horizontal" scale="each" show-values style="max-width:640px;"></lwtd-bullet>
+<script>
+  document.getElementById('demo-lwtd-bullet-h').data = {
+    ranges: [150, 225, 300],
+    bandLabels: ['Poor', 'Satisfactory', 'Good'],
+    items: [
+      { label: 'Revenue ($k)', value: 270, target: 250 },
+      { label: 'Profit ($k)', value: 22.5, target: 27, ranges: [20, 25, 30] },
+      { label: 'Avg order ($)', value: 310, target: 550, ranges: [350, 500, 600] },
+      { label: 'New customers', value: 1650, target: 2100, ranges: [1400, 2000, 2500] }
+    ]
+  };
+</script>
+                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; chart title.</li><li><code>orientation</code> &mdash; "vertical" (default, one column per metric) or "horizontal" (one row per metric, label on the left; the chart grows in height with the rows).</li><li><code>band-style</code> &mdash; "grey" (default, shades of grey, darkest = lowest band) or "color" (red / amber / green from <code>--lwt-danger</code>, <code>--lwt-warning</code>, <code>--lwt-success</code>).</li><li><code>min, max</code> &mdash; scale ends (default 0 and the largest range / value / target).</li><li><code>scale</code> &mdash; "shared" (default) or "each" (horizontal only: every row gets its own scale and tick labels).</li><li><code>value-prefix, value-suffix</code> &mdash; text around numbers, e.g. <code>value-suffix="%"</code>.</li><li><code>show-values</code> &mdash; boolean; prints each value at the end of its bar.</li><li><code>grid</code> &mdash; "none" (default) or "lines".</li><li><code>legend-position</code> &mdash; "top", "bottom" or "none". Default "top" when <code>bandLabels</code> are given, otherwise "none".</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; <code>{ ranges, bandLabels, items: [{ label, value, target, ranges, color }] }</code>. <code>ranges</code> are the upper bounds of each band, lowest first (any number of bands); an item without its own uses the shared <code>ranges</code>. <code>target</code> is optional; <code>color</code> overrides that item&rsquo;s bar. Chart.js-style <code>{ labels, datasets: [{ data }], targets, ranges }</code> also works.</li></ul><p>Screen readers get a data table (metric, value, target, versus target, band, band limits).</p><p><strong>Theming:</strong> --lwt-bullet-bar-color, --lwt-bullet-target-color (default --lwt-primary), --lwt-bullet-band-dark / --lwt-bullet-band-light (grey style end shades), plus --lwt-chart-bg, --lwt-chart-grid, --lwt-chart-tick-color, --lwt-chart-label-color, --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-aspect-ratio. <strong>Parts:</strong> wrap, tooltip.</p>
+                <p><strong>Palette:</strong> the band colors, lowest band first, used as given, e.g. <code>palette="#fecaca, #fde68a, #bbf7d0"</code> (or <code>.palette</code>, <code>--lwt-chart-palette</code>, <code>LWT.chart.palette</code>).</p>
+            </details>
+            <details>
                 <summary><lwtg-icon icon="app_palette" width="15px" height="15px"></lwtg-icon> Color Palettes (all dashboard elements)</summary>
                 <p>Every dashboard element takes a custom color palette. The first one found wins:</p>
                 <ol>
@@ -1034,7 +1081,7 @@ chart.data = {
                     <li>The element&rsquo;s built-in palette.</li>
                 </ol>
                 <p>Any CSS color works, including names, <code>hsl()</code> and <code>var(--brand-blue)</code>. A plain color is the strong color (lines, borders, dots) and a light fill is mixed from it automatically (<code>LWT.chart.fillMix</code>, default 0.35); pass <code>{ stroke, fill }</code> to choose both. Colors set in the data itself (<code>backgroundColor</code> / <code>borderColor</code>, zone <code>color</code>, item <code>color</code>) still win over the palette.</p>
-                <p>How each element uses it: series charts (bar, line, bubble, radar, scatter, pie, doughnut, treemap) &mdash; one color per dataset / slice / group, in order. Waterfall &mdash; increase, decrease, total. Gauge &mdash; zone colors, or the arc. Sparkline &mdash; the line, or up / down / flat with <code>trend</code>. Stat card &mdash; delta up / down / neutral. Mermaid &mdash; node color plus pie / journey / git colors.</p>
+                <p>How each element uses it: series charts (bar, line, bubble, radar, scatter, pie, doughnut, treemap) &mdash; one color per dataset / slice / group, in order. Bullet &mdash; the bands, lowest first. Waterfall &mdash; increase, decrease, total. Gauge &mdash; zone colors, or the arc. Sparkline &mdash; the line, or up / down / flat with <code>trend</code>. Stat card &mdash; delta up / down / neutral. Mermaid &mdash; node color plus pie / journey / git colors.</p>
                 <h4>Implementation</h4>
                 <pre><code>&lt;div class="brand-charts" style="--lwt-chart-palette: #0f766e, #b45309, #7c3aed;"&gt;
   &lt;lwtd-bar-chart title="Theme from the CSS variable"&gt;&lt;/lwtd-bar-chart&gt;
@@ -1109,18 +1156,18 @@ chart.data = {
                 <lwtd-line-chart id="demo-lwtd-line-chart" title="Monthly Visitors" x-label="Month" y-label="Visitors" style="max-width:480px;"></lwtd-line-chart>
 <script>
   document.getElementById('demo-lwtd-line-chart').data = {
-    labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+    labels: ['Jan','Feb','Mar','Apr'],
     datasets: [
-      { label: 'Visitors', data: [4200, 4800, 5100, 4900, 5500, 6200] }
+      { label: 'Visitors', data: [4200, 4800, 5100, 4900] }
     ]
   };
 let isInitialState = true;
 setInterval(() => {
   if (isInitialState) {
     document.getElementById('demo-lwtd-line-chart').data = {
-        labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+        labels: ['Jan','Feb','Mar','Apr','May'],
         datasets: [
-        { label: 'Visitors', data: [1200, 1800, 2100, 1900, 2500, 3200] }
+        { label: 'Visitors', data: [1200, 1800, 2100, 1900, 2500] }
         ]
     };
   } else {
