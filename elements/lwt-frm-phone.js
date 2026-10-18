@@ -1,84 +1,3 @@
-/*!
- * <lwtf-phone>
- * A phone number field with a country picker on the left (flag + dial
- * code, searchable dropdown of every country) and an optional extension
- * field on the right, all in one input box with one label and one error
- * line. Works like a native input inside a standard <form>.
- *
- *   <lwtf-phone label="Phone" name="phone" default-country="US"
- *     preferred="US,CA,GB" extension required></lwtf-phone>
- *
- * ---------------------------------------------------------------------
- * Value
- * ---------------------------------------------------------------------
- *   .value -> {
- *     "country": "US",                       // ISO code of the picked country
- *     "country-code": "+1",
- *     "phone": "123-456-7890",               // national number, formatted
- *     "extension": "123",
- *     "full": "+1 123-456-7890 ext.123"      // what the form submits
- *   }
- *   Set it with the same object (any subset of keys) or a string such as
- *   "+44 7700 900123 ext. 12". A normal form submit sends `full` under
- *   `name` (an empty string when there's no number, like a native input).
- *
- * Formatting while typing: +1 countries (US, Canada, Caribbean) format as
- * 123-456-7890. Other countries keep the user's own grouping, cleaned up
- * to digits and single dashes ("7700 900123" -> "7700-900123").
- * A leading trunk prefix (the 0 in UK "07700 900123", the 1 in
- * "1 415 555 2671") is dropped, except where it's part of the number
- * (e.g. Italy). Pasting or autofilling an international number
- * ("+44 20 7946 0958") switches the country automatically.
- *
- * Validation (light): the number's digit count must be a valid length for
- * the picked country (data from Google's libphonenumber metadata).
- * `required` needs a number. Errors show after leaving the field or on
- * reportValidity()/submit, never while still typing.
- *
- * ---------------------------------------------------------------------
- * Attributes
- * ---------------------------------------------------------------------
- *   label, helper, error, name, placeholder — display / form basics
- *   value            — initial value (string, e.g. "+1 415-555-2671 ext.12")
- *   default-country  — ISO code picked when there's no value (default:
- *                      from the browser language, e.g. en-GB -> GB, else US)
- *   preferred        — "US,CA,GB": pinned to the top of the list
- *   countries        — "US,CA": limit the list to these countries
- *   extension        — boolean; shows the extension field on the right
- *   extension-label  — text before the extension field (default "Ext.")
- *   required, disabled, readonly — standard form states
- *   flag-path        — folder or URL holding <iso>.svg flags. Default:
- *                      window.LWT.flagPath, else this repo's icons/flags
- *                      folder on the jsDelivr CDN.
- *
- * Properties / methods: .value (get/set), .country (get/set ISO code),
- * .name, .form, .checkValidity(), .reportValidity(), .focus()
- *
- * Events: lwt-input (+ input) on every change while typing;
- * lwt-change (+ change) when a change is committed (leaving a field or
- * picking a country); lwt-country-change { country, countryCode }.
- * All carry detail: the value object (plus the country fields).
- *
- * Accessibility: the country button reads as "Country code: United
- * States, +1". The dropdown is a searchable listbox (type a name, ISO
- * code or dial code; arrows, Home/End, Enter, Escape). Flags are
- * decorative -- the country name and code are always in text.
- *
- * Theming: --lwt-phone-bg, --lwt-phone-color, --lwt-phone-border,
- * --lwt-phone-radius, --lwt-phone-padding, --lwt-phone-focus-color,
- * --lwt-phone-error-color, --lwt-phone-divider-color,
- * --lwt-phone-label-color, --lwt-phone-helper-color,
- * --lwt-phone-popup-bg, --lwt-phone-popup-max-height,
- * --lwt-phone-option-active-bg, --lwt-phone-flag-width,
- * --lwt-phone-extension-width
- *
- * Country data: dial codes, valid lengths and trunk prefixes generated
- * from libphonenumber-js (MIT) metadata. Flags: flag-icons (MIT), see
- * icons/flags/LICENSE. Country names come from the browser
- * (Intl.DisplayNames) in the page's language.
- *
- * Requires lwt-core.js to be loaded first.
- */
 (function () {
   'use strict';
 
@@ -512,7 +431,8 @@
 
     _flagPath() {
       var p = this._strAttr('flag-path', '') || (window.LWT && window.LWT.flagPath) || DEFAULT_FLAG_PATH;
-      return /\/$/.test(p) ? p : p + '/';
+      // return /\/$/.test(p) ? p : p + '/';
+      return 'https://raw.githubusercontent.com/LWW-LWTECH/LWT-CORE-DNA/refs/heads/main/icons/flags/';
     }
 
     _flagHtml(iso, lazy) {
