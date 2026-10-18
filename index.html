@@ -746,6 +746,23 @@ dz.setStatus(file, 'done');                    // or 'error', 'Upload failed'</c
             </details>
 
             <details>
+                <summary><lwtg-icon icon="app_phone" width="15px" height="15px"></lwtg-icon> Phone (country code + extension)</summary>
+                <p>A phone number field with a searchable country picker (flag + dial code) on the left and an optional extension field on the right, in one input box. +1 numbers format as 123-456-7890 while typing; other countries keep the user&apos;s grouping, cleaned up to single dashes. A leading trunk prefix (the 0 in UK &quot;07700 900123&quot;) is dropped, and pasting an international number like &quot;+44 20 7946 0958&quot; switches the country. Light validation checks the digit count is a valid length for the picked country. The form submits the <code>full</code> string; <code>.value</code> returns the whole object.</p>
+                <h4>Implementation</h4>
+                <pre><code>&lt;lwtf-phone label="Phone" name="phone" default-country="US"
+    preferred="US,CA,GB" extension required&gt;&lt;/lwtf-phone&gt;
+
+el.value;
+// { "country": "US", "country-code": "+1", "phone": "123-456-7890",
+//   "extension": "123", "full": "+1 123-456-7890 ext.123" }</code></pre>
+
+                <lwtf-phone label="Phone" name="phone1" default-country="US" preferred="US,CA,GB" extension flag-path="./icons/flags/"></lwtf-phone>
+                <lwtf-phone label="Phone" name="phone2" default-country="US" preferred="US,CA,GB" flag-path="./icons/flags/"></lwtf-phone>
+                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label, helper, error, name, placeholder</code> &mdash; display / form basics.</li><li><code>value</code> &mdash; initial value as a string, e.g. &quot;+1 415-555-2671 ext.12&quot;.</li><li><code>default-country</code> &mdash; ISO code picked when there&apos;s no value (default: from the browser language, else US).</li><li><code>preferred</code> &mdash; &quot;US,CA,GB&quot;: pinned to the top of the list.</li><li><code>countries</code> &mdash; &quot;US,CA&quot;: limit the list to these countries.</li><li><code>extension</code> &mdash; boolean; shows the extension field on the right. <code>extension-label</code> changes its text (default &quot;Ext.&quot;).</li><li><code>required, disabled, readonly</code> &mdash; standard form states.</li><li><code>flag-path</code> &mdash; folder or URL with the &lt;iso&gt;.svg flags. Default: <code>window.LWT.flagPath</code>, else this repo&apos;s icons/flags on the jsDelivr CDN (this demo uses ./icons/flags/).</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>value</code> &mdash; get/set { country, country-code, phone, extension, full }; also accepts a string like &quot;+44 7700 900123 ext. 12&quot;.</li><li><code>country</code> &mdash; get/set the ISO code of the picked country.</li><li><code>name, form</code> &mdash; field name and owning &lt;form&gt;. form.reset() restores the initial value.</li><li><code>checkValidity(), reportValidity(), focus()</code> &mdash; standard helpers.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-input</code> (and <code>input</code>) &mdash; every change while typing; detail: the value object.</li><li><code>lwt-change</code> (and <code>change</code>) &mdash; a committed change (leaving a field or picking a country).</li><li><code>lwt-country-change</code> &mdash; detail: { country, countryCode }.</li></ul><p><strong>Theming:</strong> --lwt-phone-bg, --lwt-phone-color, --lwt-phone-border, --lwt-phone-radius, --lwt-phone-padding, --lwt-phone-focus-color, --lwt-phone-error-color, --lwt-phone-divider-color, --lwt-phone-label-color, --lwt-phone-helper-color, --lwt-phone-popup-bg, --lwt-phone-popup-max-height, --lwt-phone-option-active-bg, --lwt-phone-flag-width, --lwt-phone-extension-width.</p>
+                <p><small>Country data from libphonenumber-js (MIT); flags from flag-icons (MIT, see icons/flags/LICENSE); country names from the browser&apos;s Intl.DisplayNames.</small></p>
+            </details>
+
+            <details>
                 <summary><lwtg-icon icon="app_select" width="15px" height="15px"></lwtg-icon> Select (combobox / tags)</summary>
                 <p>A combobox supporting single- or multi-select with rich HTML options and per-option tooltips. Selections always render as removable tag chips, so an option&apos;s rich content (an icon, a color swatch) shows up for the selected state too, not just in the dropdown.</p>
                 <h4>Implementation</h4>
@@ -815,7 +832,7 @@ dz.setStatus(file, 'done');                    // or 'error', 'Upload failed'</c
 
             <details id="demo-form-panel">
                 <summary><lwtg-icon icon="app_input" width="15px" height="15px"></lwtg-icon> Save &amp; Preview (whole form)</summary>
-                <p>Every demo in this section sits inside one native <code>&lt;form novalidate&gt;</code>. Save runs <code>checkValidity()</code> on each field; if any fail, it opens that field&apos;s panel and shows its error. Otherwise it collects every named field into one data object. No <code>lwtf-form</code> wrapper is needed &mdash; the elements are form-associated, so <code>form.elements</code> and <code>new FormData(form)</code> already include them.</p>
+                <p>Every demo in this section sits inside one native <code>&lt;form novalidate&gt;</code>. Save calls <code>LWT.form.validate(form)</code>, which runs <code>checkValidity()</code> on each field and, if any fail, opens that field&apos;s panel and shows its error. Otherwise <code>LWT.form.getData(form)</code> collects every named field into one data object. Both helpers live in <code>lwt-frm-func.js</code> (bundled into <code>lwt-forms.js</code>). No <code>lwtf-form</code> wrapper is needed &mdash; the elements are form-associated, so <code>form.elements</code> and <code>new FormData(form)</code> already include them.</p>
                 <h4>Implementation</h4>
                 <pre><code>&lt;form id="demo-form" novalidate&gt;
     &lt;lwtf-input label="Full name" name="full_name" required&gt;&lt;/lwtf-input&gt;
@@ -825,11 +842,10 @@ dz.setStatus(file, 'done');                    // or 'error', 'Upload failed'</c
 
 form.addEventListener('submit', function (e) {
     e.preventDefault();
-    var fields = Array.from(form.elements).filter(function (el) { return el.getAttribute('name'); });
-    var invalid = fields.filter(function (el) { return el.checkValidity &amp;&amp; !el.checkValidity(); });
-    if (invalid.length) { invalid[0].reportValidity(); return; }
-    var data = {};
-    fields.forEach(function (el) { data[el.getAttribute('name')] = el.value; }); // typed: arrays, numbers&hellip;
+    var check = LWT.form.validate(form);     // { valid, invalid: [{ element, name, label, message }] }
+    if (!check.valid) return;                // first invalid field is already revealed
+    var data = LWT.form.getData(form);       // typed values: arrays, numbers, objects, Files
+    console.log(LWT.form.stringify(data));   // readable JSON (files / data URLs shortened)
 });</code></pre>
 
                 <lwtg-button id="demo-form-save" label="Save"></lwtg-button>
@@ -1076,7 +1092,7 @@ chart.data = {
         // property, not a method) and refreshes on every lwt-* event.
         (function () {
             var FORM_TAGS = ['lwtf-choices', 'lwtf-color-picker', 'lwtf-date-range', 'lwtf-dropzone', 'lwtf-input',
-                             'lwtf-otp', 'lwtf-select', 'lwtf-signature', 'lwtf-slider', 'lwtf-transfer-list'];
+                             'lwtf-otp', 'lwtf-phone', 'lwtf-select', 'lwtf-signature', 'lwtf-slider', 'lwtf-transfer-list'];
             var EVENTS = ['lwt-input', 'lwt-change', 'lwt-select', 'lwt-remove', 'lwt-clear',
                           'lwt-complete', 'lwt-preset', 'lwt-mode-change'];
 
@@ -1138,19 +1154,9 @@ chart.data = {
             var fdEl = document.getElementById('demo-form-formdata');
             var panel = document.getElementById('demo-form-panel');
 
-            // Signature values are long data: URLs -- shorten them for display.
-            // File objects would print as {} -- show name and size instead.
-            function shorten(key, val) {
-                if (typeof File !== 'undefined' && val instanceof File) return '[File] ' + val.name + ' (' + val.size + ' bytes)';
-                if (typeof val === 'string' && val.indexOf('data:') === 0 && val.length > 80) {
-                    return val.slice(0, 60) + '... (' + val.length + ' chars)';
-                }
-                return val;
-            }
-            // Not every lwtf- element has a .name property, so read the attribute.
-            function nameOf(el) { return el.getAttribute('name') || el.name || ''; }
-            function labelOf(el) {
-                return el.getAttribute('label') || el.getAttribute('aria-label') || nameOf(el);
+            // Long data: URLs (signature) are shortened in the FormData list.
+            function shortText(val) {
+                return val.indexOf('data:') === 0 && val.length > 80 ? val.slice(0, 60) + '... (' + val.length + ' chars)' : val;
             }
 
             document.getElementById('demo-form-save').addEventListener('click', function () {
@@ -1159,46 +1165,27 @@ chart.data = {
 
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
-                var fields = Array.prototype.filter.call(form.elements, function (el) {
-                    return nameOf(el) && !el.matches(':disabled');
-                });
 
-                var invalid = fields.filter(function (el) {
-                    return typeof el.checkValidity === 'function' && !el.checkValidity();
-                });
-                if (invalid.length) {
+                // Checks every field; if any fail, opens the first one's panel
+                // and shows its error (see lwt-frm-func.js).
+                var check = LWT.form.validate(form);
+                if (!check.valid) {
                     statusEl.className = 'demo-form-status error';
-                    statusEl.textContent = invalid.length + (invalid.length === 1 ? ' field needs' : ' fields need') +
-                        ' attention: ' + invalid.map(labelOf).join(', ') + '.';
-                    // The page only keeps one panel open, so open the first
-                    // invalid field's panel before asking it to show its error.
-                    var first = invalid[0];
-                    var holder = first.closest('details');
-                    if (holder) holder.open = true;
-                    requestAnimationFrame(function () {
-                        first.scrollIntoView({ block: 'center' });
-                        first.reportValidity();
-                    });
+                    statusEl.textContent = check.invalid.length + (check.invalid.length === 1 ? ' field needs' : ' fields need') +
+                        ' attention: ' + check.invalid.map(function (f) { return f.label; }).join(', ') + '.';
                     return;
                 }
 
-                var data = {};
-                fields.forEach(function (el) {
-                    var val = el.localName.indexOf('lwtf-') === 0 ? el.value
-                        : (el.type === 'checkbox' || el.type === 'radio') ? (el.checked ? el.value : undefined)
-                        : el.value;
-                    if (val === undefined) return;
-                    var key = nameOf(el);
-                    if (key in data) data[key] = [].concat(data[key], val);
-                    else data[key] = val;
-                });
+                var data = LWT.form.getData(form);
 
                 var fd = [];
                 new FormData(form).forEach(function (value, key) {
-                    fd.push([key, typeof value === 'string' ? shorten('', value) : '[File] ' + value.name + ' (' + value.size + ' bytes)']);
+                    console.log('FormData entry:', key, value);
+                    fd.push([key, typeof value === 'string' ? shortText(value) : '[File] ' + value.name + ' (' + value.size + ' bytes)']);
                 });
 
-                dataEl.textContent = JSON.stringify(data, shorten, 2);
+
+                dataEl.textContent = LWT.form.stringify(data);
                 fdEl.textContent = fd.length
                     ? fd.map(function (pair) { return pair[0] + ' = ' + pair[1]; }).join('\n')
                     : '(no named fields)';
