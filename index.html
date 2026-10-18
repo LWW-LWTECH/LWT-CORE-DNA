@@ -1013,6 +1013,102 @@ chart.data = {
             </details>
 
             <details>
+                <summary><lwtg-icon icon="app_mermaid" width="15px" height="15px"></lwtg-icon> Mermaid Diagram</summary>
+                <p>Renders a <a href="https://mermaid.js.org/" target="_blank" rel="noopener">Mermaid</a> diagram &mdash; flowchart, sequence, gantt, pie, class, state, ER, mindmap and more &mdash; from text. Mermaid (~3.5&nbsp;MB) is loaded from jsDelivr only when the first diagram scrolls into view, so pages without diagrams never download it. Colors follow the <code>--lwt-*</code> theme variables. Put the diagram text in a <code>&lt;script type="text/plain"&gt;</code> so labels like <code>A[R&amp;D]</code> or <code>B[one&lt;br&gt;two]</code> aren&apos;t parsed as HTML.</p>
+                <h4>Implementation</h4>
+                <pre><code>&lt;lwtd-mermaid label="AI industry overview" pan-zoom download fullscreen&gt;
+&lt;script type="text/plain"&gt;
+    graph TD
+    A[AI Industry] --&gt; B[Foundation Model Creators]
+    A --&gt; C[Hardware Providers]
+    A --&gt; D[AI Platforms / Integrators]
+
+    %% Foundation Model Creators
+    B --&gt; B1[OpenAI]
+    B1 --&gt; B1a[GPT Models]
+    B1 --&gt; B1b[DALL·E]
+    B1 --&gt; B1c[Whisper]
+
+    B --&gt; B2[Anthropic]
+    B2 --&gt; B2a[Claude Models]
+
+    B --&gt; B3[Google DeepMind]
+    B3 --&gt; B3a[Gemini Models]
+
+    B --&gt; B4[Meta]
+    B4 --&gt; B4a[Llama Models]
+    B4 --&gt; B4b[Meta AI]
+
+    B --&gt; B5[xAI]
+    B5 --&gt; B5a[Grok Models]
+
+    B --&gt; B6[Mistral AI]
+    B6 --&gt; B6a[Mistral Large]
+    B6 --&gt; B6b[Mixtral]
+
+    %% Hardware Providers
+    C --&gt; C1[NVIDIA]
+    C1 --&gt; C1a[H100 / H200 / B200 GPUs]
+
+    %% AI Platforms / Integrators
+    D --&gt; D1[Microsoft]
+    D1 --&gt; D1a[Copilot]
+    D1 --&gt; D1b[Copilot Studio]
+
+    D --&gt; D2[Amazon]
+    D2 --&gt; D2a[Alexa AI]
+    D2 --&gt; D2b[Amazon Bedrock]
+&lt;/script&gt;
+&lt;/lwtd-mermaid&gt;</code></pre>
+
+                <lwtd-mermaid label="AI industry overview" pan-zoom download fullscreen direction="LR">
+<script type="text/plain">
+    graph TB
+    A[AI Industry] --> B[Foundation Model Creators]
+    A --> C[Hardware Providers]
+    A --> D[AI Platforms / Integrators]
+
+    %% Foundation Model Creators
+    B --> B1[OpenAI]
+    B1 --> B1a[GPT Models]
+    B1 --> B1b[DALL·E]
+    B1 --> B1c[Whisper]
+
+    B --> B2[Anthropic]
+    B2 --> B2a[Claude Models]
+
+    B --> B3[Google DeepMind]
+    B3 --> B3a[Gemini Models]
+
+    B --> B4[Meta]
+    B4 --> B4a[Llama Models]
+    B4 --> B4b[Meta AI]
+
+    B --> B5[xAI]
+    B5 --> B5a[Grok Models]
+
+    B --> B6[Mistral AI]
+    B6 --> B6a[Mistral Large]
+    B6 --> B6b[Mixtral]
+
+    %% Hardware Providers
+    C --> C1[NVIDIA]
+    C1 --> C1a[H100 / H200 / B200 GPUs]
+
+    %% AI Platforms / Integrators
+    D --> D1[Microsoft]
+    D1 --> D1a[Copilot]
+    D1 --> D1b[Copilot Studio]
+
+    D --> D2[Amazon]
+    D2 --> D2a[Alexa AI]
+    D2 --> D2b[Amazon Bedrock]
+</script>
+                </lwtd-mermaid>
+                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label</code> &mdash; accessible name of the diagram (also used for the download file name).</li><li><code>pan-zoom</code> &mdash; boolean; drag to pan, Ctrl/Cmd + wheel or pinch to zoom, zoom in / out / fit buttons, and arrow keys / + / - / 0 when the diagram is focused.</li><li><code>download</code> &mdash; boolean; &quot;SVG&quot; and &quot;PNG&quot; download buttons.</li><li><code>fullscreen</code> &mdash; boolean; a full-screen button that makes the diagram fill the screen on top of everything (Esc or the button exits). Uses the browser&apos;s full-screen mode, or covers the page where that isn&apos;t available.</li><li><code>filename</code> &mdash; download file name without extension (default: from the label).</li><li><code>direction</code> &mdash; which way the arrows flow: TB / TD (top to bottom), BT, LR (left to right) or RL &mdash; overrides the direction in the text. A tree drawn TB is wide (root at the top, children spread sideways); <code>LR</code> makes it tall (each level is a column, siblings stack vertically). Applies to flowcharts and state / class diagrams.</li><li><code>theme</code> &mdash; &quot;lwt&quot; (default, colors from the --lwt-* variables) or a Mermaid theme: default, neutral, dark, forest.</li><li><code>mermaid-src</code> &mdash; URL of mermaid.min.js (default: <code>window.LWT.mermaidSrc</code>, else jsDelivr mermaid@11.17.2) &mdash; use it to self-host or pin another version.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>definition</code> &mdash; get/set the diagram text (editing the &lt;script&gt; text also re-renders).</li><li><code>svg</code> &mdash; the rendered &lt;svg&gt; element.</li><li><code>render(), fit()</code> &mdash; re-render now / fit the pan-zoom view.</li><li><code>toggleFullscreen(force), isFullscreen</code> &mdash; enter / leave full screen from code.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-render</code> &mdash; detail: { svg }.</li><li><code>lwt-error</code> &mdash; syntax or loading error, also shown inline; detail: { message }.</li><li><code>lwt-fullscreen</code> &mdash; entering / leaving full screen; detail: { active }.</li></ul><p><strong>Accessibility:</strong> flowcharts get a screen-reader outline of the node hierarchy; other diagram types use Mermaid&apos;s own <code>accTitle</code> / <code>accDescr</code> lines.</p><p><strong>Theming:</strong> --lwt-mermaid-bg, --lwt-mermaid-node-bg, --lwt-mermaid-node-border, --lwt-mermaid-text, --lwt-mermaid-line, --lwt-mermaid-font-size, --lwt-mermaid-border, --lwt-mermaid-radius, --lwt-mermaid-padding, --lwt-mermaid-height (pan-zoom viewport, default 420px).</p>
+            </details>
+
+            <details>
                 <summary><lwtg-icon icon="app_pie-chart" width="15px" height="15px"></lwtg-icon> Pie Chart</summary>
                 <p>A pie chart rendered as inline SVG, same conventions as Bar Chart. Shows one series sliced by label &mdash; for grouped/stacked multi-series data use Bar Chart instead.</p>
                 <h4>Implementation</h4>
