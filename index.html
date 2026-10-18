@@ -303,29 +303,6 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>image</code> &mdash; image URL; the image block is omitted entirely if unset.</li><li><code>image-alt</code> &mdash; alt text for the image.</li><li><code>image-position</code> &mdash; "top" (default) | "bottom".</li><li><code>label</code> &mdash; fallback heading text (overridden by slot="label").</li></ul><p><strong>Slots:</strong></p><ul><li><code>label</code> &mdash; heading; falls back to the label attribute.</li><li><code>(default)</code> &mdash; body content &mdash; any HTML, not just text.</li><li><code>cta</code> &mdash; call-to-action content, typically an &lt;lwtg-button&gt;.</li></ul><p><strong>Theming:</strong> --lwt-card-bg, --lwt-card-border, --lwt-card-radius, --lwt-card-shadow, --lwt-card-padding, --lwt-card-image-height, --lwt-card-label-color, --lwt-card-body-color, --lwt-card-gap.</p>
             </details>
 
-            <details>
-                <summary><lwtg-icon icon="app_grid" width="15px" height="15px"></lwtg-icon> Image Grid</summary>
-                <p>The image grid component allows you to display a series of images in a grid layout. You can control the number of columns, rows, gap between items, and the height of each row. Then each grid item can be told to span columns or rows.</p>
-                <h4>Implementation</h4>
-                <pre><code>&lt;lwtg-image-grid columns="4" rows="2" gap="12px" row-height="180px"&gt;
-    &lt;lwtg-grid-item  col-span="1"   row-span="2"    src="img_url_here.jpg" label="Alpha"&gt;&lt;/lwtg-grid-item&gt;
-    &lt;lwtg-grid-item  col-span="2"   row-span="1"    src="img_url_here.jpg" label="Beta"&gt;&lt;/lwtg-grid-item&gt;
-    &lt;lwtg-grid-item  col-span="1"   row-span="2"    src="img_url_here.jpg" label="Beta"&gt;&lt;/lwtg-grid-item&gt;
-    &lt;lwtg-grid-item  col-span="1"   row-span="1"    src="img_url_here.jpg" label="Delta"&gt;&lt;/lwtg-grid-item&gt;
-    &lt;lwtg-grid-item  col-span="1"   row-span="1"    src="img_url_here.jpg" label="Delta"&gt;&lt;/lwtg-grid-item&gt;
-&lt;/lwtg-image-grid&gt;
-                </code></pre>
-
-                <lwtg-image-grid columns="4" rows="2" gap="12px" row-height="180px">
-                    <lwtg-grid-item  col-span="1"   row-span="2"    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-tztpxRE_5-ZUpHms3lwxP3rhrZ6ExdxtLAGtCDFDzJThMkdxoNl5vsY&s=10" label="Alpha"></lwtg-grid-item>
-                    <lwtg-grid-item  col-span="2"   row-span="1"    src="https://magicstudio.com/blog/content/images/2023/10/props-product-photography.webp" label="Beta"></lwtg-grid-item>
-                    <lwtg-grid-item  col-span="1"   row-span="2"    src="https://cdn.shopify.com/s/files/1/0657/8569/2375/files/Cosmetic-Skincare-Product-photo-Table-top-setup.jpg?v=1681840139" label="Beta"></lwtg-grid-item>
-                    <lwtg-grid-item  col-span="1"   row-span="1"    src="https://i.pinimg.com/736x/aa/53/93/aa5393796e2aebe074f75fbc072cd76c.jpg" label="Delta"></lwtg-grid-item>
-                    <lwtg-grid-item  col-span="1"   row-span="1"    src="https://i.pinimg.com/736x/aa/53/93/aa5393796e2aebe074f75fbc072cd76c.jpg" label="Delta"></lwtg-grid-item>
-                </lwtg-image-grid>
-
-                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>columns</code> &mdash; (on &lt;lwtg-image-grid&gt;) target/max column count; omit for responsive auto-fill mode.</li><li><code>rows</code> &mdash; (on &lt;lwtg-image-grid&gt;) fixed row count; combined with columns it becomes a hard cap.</li><li><code>gap</code> &mdash; (on &lt;lwtg-image-grid&gt;) CSS length between cells (default 1rem).</li><li><code>row-height</code> &mdash; (on &lt;lwtg-image-grid&gt;) CSS length for every implicit row (default 160px).</li><li><code>dense</code> &mdash; (on &lt;lwtg-image-grid&gt;) boolean; grid-auto-flow: dense, backfills gaps left by spanning items.</li><li><code>src</code> &mdash; (on &lt;lwtg-grid-item&gt;) image URL, base64/data URI, or a YouTube URL.</li><li><code>href</code> &mdash; (on &lt;lwtg-grid-item&gt;) optional link URL; wraps the rendered image in an &lt;a&gt;.</li><li><code>type</code> &mdash; (on &lt;lwtg-grid-item&gt;) "image" (default) | "svg" | "embed"; YouTube is auto-detected from src.</li><li><code>label</code> &mdash; (on &lt;lwtg-grid-item&gt;) caption overlay shown on hover/focus.</li><li><code>col-span / row-span</code> &mdash; (on &lt;lwtg-grid-item&gt;) how many columns/rows this cell spans.</li><li><code>play-inline</code> &mdash; (on &lt;lwtg-grid-item&gt;) boolean, YouTube only; swaps the thumbnail for a live autoplaying iframe on click.</li></ul><p><strong>Slots:</strong></p><ul><li><code>(default)</code> &mdash; (on &lt;lwtg-grid-item&gt;) raw content for "svg" (no src) and "embed" types.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-click</code> &mdash; (on &lt;lwtg-grid-item&gt;) fired on click/Enter/Space; detail: { type, src, label, index }.</li><li><code>lwt-play</code> &mdash; (on &lt;lwtg-grid-item&gt;) YouTube + play-inline only; detail: { videoId }.</li></ul><p><strong>Theming:</strong> --lwt-image-grid-gap, --lwt-image-grid-row-height, --lwt-image-grid-min-width, --lwt-grid-item-radius, --lwt-grid-item-bg, --lwt-grid-item-label-bg, --lwt-grid-item-label-color.</p>
-            </details>
 
             <details>
                 <summary><lwtg-icon icon="app_modal" width="15px" height="15px"></lwtg-icon> Modal</summary>
@@ -432,6 +409,30 @@ grid.sizes = JSON.parse(localStorage.getItem('layout'));            // restore</
                 <lwtg-button id="demo-resizable-reset" variant="secondary" label="Reset layout"></lwtg-button>
                 <pre id="demo-resizable-sizes" style="font-size:12px;">Drag a handle to see .sizes</pre>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>columns</code> &mdash; target/maximum column count. Omit for pure responsive mode (auto-fit at min-col-width).</li><li><code>rows</code> &mdash; fixed row count with equal (1fr) heights. Omit to let rows size to their content.</li><li><code>gap</code> &mdash; CSS length between cells (default 1rem).</li><li><code>min-col-width</code> &mdash; minimum column width before wrapping (default 200px) &mdash; governs when the layout collapses to fewer columns.</li><li><code>row-height</code> &mdash; fixed height for every implicit row (default "auto").</li><li><code>dense</code> &mdash; boolean; grid-auto-flow: dense &mdash; lets smaller items backfill gaps left by spanning items.</li><li><code>resizable</code> &mdash; boolean; lets <code>&lt;lwtg-grid-item&gt;</code> edges marked with <code>resize-left / -right / -top / -bottom</code> drag the grid lines. Columns stay proportional; dragged rows get fixed heights.</li><li><code>resize-min</code> &mdash; smallest size a dragged column or row can reach when no item sets its own <code>min-width</code> / <code>min-height</code> (default 48px).</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>sizes</code> &mdash; get/set { columns, rows } track sizes (null when not resized) &mdash; save and restore a layout.</li><li><code>resetSizes()</code> &mdash; back to the attribute layout.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-resize</code> &mdash; after each drag or key nudge; detail: { axis, sizes }.</li></ul><p><strong>Slots:</strong></p><ul><li><code>(default)</code> &mdash; any children you want laid out.</li></ul><p><strong>Theming:</strong> --lwt-grid-gap, --lwt-grid-row-height, --lwt-grid-min-col-width, --lwt-grid-columns, --lwt-grid-rows, --lwt-grid-resize-color, --lwt-grid-resize-size.</p>
+            </details>
+
+            <details>
+                <summary><lwtg-icon icon="app_grid" width="15px" height="15px"></lwtg-icon> Image Grid</summary>
+                <p>The image grid component allows you to display a series of images in a grid layout. You can control the number of columns, rows, gap between items, and the height of each row. Then each grid item can be told to span columns or rows.</p>
+                <h4>Implementation</h4>
+                <pre><code>&lt;lwtg-image-grid columns="4" rows="2" gap="12px" row-height="180px"&gt;
+    &lt;lwtg-grid-item  col-span="1"   row-span="2"    src="img_url_here.jpg" label="Alpha"&gt;&lt;/lwtg-grid-item&gt;
+    &lt;lwtg-grid-item  col-span="2"   row-span="1"    src="img_url_here.jpg" label="Beta"&gt;&lt;/lwtg-grid-item&gt;
+    &lt;lwtg-grid-item  col-span="1"   row-span="2"    src="img_url_here.jpg" label="Beta"&gt;&lt;/lwtg-grid-item&gt;
+    &lt;lwtg-grid-item  col-span="1"   row-span="1"    src="img_url_here.jpg" label="Delta"&gt;&lt;/lwtg-grid-item&gt;
+    &lt;lwtg-grid-item  col-span="1"   row-span="1"    src="img_url_here.jpg" label="Delta"&gt;&lt;/lwtg-grid-item&gt;
+&lt;/lwtg-image-grid&gt;
+                </code></pre>
+
+                <lwtg-image-grid columns="4" rows="2" gap="12px" row-height="180px">
+                    <lwtg-grid-item  col-span="1"   row-span="2"    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-tztpxRE_5-ZUpHms3lwxP3rhrZ6ExdxtLAGtCDFDzJThMkdxoNl5vsY&s=10" label="Alpha"></lwtg-grid-item>
+                    <lwtg-grid-item  col-span="2"   row-span="1"    src="https://magicstudio.com/blog/content/images/2023/10/props-product-photography.webp" label="Beta"></lwtg-grid-item>
+                    <lwtg-grid-item  col-span="1"   row-span="2"    src="https://cdn.shopify.com/s/files/1/0657/8569/2375/files/Cosmetic-Skincare-Product-photo-Table-top-setup.jpg?v=1681840139" label="Beta"></lwtg-grid-item>
+                    <lwtg-grid-item  col-span="1"   row-span="1"    src="https://i.pinimg.com/736x/aa/53/93/aa5393796e2aebe074f75fbc072cd76c.jpg" label="Delta"></lwtg-grid-item>
+                    <lwtg-grid-item  col-span="1"   row-span="1"    src="https://i.pinimg.com/736x/aa/53/93/aa5393796e2aebe074f75fbc072cd76c.jpg" label="Delta"></lwtg-grid-item>
+                </lwtg-image-grid>
+
+                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>columns</code> &mdash; (on &lt;lwtg-image-grid&gt;) target/max column count; omit for responsive auto-fill mode.</li><li><code>rows</code> &mdash; (on &lt;lwtg-image-grid&gt;) fixed row count; combined with columns it becomes a hard cap.</li><li><code>gap</code> &mdash; (on &lt;lwtg-image-grid&gt;) CSS length between cells (default 1rem).</li><li><code>row-height</code> &mdash; (on &lt;lwtg-image-grid&gt;) CSS length for every implicit row (default 160px).</li><li><code>dense</code> &mdash; (on &lt;lwtg-image-grid&gt;) boolean; grid-auto-flow: dense, backfills gaps left by spanning items.</li><li><code>src</code> &mdash; (on &lt;lwtg-grid-item&gt;) image URL, base64/data URI, or a YouTube URL.</li><li><code>href</code> &mdash; (on &lt;lwtg-grid-item&gt;) optional link URL; wraps the rendered image in an &lt;a&gt;.</li><li><code>type</code> &mdash; (on &lt;lwtg-grid-item&gt;) "image" (default) | "svg" | "embed"; YouTube is auto-detected from src.</li><li><code>label</code> &mdash; (on &lt;lwtg-grid-item&gt;) caption overlay shown on hover/focus.</li><li><code>col-span / row-span</code> &mdash; (on &lt;lwtg-grid-item&gt;) how many columns/rows this cell spans.</li><li><code>play-inline</code> &mdash; (on &lt;lwtg-grid-item&gt;) boolean, YouTube only; swaps the thumbnail for a live autoplaying iframe on click.</li></ul><p><strong>Slots:</strong></p><ul><li><code>(default)</code> &mdash; (on &lt;lwtg-grid-item&gt;) raw content for "svg" (no src) and "embed" types.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-click</code> &mdash; (on &lt;lwtg-grid-item&gt;) fired on click/Enter/Space; detail: { type, src, label, index }.</li><li><code>lwt-play</code> &mdash; (on &lt;lwtg-grid-item&gt;) YouTube + play-inline only; detail: { videoId }.</li></ul><p><strong>Theming:</strong> --lwt-image-grid-gap, --lwt-image-grid-row-height, --lwt-image-grid-min-width, --lwt-grid-item-radius, --lwt-grid-item-bg, --lwt-grid-item-label-bg, --lwt-grid-item-label-color.</p>
             </details>
 
             <details>
@@ -804,6 +805,78 @@ el.value;
                     <lwtf-select-option value="ams">Amsterdam</lwtf-select-option>
                     <lwtf-select-option value="ber">Berlin</lwtf-select-option>
                     <lwtf-select-option value="ath" disabled>Athens</lwtf-select-option>
+                </lwtf-select>
+
+                <h4>Rich HTML options and tooltips</h4>
+                <p>An option&apos;s content can be any HTML &mdash; here a color swatch, a bold name and the hex code &mdash; and the same markup shows on the selected tag. A <code>&lt;template slot="tooltip"&gt;</code> inside an option is shown when that option is hovered or highlighted with the arrow keys. Typing still searches the option&apos;s text (try &quot;orange&quot; or &quot;#05&quot;). Options and tooltips are drawn inside the element, so style them with inline styles rather than page CSS classes.</p>
+                <pre><code>&lt;lwtf-select label="Brand colors" name="brand_colors" placeholder="Search colors…" multiple&gt;
+    &lt;lwtf-select-option value="ocean"&gt;
+        &lt;span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#2563EB;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);vertical-align:-2px;margin-right:6px"&gt;&lt;/span&gt;&lt;strong&gt;Ocean Blue&lt;/strong&gt; &lt;small style="opacity:.7"&gt;#2563EB&lt;/small&gt;
+        &lt;template slot="tooltip"&gt;
+            &lt;div style="width:190px"&gt;
+                &lt;div style="height:64px;border-radius:6px;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700"&gt;Aa&lt;/div&gt;
+                &lt;div style="margin-top:8px"&gt;&lt;strong&gt;Ocean Blue&lt;/strong&gt;&lt;br&gt;#2563EB &amp;middot; rgb(37, 99, 235)&lt;br&gt;&lt;em&gt;Primary buttons and links&lt;/em&gt;&lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/template&gt;
+    &lt;/lwtf-select-option&gt;
+    &lt;lwtf-select-option value="sunset"&gt;
+        &lt;span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#EA580C;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);vertical-align:-2px;margin-right:6px"&gt;&lt;/span&gt;&lt;strong&gt;Sunset Orange&lt;/strong&gt; &lt;small style="opacity:.7"&gt;#EA580C&lt;/small&gt;
+        &lt;template slot="tooltip"&gt;
+            &lt;div style="width:190px"&gt;
+                &lt;div style="height:64px;border-radius:6px;background:#EA580C;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700"&gt;Aa&lt;/div&gt;
+                &lt;div style="margin-top:8px"&gt;&lt;strong&gt;Sunset Orange&lt;/strong&gt;&lt;br&gt;#EA580C &amp;middot; rgb(234, 88, 12)&lt;br&gt;&lt;em&gt;Highlights and call-outs&lt;/em&gt;&lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/template&gt;
+    &lt;/lwtf-select-option&gt;
+    …
+&lt;/lwtf-select&gt;</code></pre>
+
+                <lwtf-select label="Brand colors" name="brand_colors" placeholder="Search colors&hellip;" multiple helper="Hover an option to preview the color.">
+                    <lwtf-select-option value="ocean">
+                        <span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#2563EB;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);vertical-align:-2px;margin-right:6px"></span><strong>Ocean Blue</strong> <small style="opacity:.7">#2563EB</small>
+                        <template slot="tooltip">
+                            <div style="width:190px">
+                                <div style="height:64px;border-radius:6px;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700">Aa</div>
+                                <div style="margin-top:8px"><strong>Ocean Blue</strong><br>#2563EB &middot; rgb(37, 99, 235)<br><em>Primary buttons and links</em></div>
+                            </div>
+                        </template>
+                    </lwtf-select-option>
+                    <lwtf-select-option value="forest">
+                        <span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#059669;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);vertical-align:-2px;margin-right:6px"></span><strong>Forest Green</strong> <small style="opacity:.7">#059669</small>
+                        <template slot="tooltip">
+                            <div style="width:190px">
+                                <div style="height:64px;border-radius:6px;background:#059669;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700">Aa</div>
+                                <div style="margin-top:8px"><strong>Forest Green</strong><br>#059669 &middot; rgb(5, 150, 105)<br><em>Success messages and confirmations</em></div>
+                            </div>
+                        </template>
+                    </lwtf-select-option>
+                    <lwtf-select-option value="sunset">
+                        <span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#EA580C;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);vertical-align:-2px;margin-right:6px"></span><strong>Sunset Orange</strong> <small style="opacity:.7">#EA580C</small>
+                        <template slot="tooltip">
+                            <div style="width:190px">
+                                <div style="height:64px;border-radius:6px;background:#EA580C;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700">Aa</div>
+                                <div style="margin-top:8px"><strong>Sunset Orange</strong><br>#EA580C &middot; rgb(234, 88, 12)<br><em>Highlights and call-outs</em></div>
+                            </div>
+                        </template>
+                    </lwtf-select-option>
+                    <lwtf-select-option value="berry">
+                        <span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#7C3AED;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);vertical-align:-2px;margin-right:6px"></span><strong>Berry Purple</strong> <small style="opacity:.7">#7C3AED</small>
+                        <template slot="tooltip">
+                            <div style="width:190px">
+                                <div style="height:64px;border-radius:6px;background:#7C3AED;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700">Aa</div>
+                                <div style="margin-top:8px"><strong>Berry Purple</strong><br>#7C3AED &middot; rgb(124, 58, 237)<br><em>Badges and featured content</em></div>
+                            </div>
+                        </template>
+                    </lwtf-select-option>
+                    <lwtf-select-option value="sand">
+                        <span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#FDE68A;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);vertical-align:-2px;margin-right:6px"></span><strong>Sand</strong> <small style="opacity:.7">#FDE68A</small>
+                        <template slot="tooltip">
+                            <div style="width:190px">
+                                <div style="height:64px;border-radius:6px;background:#FDE68A;color:#111827;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700">Aa</div>
+                                <div style="margin-top:8px"><strong>Sand</strong><br>#FDE68A &middot; rgb(253, 230, 138)<br><em>Soft backgrounds (use dark text)</em></div>
+                            </div>
+                        </template>
+                    </lwtf-select-option>
                 </lwtf-select>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label, helper, error, placeholder, name</code> &mdash; display / form basics.</li><li><code>multiple</code> &mdash; boolean; allow more than one tag. Without it, picking a new option replaces the existing tag.</li><li><code>max-selections</code> &mdash; integer; caps how many tags multiple allows.</li><li><code>max-visible</code> &mdash; max dropdown rows visible before it scrolls (default 8).</li><li><code>required, disabled, readonly</code> &mdash; standard form states.</li></ul><p><strong>Slots:</strong></p><ul><li><code>tooltip</code> &mdash; (inside a &lt;lwtf-select-option&gt;, via &lt;template slot="tooltip"&gt;) rich HTML shown on hover in the dropdown.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>value</code> &mdash; get/set array of selected values &mdash; always an array, even in single-select mode.</li><li><code>options</code> &mdash; get/set the full option list as [{value, label, disabled, selected, html}]; setter replaces every option.</li></ul><p><strong>Methods:</strong></p><ul><li><code>addOption(opt) / updateOption(value, patch) / removeOption(value)</code> &mdash; build options from JS: {value, label, disabled?, selected?, html?}.</li><li><code>clear() / checkValidity() / reportValidity()</code> &mdash; standard helpers.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-input</code> &mdash; every selection/removal while interacting; detail: { value: [...] }.</li><li><code>lwt-change</code> &mdash; commit (tag added/removed, or dropdown closes); detail: { value: [...] }.</li><li><code>lwt-select</code> &mdash; an option was picked; detail: { value, option }.</li><li><code>lwt-remove</code> &mdash; a tag was removed (&times; or Backspace); detail: { value, option }.</li></ul><p><strong>Form participation:</strong> uses ElementInternals, so <code>name="&hellip;"</code> submits one entry per selected value.</p>
             </details>
