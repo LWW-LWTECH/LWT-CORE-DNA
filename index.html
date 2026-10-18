@@ -649,7 +649,7 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
             <summary><span></span>Form Elements</summary>
             <p>These elements are part of the CDNA forms library (<code>lwt-forms.js</code>). Every one of them participates in a native <code>&lt;form&gt;</code> via the ElementInternals API, so a <code>name</code> attribute submits like a regular form control.</p>
             <br/>
-            <form id="demo-form" novalidate>
+            <form id="demo-form" novalidate enctype="multipart/form-data">
 
 
             <details>
@@ -700,6 +700,25 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
                 <lwtf-date-range label="Stay dates" name="stay_dates" months="2"
     value="2026-11-06,2026-11-22" min="2026-01-01" max="2026-12-31"></lwtf-date-range>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label, helper, error, placeholder</code> &mdash; display / form basics.</li><li><code>value</code> &mdash; initial "start,end" ISO date pair (or ISO datetimes when <code>time</code> is set); read once at connect, use .value after.</li><li><code>name</code> &mdash; form field name.</li><li><code>months</code> &mdash; how many side-by-side calendars to show (default 2).</li><li><code>time</code> &mdash; boolean; adds a 00:00&ndash;23:59 time-of-day range slider per end.</li><li><code>min, max</code> &mdash; ISO date bounds; days/navigation outside this range are disabled.</li><li><code>presets</code> &mdash; comma list overriding which preset shortcuts show, from: today, yesterday, last7, last15, lastmonth, custom.</li><li><code>no-presets</code> &mdash; boolean; hides the preset sidebar entirely.</li><li><code>required, disabled, readonly</code> &mdash; standard form states.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>value</code> &mdash; get/set array [start, end] (empty array if unset).</li><li><code>valueAsDates</code> &mdash; read-only [Date, Date] or [null, null].</li></ul><p><strong>Methods:</strong></p><ul><li><code>setRange(start, end)</code> &mdash; programmatic set; Date objects or ISO strings. {silent:true} to skip events.</li><li><code>clear() / open() / close() / toggle()</code> &mdash; popup and value control.</li><li><code>checkValidity() / reportValidity() / focus() / blur()</code> &mdash; standard form helpers, proxied to the trigger field.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-input</code> &mdash; every draft change while the popup is open; detail: { value } (in-progress draft).</li><li><code>lwt-change</code> &mdash; Apply pressed, or .value/.setRange() called; detail: { value }.</li><li><code>lwt-preset</code> &mdash; a preset shortcut was picked; detail: { preset, value }.</li><li><code>lwt-open / lwt-close</code> &mdash; popup opened/closed.</li></ul><p><strong>Form participation:</strong> uses ElementInternals &mdash; submits two form entries under <code>name</code> (start and end). <code>required</code> is satisfied only once both ends are set.</p>
+            </details>
+
+            <details>
+                <summary><lwtg-icon icon="app_dropzone" width="15px" height="15px"></lwtg-icon> Dropzone (file upload)</summary>
+                <p>A drag-and-drop file picker that works like a native <code>&lt;input type="file"&gt;</code> in a standard form. Drop files on the zone, or click it (or press Enter / Space) to browse. Accepted files are listed with a thumbnail or file icon, a readable size, an optional upload progress bar and a remove button. Files of the wrong type, over <code>max-size</code>, already in the list, or folders are skipped with an inline message under the zone. For a normal form post the <code>&lt;form&gt;</code> needs <code>enctype="multipart/form-data"</code>.</p>
+                <h4>Implementation</h4>
+                <pre><code>&lt;form method="post" enctype="multipart/form-data"&gt;
+    &lt;lwtf-dropzone label="Upload your files" name="attachments" multiple
+        accept="jpg, png, pdf, doc, docx, xls, xlsx, ppt, odt, rtf" max-size="26214400"&gt;&lt;/lwtf-dropzone&gt;
+&lt;/form&gt;
+
+// Show upload progress on a row (bar stays hidden until first called)
+dz.setProgress(file, 42);
+dz.setStatus(file, 'done');                    // or 'error', 'Upload failed'</code></pre>
+
+                <lwtf-dropzone id="demo-dropzone" label="Upload your files" name="attachments" multiple
+    accept="jpg, png, pdf, doc, docx, xls, xlsx, ppt, odt, rtf" max-size="26214400"></lwtf-dropzone>
+                <lwtg-button id="demo-dropzone-upload" variant="secondary" label="Simulate upload"></lwtg-button>
+                <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>label, helper, error, name</code> &mdash; display / form basics; every file is submitted under <code>name</code>.</li><li><code>accept</code> &mdash; comma separated types: extensions with or without the dot ("jpg", ".pdf") or MIME types ("image/*"). jpg/jpeg and tif/tiff count as the same type. Shows "Accepted: JPG, PNG, &hellip;" under the zone.</li><li><code>max-size</code> &mdash; maximum size per file in bytes (1024 per KB); shows "Maximum file size: 25 MB".</li><li><code>multiple</code> &mdash; allow more than one file. Without it a new file replaces the current one.</li><li><code>required, disabled</code> &mdash; standard form states (a disabled &lt;fieldset&gt; also disables it).</li><li><code>zone-text</code> &mdash; text inside the zone.</li><li><code>list-label</code> &mdash; heading over the file list (default "Uploaded files"); the count is added automatically.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>files</code> / <code>value</code> &mdash; array of the File objects in the list.</li><li><code>name, form</code> &mdash; field name and owning &lt;form&gt;. form.reset() clears the list.</li><li><code>addFiles(list), removeFile(file), clear()</code> &mdash; manage the list from code (addFiles follows the same rules as a drop).</li><li><code>setProgress(file, percent)</code> &mdash; show / animate a row&apos;s progress bar (0&ndash;100).</li><li><code>setStatus(file, 'done' | 'error' | '', message)</code> &mdash; mark a row finished or failed.</li><li><code>checkValidity(), reportValidity()</code> &mdash; standard helpers.</li></ul><p><strong>Events:</strong></p><ul><li><code>lwt-change</code> (and <code>change</code>) &mdash; the list changed; detail: { files }.</li><li><code>lwt-add</code> &mdash; detail: { added, files }.</li><li><code>lwt-remove</code> &mdash; detail: { file, files }.</li><li><code>lwt-reject</code> &mdash; files were skipped; detail: { rejected: [{ name, reason, message }] }, reason: type | size | duplicate | folder | single.</li></ul><p><strong>Theming:</strong> --lwt-dropzone-bg, --lwt-dropzone-color, --lwt-dropzone-border, --lwt-dropzone-radius, --lwt-dropzone-padding, --lwt-dropzone-min-height, --lwt-dropzone-gap, --lwt-dropzone-hover-bg, --lwt-dropzone-accent (drag-over), --lwt-dropzone-dropped-color, --lwt-dropzone-focus-color, --lwt-dropzone-hint-color, --lwt-dropzone-error-color, --lwt-dropzone-list-label-color, --lwt-dropzone-visible-rows (default 3), --lwt-dropzone-row-height, --lwt-dropzone-row-gap, --lwt-dropzone-thumb-size, --lwt-dropzone-thumb-radius, --lwt-dropzone-progress-height, --lwt-dropzone-progress-track, --lwt-dropzone-progress-color, --lwt-dropzone-progress-done-color, --lwt-dropzone-remove-color.</p>
             </details>
 
             <details>
@@ -1056,13 +1075,15 @@ chart.data = {
         // readout shows exactly what `element.value` returns (it's a
         // property, not a method) and refreshes on every lwt-* event.
         (function () {
-            var FORM_TAGS = ['lwtf-choices', 'lwtf-color-picker', 'lwtf-date-range', 'lwtf-input',
+            var FORM_TAGS = ['lwtf-choices', 'lwtf-color-picker', 'lwtf-date-range', 'lwtf-dropzone', 'lwtf-input',
                              'lwtf-otp', 'lwtf-select', 'lwtf-signature', 'lwtf-slider', 'lwtf-transfer-list'];
             var EVENTS = ['lwt-input', 'lwt-change', 'lwt-select', 'lwt-remove', 'lwt-clear',
                           'lwt-complete', 'lwt-preset', 'lwt-mode-change'];
 
             // Long data URLs (lwtf-signature) would flood the panel -- shorten them.
+            // File objects (lwtf-dropzone) would print as {} -- show name and size.
             function shorten(key, val) {
+                if (typeof File !== 'undefined' && val instanceof File) return '[File] ' + val.name + ' (' + val.size + ' bytes)';
                 if (typeof val === 'string' && val.indexOf('data:') === 0 && val.length > 80) {
                     return val.slice(0, 60) + '... (' + val.length + ' chars)';
                 }
@@ -1118,7 +1139,9 @@ chart.data = {
             var panel = document.getElementById('demo-form-panel');
 
             // Signature values are long data: URLs -- shorten them for display.
+            // File objects would print as {} -- show name and size instead.
             function shorten(key, val) {
+                if (typeof File !== 'undefined' && val instanceof File) return '[File] ' + val.name + ' (' + val.size + ' bytes)';
                 if (typeof val === 'string' && val.indexOf('data:') === 0 && val.length > 80) {
                     return val.slice(0, 60) + '... (' + val.length + ' chars)';
                 }
@@ -1172,7 +1195,7 @@ chart.data = {
 
                 var fd = [];
                 new FormData(form).forEach(function (value, key) {
-                    fd.push([key, typeof value === 'string' ? shorten('', value) : '[File] ' + value.name]);
+                    fd.push([key, typeof value === 'string' ? shorten('', value) : '[File] ' + value.name + ' (' + value.size + ' bytes)']);
                 });
 
                 dataEl.textContent = JSON.stringify(data, shorten, 2);
@@ -1182,6 +1205,30 @@ chart.data = {
                 statusEl.className = 'demo-form-status ok';
                 statusEl.textContent = 'Saved ' + Object.keys(data).length + ' fields at ' + new Date().toLocaleTimeString() + '.';
                 panel.open = true;
+            });
+        })();
+    </script>
+    <script>
+        // Dropzone demo: fake an upload so the progress bars animate.
+        (function () {
+            var dz = document.getElementById('demo-dropzone');
+            var btn = document.getElementById('demo-dropzone-upload');
+            if (!dz || !btn) return;
+            btn.addEventListener('click', function () {
+                dz.files.forEach(function (file, i) {
+                    var pct = 0;
+                    dz.setStatus(file, '');
+                    dz.setProgress(file, 0);
+                    var timer = setInterval(function () {
+                        pct += 8 + Math.random() * 14;
+                        if (pct >= 100) {
+                            clearInterval(timer);
+                            dz.setStatus(file, 'done');
+                        } else {
+                            dz.setProgress(file, pct);
+                        }
+                    }, 180 + i * 60);
+                });
             });
         })();
     </script>
