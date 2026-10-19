@@ -1,7 +1,7 @@
 /*!
  * LWT Dashboard Elements
  * Developer: Lee W Winter
- * Last Generated: 2026-10-18T21:32:52.402Z
+ * Last Generated: 2026-10-19T00:24:07.228Z
  * Requires lwt-core.js to be loaded first.
  */
 
@@ -132,11 +132,11 @@
       .replace(/"/g, '&quot;');
   }
 
-  function rectSvg(x, y, w, h, fill, stroke) {
+  function rectSvg(x, y, w, h, fill, stroke, attrs) {
     w = Math.max(0, w);
     h = Math.max(0, h);
     return '<rect x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" width="' + w.toFixed(2) + '" height="' + h.toFixed(2) +
-      '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5" rx="2"></rect>';
+      '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5" rx="2"' + (attrs || '') + '></rect>';
   }
 
   var CSS = `
@@ -196,7 +196,8 @@
       this._chartName = this._a11yName([this._strAttr('title', '')], 'Bar chart', 'Add a title attribute');
       var table = a11y.chartTableHtml(this._chartName, this._data);
       this._hasTable = !!table;
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' + window.LWT.chart.TIP_HTML, CSS + a11y.SR_ONLY_CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _measureText(text, fontSize) {
@@ -290,6 +291,7 @@
       // ---- bars ----
       var barsSvg = '';
       var numDs = datasets.length;
+      function tipFor(li, di, v) { return window.LWT.chart.tipAttr(labels[li], (numDs > 1 ? (datasets[di].label || ('Series ' + (di + 1))) + ': ' : '') + v, null); }
       for (var li = 0; li < n; li++) {
         if (!horizontal) {
           if (stacked) {
@@ -299,7 +301,7 @@
               var v = Number(datasets[di].data && datasets[di].data[li]) || 0;
               var segH = valueToPx(v);
               var y = plotBottom - valueToPx(cum) - segH;
-              barsSvg += rectSvg(xPos, y, innerBand, segH, colors[di].fill, colors[di].stroke);
+              barsSvg += rectSvg(xPos, y, innerBand, segH, colors[di].fill, colors[di].stroke, tipFor(li, di, v));
               cum += v;
             }
           } else {
@@ -308,7 +310,7 @@
               var v2 = Number(datasets[di2].data && datasets[di2].data[li]) || 0;
               var h2 = valueToPx(v2);
               var x2 = plotLeft + bandLen * li + bandPad + subW * di2;
-              barsSvg += rectSvg(x2, plotBottom - h2, subW, h2, colors[di2].fill, colors[di2].stroke);
+              barsSvg += rectSvg(x2, plotBottom - h2, subW, h2, colors[di2].fill, colors[di2].stroke, tipFor(li, di2, v2));
             }
           }
         } else {
@@ -319,7 +321,7 @@
               var v3 = Number(datasets[di3].data && datasets[di3].data[li]) || 0;
               var segW = valueToPx(v3);
               var x3 = plotLeft + valueToPx(cumH);
-              barsSvg += rectSvg(x3, yPos, segW, innerBand, colors[di3].fill, colors[di3].stroke);
+              barsSvg += rectSvg(x3, yPos, segW, innerBand, colors[di3].fill, colors[di3].stroke, tipFor(li, di3, v3));
               cumH += v3;
             }
           } else {
@@ -328,7 +330,7 @@
               var v4 = Number(datasets[di4].data && datasets[di4].data[li]) || 0;
               var w4 = valueToPx(v4);
               var y4 = plotTop + bandLen * li + bandPad + subH * di4;
-              barsSvg += rectSvg(plotLeft, y4, w4, subH, colors[di4].fill, colors[di4].stroke);
+              barsSvg += rectSvg(plotLeft, y4, w4, subH, colors[di4].fill, colors[di4].stroke, tipFor(li, di4, v4));
             }
           }
         }
@@ -612,7 +614,8 @@
       this._chartName = this._a11yName([this._strAttr('title', '')], 'Bubble chart', 'Add a title attribute');
       var table = a11y.chartTableHtml(this._chartName, this._data);
       this._hasTable = !!table;
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' + window.LWT.chart.TIP_HTML, CSS + a11y.SR_ONLY_CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _measureText(text, fontSize) {
@@ -723,7 +726,7 @@
           var r = Math.max(1, (Number(p.r) || 5) * bubbleScale);
           var c = pointColor(s, i);
           bubblesSvg += '<circle class="bubble" cx="' + xPos(x).toFixed(2) + '" cy="' + yPos(y).toFixed(2) + '" r="' + r.toFixed(2) +
-            '" fill="' + c.fill + '" stroke="' + c.stroke + '"></circle>';
+            '" fill="' + c.fill + '" stroke="' + c.stroke + '"' + window.LWT.chart.tipAttr(s.label, '(' + x + ', ' + y + ')', (Number(p.r) ? 'size ' + Number(p.r) : null)) + '></circle>';
         });
       });
 
@@ -1426,7 +1429,8 @@
       this._chartName = this._a11yName([this._strAttr('title', '')], 'Doughnut chart', 'Add a title attribute');
       var table = a11y.chartTableHtml(this._chartName, this._data);
       this._hasTable = !!table;
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' + window.LWT.chart.TIP_HTML, CSS + a11y.SR_ONLY_CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _measureText(text, fontSize) {
@@ -1488,7 +1492,7 @@
           if (v <= 0) return;
           var sweep = (v / total) * Math.PI * 2;
           var path = slicePath(cx, cy, outerR, innerR, angle, angle + sweep);
-          slicesSvg += '<path class="slice" d="' + path + '" fill="' + colors[i].fill + '" stroke="' + colors[i].stroke + '"></path>';
+          slicesSvg += '<path class="slice" d="' + path + '" fill="' + colors[i].fill + '" stroke="' + colors[i].stroke + '"' + window.LWT.chart.tipAttr(l, v, (total > 0 ? Math.round(v / total * 100) + '%' : null)) + '></path>';
           angle += sweep;
         });
       } else {
@@ -1679,7 +1683,8 @@
     }
 
     render() {
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + '</div>', CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + '</div>' + window.LWT.chart.TIP_HTML, CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _buildSvg() {
@@ -1778,11 +1783,13 @@
         centerSvg += '<text class="label-text" x="' + cx + '" y="' + (valueY + 22).toFixed(2) + '" text-anchor="middle">' + escapeXml(label) + '</text>';
       }
 
+      var hitSvg = '<path d="' + describeArc(cx, cy, ringR, startAngle, endAngle) + '" fill="none" stroke="transparent" stroke-width="' + (thickness + 18) + '"' + window.LWT.chart.tipAttr(title || label || '', displayValue + unit, null) + '></path>';
+
       var titleSvg = title ? '<text class="title-text" x="' + (VBW / 2) + '" y="' + (PAD + 16) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
 
       return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml(this._a11yName([title, label], 'Gauge', 'Add a title or label attribute') +
         ': ' + displayValue + unit + ' (range ' + min + ' to ' + max + ')') + '">' +
-        titleSvg + trackSvg + progressSvg + indicatorSvg + tickSvg + centerSvg +
+        titleSvg + trackSvg + progressSvg + indicatorSvg + tickSvg + centerSvg + hitSvg +
         '</svg>';
     }
   }
@@ -1983,7 +1990,8 @@
       this._chartName = this._a11yName([this._strAttr('title', '')], 'Line chart', 'Add a title attribute');
       var table = a11y.chartTableHtml(this._chartName, this._data);
       this._hasTable = !!table;
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' + window.LWT.chart.TIP_HTML, CSS + a11y.SR_ONLY_CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _measureText(text, fontSize) {
@@ -2088,6 +2096,7 @@
 
       // ---- lines, fills, points ----
       var runningCum = labels.map(function () { return 0; });
+      var hitData = [];
       var seriesPoints = series.map(function (s) {
         var topPts = [], basePts = [];
         labels.forEach(function (l, li) {
@@ -2097,6 +2106,7 @@
           var x = xPos(li);
           topPts.push({ x: x, y: plotBottom - valueToPx(topCum) });
           basePts.push({ x: x, y: plotBottom - valueToPx(baseCum) });
+          hitData.push({ x: x, y: plotBottom - valueToPx(topCum), label: l, series: s.label, value: v });
         });
         if (stacked) labels.forEach(function (l, li) { runningCum[li] += Number(s.data[li]) || 0; });
         return { top: topPts, base: basePts };
@@ -2150,8 +2160,13 @@
         ? '<text class="axis-title" x="0" y="0" text-anchor="middle" transform="translate(' + (PAD + 10) + ',' + ((plotTop + plotBottom) / 2) + ') rotate(-90)">' + escapeXml(yLabel) + '</text>'
         : '';
 
+      var hitsSvg = '';
+      var multi = series.length > 1;
+      hitData.forEach(function (h) {
+        hitsSvg += '<circle cx="' + h.x.toFixed(2) + '" cy="' + h.y.toFixed(2) + '" r="11" fill="transparent"' + window.LWT.chart.tipAttr(h.label, (multi ? h.series + ': ' : '') + h.value, null) + '></circle>';
+      });
       return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((this._chartName || title || 'Line chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
-        titleSvg + legendSvg + gridSvg + borderSvg + fillsSvg + linesSvg + tickSvg + xLabelSvg + yLabelSvg +
+        titleSvg + legendSvg + gridSvg + borderSvg + fillsSvg + linesSvg + tickSvg + xLabelSvg + yLabelSvg + hitsSvg +
         '</svg>';
     }
   }
@@ -3098,7 +3113,8 @@
       this._chartName = this._a11yName([this._strAttr('title', '')], 'Pie chart', 'Add a title attribute');
       var table = a11y.chartTableHtml(this._chartName, this._data);
       this._hasTable = !!table;
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' + window.LWT.chart.TIP_HTML, CSS + a11y.SR_ONLY_CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _measureText(text, fontSize) {
@@ -3167,7 +3183,7 @@
           if (v <= 0) return;
           var sweep = (v / total) * Math.PI * 2;
           var path = slicePath(cx, cy, outerR, innerR, angle, angle + sweep);
-          slicesSvg += '<path class="slice" d="' + path + '" fill="' + colors[i].fill + '" stroke="' + colors[i].stroke + '"></path>';
+          slicesSvg += '<path class="slice" d="' + path + '" fill="' + colors[i].fill + '" stroke="' + colors[i].stroke + '"' + window.LWT.chart.tipAttr(l, v, (total > 0 ? Math.round(v / total * 100) + '%' : null)) + '></path>';
           angle += sweep;
         });
       } else {
@@ -3396,7 +3412,8 @@
       this._chartName = this._a11yName([this._strAttr('title', '')], 'Radar chart', 'Add a title attribute');
       var table = a11y.chartTableHtml(this._chartName, this._data);
       this._hasTable = !!table;
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' + window.LWT.chart.TIP_HTML, CSS + a11y.SR_ONLY_CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _measureText(text, fontSize) {
@@ -3520,11 +3537,15 @@
 
       // ---- data polygons ----
       var shapesSvg = '';
+      var radarHits = [];
+      var radarMulti = series.length > 1;
       series.forEach(function (s) {
         var pts = [];
         for (var i = 0; i < n; i++) {
           var v = Number(s.data[i]) || 0;
-          pts.push(polarToCartesian(cx, cy, valueToRadius(v), angle(i)));
+          var rp = polarToCartesian(cx, cy, valueToRadius(v), angle(i));
+          pts.push(rp);
+          radarHits.push({ x: rp.x, y: rp.y, axis: labels[i], series: s.label, value: v });
         }
         if (!pts.length) return;
         var d = 'M ' + pts.map(function (p) { return p.x.toFixed(2) + ' ' + p.y.toFixed(2); }).join(' L ') + ' Z';
@@ -3561,8 +3582,12 @@
 
       var titleSvg = title ? '<text class="chart-title" x="' + (VBW / 2) + '" y="' + (PAD + 20) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
 
+      var hitsSvg = '';
+      radarHits.forEach(function (h) {
+        hitsSvg += '<circle cx="' + h.x.toFixed(2) + '" cy="' + h.y.toFixed(2) + '" r="11" fill="transparent"' + window.LWT.chart.tipAttr(h.axis, (radarMulti ? h.series + ': ' : '') + h.value, null) + '></circle>';
+      });
       return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((this._chartName || title || 'Radar chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
-        titleSvg + legendSvg + gridSvg + shapesSvg + tickSvg + labelSvg +
+        titleSvg + legendSvg + gridSvg + shapesSvg + tickSvg + labelSvg + hitsSvg +
         '</svg>';
     }
   }
@@ -4267,7 +4292,8 @@
     }
 
     render() {
-      this._renderShadow(this._buildSvg(), CSS);
+      this._renderShadow(this._buildSvg() + window.LWT.chart.TIP_HTML, CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _parseData() {
@@ -4372,9 +4398,14 @@
       }
 
       var lineSvg = '<path class="spark-line" d="' + linePath + '" style="' + strokeStyle + '" stroke-width="' + lineWidth + '"></path>';
+      var hitSvg = '';
+      var bandW = n > 1 ? VBW / (n - 1) : VBW;
+      points.forEach(function (p, i) {
+        hitSvg += '<rect x="' + (p.x - bandW / 2).toFixed(2) + '" y="0" width="' + bandW.toFixed(2) + '" height="' + VBH + '" fill="transparent"' + window.LWT.chart.tipAttr(label, values[i], null) + '></rect>';
+      });
 
       return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="none" role="img" aria-label="' + escapeXml(this._spokenName(values)) + '">' +
-        defsSvg + fillSvg + lineSvg +
+        defsSvg + fillSvg + lineSvg + hitSvg +
         '</svg>';
     }
   }

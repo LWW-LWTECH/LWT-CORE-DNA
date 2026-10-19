@@ -124,11 +124,11 @@
       .replace(/"/g, '&quot;');
   }
 
-  function rectSvg(x, y, w, h, fill, stroke) {
+  function rectSvg(x, y, w, h, fill, stroke, attrs) {
     w = Math.max(0, w);
     h = Math.max(0, h);
     return '<rect x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" width="' + w.toFixed(2) + '" height="' + h.toFixed(2) +
-      '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5" rx="2"></rect>';
+      '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5" rx="2"' + (attrs || '') + '></rect>';
   }
 
   var CSS = `
@@ -188,7 +188,8 @@
       this._chartName = this._a11yName([this._strAttr('title', '')], 'Bar chart', 'Add a title attribute');
       var table = a11y.chartTableHtml(this._chartName, this._data);
       this._hasTable = !!table;
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' + window.LWT.chart.TIP_HTML, CSS + a11y.SR_ONLY_CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _measureText(text, fontSize) {
@@ -282,6 +283,7 @@
       // ---- bars ----
       var barsSvg = '';
       var numDs = datasets.length;
+      function tipFor(li, di, v) { return window.LWT.chart.tipAttr(labels[li], (numDs > 1 ? (datasets[di].label || ('Series ' + (di + 1))) + ': ' : '') + v, null); }
       for (var li = 0; li < n; li++) {
         if (!horizontal) {
           if (stacked) {
@@ -291,7 +293,7 @@
               var v = Number(datasets[di].data && datasets[di].data[li]) || 0;
               var segH = valueToPx(v);
               var y = plotBottom - valueToPx(cum) - segH;
-              barsSvg += rectSvg(xPos, y, innerBand, segH, colors[di].fill, colors[di].stroke);
+              barsSvg += rectSvg(xPos, y, innerBand, segH, colors[di].fill, colors[di].stroke, tipFor(li, di, v));
               cum += v;
             }
           } else {
@@ -300,7 +302,7 @@
               var v2 = Number(datasets[di2].data && datasets[di2].data[li]) || 0;
               var h2 = valueToPx(v2);
               var x2 = plotLeft + bandLen * li + bandPad + subW * di2;
-              barsSvg += rectSvg(x2, plotBottom - h2, subW, h2, colors[di2].fill, colors[di2].stroke);
+              barsSvg += rectSvg(x2, plotBottom - h2, subW, h2, colors[di2].fill, colors[di2].stroke, tipFor(li, di2, v2));
             }
           }
         } else {
@@ -311,7 +313,7 @@
               var v3 = Number(datasets[di3].data && datasets[di3].data[li]) || 0;
               var segW = valueToPx(v3);
               var x3 = plotLeft + valueToPx(cumH);
-              barsSvg += rectSvg(x3, yPos, segW, innerBand, colors[di3].fill, colors[di3].stroke);
+              barsSvg += rectSvg(x3, yPos, segW, innerBand, colors[di3].fill, colors[di3].stroke, tipFor(li, di3, v3));
               cumH += v3;
             }
           } else {
@@ -320,7 +322,7 @@
               var v4 = Number(datasets[di4].data && datasets[di4].data[li]) || 0;
               var w4 = valueToPx(v4);
               var y4 = plotTop + bandLen * li + bandPad + subH * di4;
-              barsSvg += rectSvg(plotLeft, y4, w4, subH, colors[di4].fill, colors[di4].stroke);
+              barsSvg += rectSvg(plotLeft, y4, w4, subH, colors[di4].fill, colors[di4].stroke, tipFor(li, di4, v4));
             }
           }
         }

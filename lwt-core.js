@@ -271,6 +271,70 @@
     return d;
   };
 
+  // ---- shared hover tooltip (opt-in per chart) --------------------------
+  // A chart turns this on by: appending chart.TOOLTIP_CSS to its stylesheet
+  // and chart.TIP_HTML to its shadow, tagging each hoverable shape with the
+  // attributes from chart.tipAttr(label, value, extra), and calling
+  // chart.enableTooltips(this) after _renderShadow. Hovering a shape shows a
+  // tooltip and dims the others; works with mouse and touch.
+  chart.TIP_HTML = '<div class="lwt-tip" part="tooltip" hidden></div>';
+  chart.TOOLTIP_CSS =
+    ':host { position: relative; }' +
+    '.lwt-tip { position: absolute; z-index: 3; pointer-events: none; padding: 0.4rem 0.55rem;' +
+    ' border-radius: var(--lwt-border-radius, 6px); background: var(--lwt-color-text-strong, #111827);' +
+    ' color: var(--lwt-color-surface, #fff); font-size: 12px; line-height: 1.45; white-space: nowrap;' +
+    ' box-shadow: 0 4px 12px rgba(0,0,0,0.18); transform: translate(-50%, calc(-100% - 8px)); }' +
+    '.lwt-tip[hidden] { display: none; } .lwt-tip strong { display: block; } .lwt-tip .muted { opacity: 0.85; }' +
+    ' [data-tv] { transition: opacity 120ms ease; }' +
+    ' svg.lwt-hov [data-tv]:not(.lwt-hover) { opacity: 0.4; }';
+
+  // Builds the data-* attributes for one hoverable shape. `value` is the main
+  // line, `label` the bold heading (optional), `extra` a muted line (optional).
+  chart.tipAttr = function (label, value, extra) {
+    var esc = a11y.escape;
+    var s = ' data-tv="' + esc(value == null ? '' : value) + '"';
+    if (label != null && String(label) !== '') s = ' data-tl="' + esc(label) + '"' + s;
+    if (extra != null && String(extra) !== '') s += ' data-te="' + esc(extra) + '"';
+    return s;
+  };
+
+  chart.enableTooltips = function (host) {
+    if (host._lwtTipWired) return;   // listeners live on the shadow root, which survives re-renders
+    host._lwtTipWired = true;
+    var root = host._root, esc = a11y.escape;
+    function hide() {
+      var svg = root.querySelector('svg'), tip = root.querySelector('.lwt-tip');
+      if (tip) tip.hidden = true;
+      if (svg) {
+        svg.classList.remove('lwt-hov');
+        Array.prototype.forEach.call(svg.querySelectorAll('.lwt-hover'), function (el) { el.classList.remove('lwt-hover'); });
+      }
+    }
+    function show(e) {
+      var svg = root.querySelector('svg'), tip = root.querySelector('.lwt-tip');
+      if (!svg || !tip) return;
+      var t = e.target && e.target.closest ? e.target.closest('[data-tv]') : null;
+      if (!t) { hide(); return; }
+      svg.classList.add('lwt-hov');
+      Array.prototype.forEach.call(svg.querySelectorAll('.lwt-hover'), function (el) { if (el !== t) el.classList.remove('lwt-hover'); });
+      t.classList.add('lwt-hover');
+      var label = t.getAttribute('data-tl') || '', value = t.getAttribute('data-tv') || '', extra = t.getAttribute('data-te') || '';
+      tip.innerHTML = (label ? '<strong>' + esc(label) + '</strong>' : '') + esc(value) + (extra ? '<br><span class="muted">' + esc(extra) + '</span>' : '');
+      tip.hidden = false;
+      var hb = host.getBoundingClientRect(), r = t.getBoundingClientRect();
+      var x = r.left + r.width / 2 - hb.left, half = tip.offsetWidth / 2;
+      x = Math.max(half + 4, Math.min(hb.width - half - 4, x));
+      var top = r.top - hb.top;
+      if (top - tip.offsetHeight - 10 < 0) { tip.style.transform = 'translate(-50%, 8px)'; top = r.bottom - hb.top; }
+      else { tip.style.transform = ''; }
+      tip.style.left = x + 'px';
+      tip.style.top = top + 'px';
+    }
+    root.addEventListener('pointermove', show);
+    root.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse') show(e); });
+    host.addEventListener('pointerleave', hide);
+  };
+
   // Adds a `palette` property (get/set, re-renders) to a chart class.
   // Add 'palette' to the class's observedAttributes and observedProps too.
   chart.withPalette = function (ElementClass) {

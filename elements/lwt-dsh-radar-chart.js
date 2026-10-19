@@ -180,7 +180,8 @@
       this._chartName = this._a11yName([this._strAttr('title', '')], 'Radar chart', 'Add a title attribute');
       var table = a11y.chartTableHtml(this._chartName, this._data);
       this._hasTable = !!table;
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' + window.LWT.chart.TIP_HTML, CSS + a11y.SR_ONLY_CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _measureText(text, fontSize) {
@@ -304,11 +305,15 @@
 
       // ---- data polygons ----
       var shapesSvg = '';
+      var radarHits = [];
+      var radarMulti = series.length > 1;
       series.forEach(function (s) {
         var pts = [];
         for (var i = 0; i < n; i++) {
           var v = Number(s.data[i]) || 0;
-          pts.push(polarToCartesian(cx, cy, valueToRadius(v), angle(i)));
+          var rp = polarToCartesian(cx, cy, valueToRadius(v), angle(i));
+          pts.push(rp);
+          radarHits.push({ x: rp.x, y: rp.y, axis: labels[i], series: s.label, value: v });
         }
         if (!pts.length) return;
         var d = 'M ' + pts.map(function (p) { return p.x.toFixed(2) + ' ' + p.y.toFixed(2); }).join(' L ') + ' Z';
@@ -345,8 +350,12 @@
 
       var titleSvg = title ? '<text class="chart-title" x="' + (VBW / 2) + '" y="' + (PAD + 20) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
 
+      var hitsSvg = '';
+      radarHits.forEach(function (h) {
+        hitsSvg += '<circle cx="' + h.x.toFixed(2) + '" cy="' + h.y.toFixed(2) + '" r="11" fill="transparent"' + window.LWT.chart.tipAttr(h.axis, (radarMulti ? h.series + ': ' : '') + h.value, null) + '></circle>';
+      });
       return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((this._chartName || title || 'Radar chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
-        titleSvg + legendSvg + gridSvg + shapesSvg + tickSvg + labelSvg +
+        titleSvg + legendSvg + gridSvg + shapesSvg + tickSvg + labelSvg + hitsSvg +
         '</svg>';
     }
   }

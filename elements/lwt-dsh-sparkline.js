@@ -84,7 +84,8 @@
     }
 
     render() {
-      this._renderShadow(this._buildSvg(), CSS);
+      this._renderShadow(this._buildSvg() + window.LWT.chart.TIP_HTML, CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _parseData() {
@@ -189,9 +190,14 @@
       }
 
       var lineSvg = '<path class="spark-line" d="' + linePath + '" style="' + strokeStyle + '" stroke-width="' + lineWidth + '"></path>';
+      var hitSvg = '';
+      var bandW = n > 1 ? VBW / (n - 1) : VBW;
+      points.forEach(function (p, i) {
+        hitSvg += '<rect x="' + (p.x - bandW / 2).toFixed(2) + '" y="0" width="' + bandW.toFixed(2) + '" height="' + VBH + '" fill="transparent"' + window.LWT.chart.tipAttr(label, values[i], null) + '></rect>';
+      });
 
       return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="none" role="img" aria-label="' + escapeXml(this._spokenName(values)) + '">' +
-        defsSvg + fillSvg + lineSvg +
+        defsSvg + fillSvg + lineSvg + hitSvg +
         '</svg>';
     }
   }

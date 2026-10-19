@@ -51,6 +51,20 @@
                 border-radius: 5px;
                 border: 1px solid #ddd;
                 overflow-x: auto;
+
+                button{
+                    display:block;
+                    margin-bottom: 10px;
+                    cursor: pointer;
+                }
+
+                code{
+                    display: block;
+                    padding: 10px;
+                    background-color: #383838;
+                    border-radius: 5px;
+                    color: #f8f8f8;
+                }
             }
 
             h4 {
@@ -70,13 +84,6 @@
             ul li {
                 margin-bottom: 0.4em;
                 line-height: 1.4;
-            }
-
-            code {
-                background: #f1f1f1;
-                padding: 1px 5px;
-                border-radius: 3px;
-                font-size: 0.95em;
             }
         }
         /* Live ".value" readout under each form demo (see script at end of page) */
@@ -160,6 +167,7 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
             <summary><span></span>General Elements</summary>
             <p>These elements are part of the CDNA general library. A growing collection of custom Web UI components for building modern web applications.</p>
             <br/>
+
 
             <details>
                 <summary><lwtg-icon icon="app_accordion" width="15px" height="15px"></lwtg-icon> Accordion</summary>
@@ -677,7 +685,6 @@ grid.sizes = JSON.parse(localStorage.getItem('layout'));            // restore</
             <br/>
             <form id="demo-form" novalidate enctype="multipart/form-data">
 
-
             <details>
                 <summary><lwtg-icon icon="app_choices" width="15px" height="15px"></lwtg-icon> Choices (radio / checkbox group)</summary>
                 <p>Custom-drawn radio buttons or checkboxes &mdash; no native &lt;input type="radio"/"checkbox"&gt; and no manual label/for/id wiring. Defaults to single-select; set <code>type="multiple"</code> for independent checkboxes. Options can also be built entirely from JS via <code>.options</code>.</p>
@@ -969,6 +976,33 @@ form.addEventListener('submit', function (e) {
             <br/>
 
             <details>
+                <summary><lwtg-icon icon="app_palette" width="15px" height="15px"></lwtg-icon> Color Palettes (all dashboard elements)</summary>
+                <p>Every dashboard element takes a custom color palette. The first one found wins:</p>
+                <ol>
+                    <li><code>chart.palette = ['#2563eb', '#dc2626', { stroke: '#16a34a', fill: '#dcfce7' }]</code> &mdash; JS property.</li>
+                    <li><code>&lt;lwtd-bar-chart palette="#2563eb, #dc2626, #16a34a"&gt;</code> &mdash; attribute, comma-separated.</li>
+                    <li><code>--lwt-chart-palette: #2563eb, #dc2626, #16a34a;</code> &mdash; CSS variable; it inherits, so one rule can theme a whole page, section or dashboard.</li>
+                    <li><code>LWT.chart.palette = [...]</code> &mdash; page-wide default (set it before the charts render).</li>
+                    <li>The element&rsquo;s built-in palette.</li>
+                </ol>
+                <p>Any CSS color works, including names, <code>hsl()</code> and <code>var(--brand-blue)</code>. A plain color is the strong color (lines, borders, dots) and a light fill is mixed from it automatically (<code>LWT.chart.fillMix</code>, default 0.35); pass <code>{ stroke, fill }</code> to choose both. Colors set in the data itself (<code>backgroundColor</code> / <code>borderColor</code>, zone <code>color</code>, item <code>color</code>) still win over the palette.</p>
+                <p>How each element uses it: series charts (bar, line, bubble, radar, scatter, pie, doughnut, treemap) &mdash; one color per dataset / slice / group, in order. Bullet &mdash; the bands, lowest first. Waterfall &mdash; increase, decrease, total. Gauge &mdash; zone colors, or the arc. Sparkline &mdash; the line, or up / down / flat with <code>trend</code>. Stat card &mdash; delta up / down / neutral. Mermaid &mdash; node color plus pie / journey / git colors.</p>
+                <h4>Implementation</h4>
+                <pre><code>&lt;div class="brand-charts" style="--lwt-chart-palette: #0f766e, #b45309, #7c3aed;"&gt;
+  &lt;lwtd-bar-chart title="Theme from the CSS variable"&gt;&lt;/lwtd-bar-chart&gt;
+  &lt;lwtd-doughnut-chart title="Same palette"&gt;&lt;/lwtd-doughnut-chart&gt;
+&lt;/div&gt;</code></pre>
+                <div style="--lwt-chart-palette: #0f766e, #b45309, #7c3aed; display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem; max-width:720px;">
+                    <lwtd-bar-chart id="demo-palette-bar" title="Theme from the CSS variable"></lwtd-bar-chart>
+                    <lwtd-doughnut-chart id="demo-palette-doughnut" title="Same palette" inner-radius="60"></lwtd-doughnut-chart>
+                </div>
+<script>
+  document.getElementById('demo-palette-bar').data = { labels: ['Q1', 'Q2', 'Q3', 'Q4'], datasets: [ { label: 'North', data: [42, 51, 47, 60] }, { label: 'South', data: [35, 39, 44, 41] }, { label: 'West', data: [20, 28, 31, 36] } ] };
+  document.getElementById('demo-palette-doughnut').data = { labels: ['North', 'South', 'West'], datasets: [{ data: [200, 159, 115] }] };
+</script>
+            </details>
+
+            <details>
                 <summary><lwtg-icon icon="app_bar-chart" width="15px" height="15px"></lwtg-icon> Bar Chart</summary>
                 <p>A bar chart rendered as inline SVG (no Chart.js dependency, but a Chart.js-compatible <code>data</code> shape), redrawn whenever <code>.data</code> or a style attribute changes. Supports grouped or stacked bars, horizontal orientation, and dashed goal/target reference lines.</p>
                 <h4>Implementation</h4>
@@ -1023,6 +1057,7 @@ chart.data = {
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; chart title text.</li><li><code>bubble-scale</code> &mdash; multiplier applied to every point&apos;s r (default 1).</li><li><code>legend-position</code> &mdash; "top" (default) | "bottom" | "left" | "right" | "none".</li><li><code>grid</code> &mdash; "both" (default) | "horizontal" | "vertical" | "none".</li><li><code>x-label / y-label</code> &mdash; axis titles.</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; set only &mdash; { datasets: [{ label, data: [{x, y, r}], backgroundColor?, borderColor? }] }. <code>r</code> is a literal pixel radius (not auto-scaled); tune via <code>bubble-scale</code> or directly in the data.</li></ul><p><strong>Theming:</strong> --lwt-chart-bg, --lwt-chart-grid, --lwt-chart-border, --lwt-chart-tick-color, --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-aspect-ratio.</p>
                 <p><strong>Palette:</strong> <code>palette="#2563eb, #dc2626, #16a34a"</code> (or <code>.palette</code>, <code>--lwt-chart-palette</code>, <code>LWT.chart.palette</code>) &mdash; one color per dataset, in order; a light fill is mixed from each. Per-dataset <code>backgroundColor</code> / <code>borderColor</code> still win. See <em>Color Palettes</em>.</p>
             </details>
+
             <details>
                 <summary><lwtg-icon icon="app_bullet" width="15px" height="15px"></lwtg-icon> Bullet Chart</summary>
                 <p>A bullet chart: for each metric, a bar for the actual value, a short line for the target, and shaded bands behind them for the qualitative ranges (e.g. poor / fair / good). A compact alternative to gauges for several metrics side by side. Hover a metric for its value, target (and the difference) and the band it falls in.</p>
@@ -1069,32 +1104,6 @@ chart.data = {
 </script>
                 <h4>Properties</h4><p><strong>Attributes:</strong></p><ul><li><code>title</code> &mdash; chart title.</li><li><code>orientation</code> &mdash; "vertical" (default, one column per metric) or "horizontal" (one row per metric, label on the left; the chart grows in height with the rows).</li><li><code>band-style</code> &mdash; "grey" (default, shades of grey, darkest = lowest band) or "color" (red / amber / green from <code>--lwt-danger</code>, <code>--lwt-warning</code>, <code>--lwt-success</code>).</li><li><code>min, max</code> &mdash; scale ends (default 0 and the largest range / value / target).</li><li><code>scale</code> &mdash; "shared" (default) or "each" (horizontal only: every row gets its own scale and tick labels).</li><li><code>value-prefix, value-suffix</code> &mdash; text around numbers, e.g. <code>value-suffix="%"</code>.</li><li><code>show-values</code> &mdash; boolean; prints each value at the end of its bar.</li><li><code>grid</code> &mdash; "none" (default) or "lines".</li><li><code>legend-position</code> &mdash; "top", "bottom" or "none". Default "top" when <code>bandLabels</code> are given, otherwise "none".</li></ul><p><strong>JS Properties:</strong></p><ul><li><code>data</code> &mdash; <code>{ ranges, bandLabels, items: [{ label, value, target, ranges, color }] }</code>. <code>ranges</code> are the upper bounds of each band, lowest first (any number of bands); an item without its own uses the shared <code>ranges</code>. <code>target</code> is optional; <code>color</code> overrides that item&rsquo;s bar. Chart.js-style <code>{ labels, datasets: [{ data }], targets, ranges }</code> also works.</li></ul><p>Screen readers get a data table (metric, value, target, versus target, band, band limits).</p><p><strong>Theming:</strong> --lwt-bullet-bar-color, --lwt-bullet-target-color (default --lwt-primary), --lwt-bullet-band-dark / --lwt-bullet-band-light (grey style end shades), plus --lwt-chart-bg, --lwt-chart-grid, --lwt-chart-tick-color, --lwt-chart-label-color, --lwt-chart-title-color, --lwt-chart-legend-color, --lwt-chart-aspect-ratio. <strong>Parts:</strong> wrap, tooltip.</p>
                 <p><strong>Palette:</strong> the band colors, lowest band first, used as given, e.g. <code>palette="#fecaca, #fde68a, #bbf7d0"</code> (or <code>.palette</code>, <code>--lwt-chart-palette</code>, <code>LWT.chart.palette</code>).</p>
-            </details>
-            <details>
-                <summary><lwtg-icon icon="app_palette" width="15px" height="15px"></lwtg-icon> Color Palettes (all dashboard elements)</summary>
-                <p>Every dashboard element takes a custom color palette. The first one found wins:</p>
-                <ol>
-                    <li><code>chart.palette = ['#2563eb', '#dc2626', { stroke: '#16a34a', fill: '#dcfce7' }]</code> &mdash; JS property.</li>
-                    <li><code>&lt;lwtd-bar-chart palette="#2563eb, #dc2626, #16a34a"&gt;</code> &mdash; attribute, comma-separated.</li>
-                    <li><code>--lwt-chart-palette: #2563eb, #dc2626, #16a34a;</code> &mdash; CSS variable; it inherits, so one rule can theme a whole page, section or dashboard.</li>
-                    <li><code>LWT.chart.palette = [...]</code> &mdash; page-wide default (set it before the charts render).</li>
-                    <li>The element&rsquo;s built-in palette.</li>
-                </ol>
-                <p>Any CSS color works, including names, <code>hsl()</code> and <code>var(--brand-blue)</code>. A plain color is the strong color (lines, borders, dots) and a light fill is mixed from it automatically (<code>LWT.chart.fillMix</code>, default 0.35); pass <code>{ stroke, fill }</code> to choose both. Colors set in the data itself (<code>backgroundColor</code> / <code>borderColor</code>, zone <code>color</code>, item <code>color</code>) still win over the palette.</p>
-                <p>How each element uses it: series charts (bar, line, bubble, radar, scatter, pie, doughnut, treemap) &mdash; one color per dataset / slice / group, in order. Bullet &mdash; the bands, lowest first. Waterfall &mdash; increase, decrease, total. Gauge &mdash; zone colors, or the arc. Sparkline &mdash; the line, or up / down / flat with <code>trend</code>. Stat card &mdash; delta up / down / neutral. Mermaid &mdash; node color plus pie / journey / git colors.</p>
-                <h4>Implementation</h4>
-                <pre><code>&lt;div class="brand-charts" style="--lwt-chart-palette: #0f766e, #b45309, #7c3aed;"&gt;
-  &lt;lwtd-bar-chart title="Theme from the CSS variable"&gt;&lt;/lwtd-bar-chart&gt;
-  &lt;lwtd-doughnut-chart title="Same palette"&gt;&lt;/lwtd-doughnut-chart&gt;
-&lt;/div&gt;</code></pre>
-                <div style="--lwt-chart-palette: #0f766e, #b45309, #7c3aed; display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem; max-width:720px;">
-                    <lwtd-bar-chart id="demo-palette-bar" title="Theme from the CSS variable"></lwtd-bar-chart>
-                    <lwtd-doughnut-chart id="demo-palette-doughnut" title="Same palette" inner-radius="60"></lwtd-doughnut-chart>
-                </div>
-<script>
-  document.getElementById('demo-palette-bar').data = { labels: ['Q1', 'Q2', 'Q3', 'Q4'], datasets: [ { label: 'North', data: [42, 51, 47, 60] }, { label: 'South', data: [35, 39, 44, 41] }, { label: 'West', data: [20, 28, 31, 36] } ] };
-  document.getElementById('demo-palette-doughnut').data = { labels: ['North', 'South', 'West'], datasets: [{ data: [200, 159, 115] }] };
-</script>
             </details>
 
             <details>
@@ -1655,6 +1664,19 @@ chart.data = {
             reset.addEventListener('click', function () {
                 grid.resetSizes();
                 out.textContent = 'Layout reset.';
+            });
+        })();
+
+        // Add a copy button for every code block place before code in pre tag
+        (function () {
+            var pres = document.querySelectorAll('pre code');
+            pres.forEach(function (pre) {
+                var btn = document.createElement('button');
+                btn.textContent = 'Copy';
+                btn.addEventListener('click', function () {
+                    navigator.clipboard.writeText(pre.textContent);
+                });
+                pre.parentNode.insertBefore(btn, pre);
             });
         })();
     </script>

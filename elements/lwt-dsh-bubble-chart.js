@@ -173,7 +173,8 @@
       this._chartName = this._a11yName([this._strAttr('title', '')], 'Bubble chart', 'Add a title attribute');
       var table = a11y.chartTableHtml(this._chartName, this._data);
       this._hasTable = !!table;
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' + window.LWT.chart.TIP_HTML, CSS + a11y.SR_ONLY_CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _measureText(text, fontSize) {
@@ -284,7 +285,7 @@
           var r = Math.max(1, (Number(p.r) || 5) * bubbleScale);
           var c = pointColor(s, i);
           bubblesSvg += '<circle class="bubble" cx="' + xPos(x).toFixed(2) + '" cy="' + yPos(y).toFixed(2) + '" r="' + r.toFixed(2) +
-            '" fill="' + c.fill + '" stroke="' + c.stroke + '"></circle>';
+            '" fill="' + c.fill + '" stroke="' + c.stroke + '"' + window.LWT.chart.tipAttr(s.label, '(' + x + ', ' + y + ')', (Number(p.r) ? 'size ' + Number(p.r) : null)) + '></circle>';
         });
       });
 

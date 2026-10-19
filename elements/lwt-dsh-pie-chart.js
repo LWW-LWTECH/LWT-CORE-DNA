@@ -149,7 +149,8 @@
       this._chartName = this._a11yName([this._strAttr('title', '')], 'Pie chart', 'Add a title attribute');
       var table = a11y.chartTableHtml(this._chartName, this._data);
       this._hasTable = !!table;
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' + window.LWT.chart.TIP_HTML, CSS + a11y.SR_ONLY_CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _measureText(text, fontSize) {
@@ -218,7 +219,7 @@
           if (v <= 0) return;
           var sweep = (v / total) * Math.PI * 2;
           var path = slicePath(cx, cy, outerR, innerR, angle, angle + sweep);
-          slicesSvg += '<path class="slice" d="' + path + '" fill="' + colors[i].fill + '" stroke="' + colors[i].stroke + '"></path>';
+          slicesSvg += '<path class="slice" d="' + path + '" fill="' + colors[i].fill + '" stroke="' + colors[i].stroke + '"' + window.LWT.chart.tipAttr(l, v, (total > 0 ? Math.round(v / total * 100) + '%' : null)) + '></path>';
           angle += sweep;
         });
       } else {

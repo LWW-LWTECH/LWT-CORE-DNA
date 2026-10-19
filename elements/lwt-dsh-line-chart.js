@@ -189,7 +189,8 @@
       this._chartName = this._a11yName([this._strAttr('title', '')], 'Line chart', 'Add a title attribute');
       var table = a11y.chartTableHtml(this._chartName, this._data);
       this._hasTable = !!table;
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>', CSS + a11y.SR_ONLY_CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + table + '</div>' + window.LWT.chart.TIP_HTML, CSS + a11y.SR_ONLY_CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _measureText(text, fontSize) {
@@ -294,6 +295,7 @@
 
       // ---- lines, fills, points ----
       var runningCum = labels.map(function () { return 0; });
+      var hitData = [];
       var seriesPoints = series.map(function (s) {
         var topPts = [], basePts = [];
         labels.forEach(function (l, li) {
@@ -303,6 +305,7 @@
           var x = xPos(li);
           topPts.push({ x: x, y: plotBottom - valueToPx(topCum) });
           basePts.push({ x: x, y: plotBottom - valueToPx(baseCum) });
+          hitData.push({ x: x, y: plotBottom - valueToPx(topCum), label: l, series: s.label, value: v });
         });
         if (stacked) labels.forEach(function (l, li) { runningCum[li] += Number(s.data[li]) || 0; });
         return { top: topPts, base: basePts };
@@ -356,8 +359,13 @@
         ? '<text class="axis-title" x="0" y="0" text-anchor="middle" transform="translate(' + (PAD + 10) + ',' + ((plotTop + plotBottom) / 2) + ') rotate(-90)">' + escapeXml(yLabel) + '</text>'
         : '';
 
+      var hitsSvg = '';
+      var multi = series.length > 1;
+      hitData.forEach(function (h) {
+        hitsSvg += '<circle cx="' + h.x.toFixed(2) + '" cy="' + h.y.toFixed(2) + '" r="11" fill="transparent"' + window.LWT.chart.tipAttr(h.label, (multi ? h.series + ': ' : '') + h.value, null) + '></circle>';
+      });
       return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml((this._chartName || title || 'Line chart') + (this._hasTable ? ', data table follows' : ', no data')) + '">' +
-        titleSvg + legendSvg + gridSvg + borderSvg + fillsSvg + linesSvg + tickSvg + xLabelSvg + yLabelSvg +
+        titleSvg + legendSvg + gridSvg + borderSvg + fillsSvg + linesSvg + tickSvg + xLabelSvg + yLabelSvg + hitsSvg +
         '</svg>';
     }
   }

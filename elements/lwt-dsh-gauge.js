@@ -142,7 +142,8 @@
     }
 
     render() {
-      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + '</div>', CSS);
+      this._renderShadow('<div class="chart-wrap" part="wrap">' + this._buildSvg() + '</div>' + window.LWT.chart.TIP_HTML, CSS + window.LWT.chart.TOOLTIP_CSS);
+      window.LWT.chart.enableTooltips(this);
     }
 
     _buildSvg() {
@@ -241,11 +242,13 @@
         centerSvg += '<text class="label-text" x="' + cx + '" y="' + (valueY + 22).toFixed(2) + '" text-anchor="middle">' + escapeXml(label) + '</text>';
       }
 
+      var hitSvg = '<path d="' + describeArc(cx, cy, ringR, startAngle, endAngle) + '" fill="none" stroke="transparent" stroke-width="' + (thickness + 18) + '"' + window.LWT.chart.tipAttr(title || label || '', displayValue + unit, null) + '></path>';
+
       var titleSvg = title ? '<text class="title-text" x="' + (VBW / 2) + '" y="' + (PAD + 16) + '" text-anchor="middle">' + escapeXml(title) + '</text>' : '';
 
       return '<svg viewBox="0 0 ' + VBW + ' ' + VBH + '" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + escapeXml(this._a11yName([title, label], 'Gauge', 'Add a title or label attribute') +
         ': ' + displayValue + unit + ' (range ' + min + ' to ' + max + ')') + '">' +
-        titleSvg + trackSvg + progressSvg + indicatorSvg + tickSvg + centerSvg +
+        titleSvg + trackSvg + progressSvg + indicatorSvg + tickSvg + centerSvg + hitSvg +
         '</svg>';
     }
   }
