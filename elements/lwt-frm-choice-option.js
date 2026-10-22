@@ -114,8 +114,8 @@
       transition: opacity 120ms ease, transform 120ms ease;
     }
     :host([checked]) .box {
-      background: var(--lwt-choices-checked-bg, var(--lwt-color-success, #15803d));
-      border-color: var(--lwt-choices-checked-border, var(--lwt-color-success, #15803d));
+      background: var(--lwt-choices-color, var(--lwt-color-primary, #15803d));
+      border-color: var(--lwt-choices-color, var(--lwt-color-primary, #15803d));
     }
     :host([checked]) .check { opacity: 1; transform: scale(1); }
     :host([disabled]) .box {

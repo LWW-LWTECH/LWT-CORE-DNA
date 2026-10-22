@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Core: DNA — Web components for business apps</title>
+<meta name="description" content="Core: DNA is a library of 40+ framework-free web components: forms, charts, layouts and feedback. One script tag, no build step, MIT licensed.">
+<link rel="shortcut icon" href="./icons/cdna/favicon.ico">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Carter+One&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+
+<script src="./lwt-core.js"></script>
+<script src="./lwt-general.js"></script>
+<script src="./lwt-forms.js"></script>
+<script src="./lwt-dashboard.js"></script>
+<link rel="stylesheet" href="./lwt-core.css">
+
+<style>
+.libre-caslon-text-bold {
+  font-family: "Libre Caslon Text", serif;
+  font-weight: 700;
+  font-style: normal;
+}
+/* ------------------------------------------------------------------
+   Page tokens. Bundle colours double as the "base pair" colours of the
+   helix and the component map: General = blue, Forms = green,
+   Dashboard = orange.
+   ------------------------------------------------------------------ */
+:root{
+    --ink:        #161a2e;
+    --ink-soft:   #4a5068;
+    --ink-faint:  #8a90a6;
+    --paper:      #f5f6f9;
+    --sheet:      #ffffff;
+    --line:       #dfe2ea;
+    --gen:        #3157f6;
+    --frm:        #0a9471;
+    --dsh:        #e0561c;
+    --code-bg:    #1c2036;
+    --code-ink:   #e6e8f2;
+
+    --f-display: font-family: "Libre Caslon Text", serif;
+    --f-body:    "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+    --f-mono:    "JetBrains Mono", Consolas, monospace;
+
+    --wrap: 1200px;
+    --gutter: clamp(16px, 4vw, 40px);
+}
+*,*::before,*::after{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; scroll-padding-top:72px; }
+body{
+    margin:0;
+    font-family:var(--f-body);
+    font-size:16px;
+    line-height:1.55;
+    color:var(--ink);
+    background:var(--paper);
+    -webkit-font-smoothing:antialiased;
+}
+a{ color:inherit; }
+:focus-visible{ outline:2px solid var(--gen); outline-offset:2px; border-radius:4px; }
+.wrap{ max-width:var(--wrap); margin:0 auto; padding:0 var(--gutter); }
+h1,h2,h3{ font-family:var(--f-display); font-weight:700; letter-spacing:-0.02em; line-height:1.05; margin:0; }
+p{ margin:0; }
+
+/* ---------- Top bar ---------- */
+.top{
+    position:sticky; top:0; z-index:50;
+    background:color-mix(in srgb, var(--paper) 86%, transparent);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid transparent;
+    transition:border-color .2s;
+}
+.top.scrolled{ border-bottom-color:var(--line); }
+.top .wrap{ display:flex; align-items:center; gap:28px; height:60px; }
+.brand{ display:flex; align-items:center; gap:10px; text-decoration:none; font-family:var(--f-display); font-weight:800; font-size:19px; letter-spacing:-0.02em; }
+.brand img{ width:26px; height:26px; }
+.top nav{ display:flex; gap:22px; font-size:14.5px; color:var(--ink-soft); }
+.top nav a{ text-decoration:none; }
+.top nav a:hover{ color:var(--ink); }
+.top .spacer{ flex:1; }
+.btn{
+    display:inline-flex; align-items:center; gap:8px;
+    font:600 15px/1 var(--f-body);
+    padding:12px 18px; border-radius:10px;
+    text-decoration:none; cursor:pointer; border:1px solid transparent;
+    transition:background .15s, border-color .15s;
+}
+.btn-ink{ background:var(--ink); color:#fff; }
+.btn-ink:hover{ background:#2a3050; }
+.btn-line{ background:transparent; border-color:#c9cdd9; color:var(--ink); }
+.btn-line:hover{ border-color:var(--ink); }
+.btn-sm{ padding:9px 14px; font-size:14px; }
+@media (max-width:760px){ .top nav{ display:none; } }
+
+/* ---------- Hero ---------- */
+.hero{ position:relative; overflow:hidden; padding:48px 0 150px; }
+.helix{ position:absolute; left:0; right:0; bottom:0; width:100%; height:130px; pointer-events:none; }
+.hero .wrap > *{ min-width:0; }
+.hero .wrap{ position:relative; display:grid; grid-template-columns: minmax(0,1.05fr) minmax(0,1fr); gap:48px; align-items:center; }
+.hero h1{
+    font-size:clamp(40px, 5.3vw, 74px);
+    font-weight:800;
+    letter-spacing:-0.045em;
+    line-height:.95;
+}
+.hero .lede{ margin-top:22px; font-size:19px; color:var(--ink-soft); max-width:34em; }
+.hero .ctas{ margin-top:30px; display:flex; flex-wrap:wrap; gap:12px; }
+.install{
+    margin-top:26px; display:flex; align-items:center; gap:12px;
+    background:var(--sheet); border:1px solid var(--line); border-radius:10px;
+    padding:10px 10px 10px 16px; max-width:520px;
+    font:13px/1.4 var(--f-mono); color:var(--ink-soft);
+}
+.install code{ flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.install code b{ color:var(--gen); font-weight:500; }
+.copy{ font:500 12.5px var(--f-body); border:1px solid var(--line); background:var(--paper); border-radius:7px; padding:6px 10px; cursor:pointer; color:var(--ink); }
+.copy:hover{ border-color:var(--ink-faint); }
+.facts{ margin-top:34px; display:flex; flex-wrap:wrap; gap:10px 34px; }
+.facts div{ display:flex; flex-direction:column; }
+.facts dt{ font-family:var(--f-display); font-weight:700; font-size:28px; letter-spacing:-0.03em; }
+.facts dd{ margin:0; font-size:13.5px; color:var(--ink-faint); }
+#hero-stats{ grid-template-columns:repeat(3, minmax(0,1fr)); }
+@media (max-width:960px){ .hero .wrap{ grid-template-columns:minmax(0,1fr); } }
+@media (max-width:520px){ #hero-stats{ grid-template-columns:minmax(0,1fr); } .hero{ padding-bottom:120px; } }
+
+/* ---------- App window (used in hero, showcases, playground) ---------- */
+.window{
+    background:var(--sheet);
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow: 0 1px 0 rgba(22,26,46,.04), 0 24px 48px -24px rgba(22,26,46,.28);
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    min-width:0;
+}
+.window-bar{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 14px; border-bottom:1px solid var(--line);
+    background:#fafbfc;
+}
+.dots{ display:flex; gap:6px; }
+.dots i{ width:10px; height:10px; border-radius:50%; background:#dcdfe7; display:block; }
+.url{
+    flex:1; min-width:0;
+    font:12.5px var(--f-mono); color:var(--ink-faint);
+    background:var(--paper); border-radius:6px; padding:5px 10px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.seg{ display:flex; background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:2px; }
+.seg button{
+    font:500 12.5px var(--f-body); border:0; background:transparent; color:var(--ink-soft);
+    padding:5px 11px; border-radius:6px; cursor:pointer;
+}
+.seg button[aria-pressed="true"]{ background:var(--sheet); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.08); }
+.stage{ position:relative; padding:22px; min-height:460px; overflow:auto; }
+.stage.is-code{ padding:0; background:var(--code-bg); }
+.stage pre{ margin:0; padding:20px 22px; font:12.5px/1.65 var(--f-mono); color:var(--code-ink); white-space:pre; overflow:auto; min-height:460px; }
+.stage pre .t{ color:#8fb4ff; } .stage pre .a{ color:#7fd6b4; } .stage pre .s{ color:#ffc58f; } .stage pre .c{ color:#7d849f; }
+.stage pre .h{ display:block; color:#7d849f; margin:6px 0; }
+.readout{
+    border-top:1px solid var(--line); background:#fafbfc;
+    font:12px/1.5 var(--f-mono); color:var(--ink-soft);
+    max-height:150px; overflow:auto;
+}
+.readout summary{ cursor:pointer; padding:8px 14px; font-family:var(--f-body); font-size:12.5px; color:var(--ink-soft); }
+.readout pre{ margin:0; padding:0 14px 12px; white-space:pre-wrap; word-break:break-all; color:var(--ink); }
+.readout[hidden]{ display:none; }
+
+/* ---------- Component map ---------- */
+.map{ padding:28px 0 8px; }
+.map-intro{ display:flex; justify-content:space-between; align-items:end; gap:20px; flex-wrap:wrap; margin-bottom:18px; }
+.map-intro p{ color:var(--ink-soft); max-width:40em; }
+.strand{ display:grid; grid-template-columns:150px 1fr; align-items:center; gap:16px; margin-bottom:10px; }
+.strand-name{ font-family:var(--f-display); font-weight:700; font-size:17px; }
+.strand-name small{ display:block; font:12.5px var(--f-mono); color:var(--ink-faint); font-weight:400; }
+.bands{
+    display:flex; flex-wrap:wrap;
+    border-radius:999px; overflow:hidden;
+    border:1.5px solid var(--c);
+    background:color-mix(in srgb, var(--c) 6%, white);
+}
+.bands a{
+    flex:1 0 auto; text-align:center;
+    padding:9px 12px; font-size:13px; text-decoration:none; color:var(--ink);
+    border-right:1px solid color-mix(in srgb, var(--c) 22%, white);
+    transition:background .12s, color .12s;
+}
+.bands a:last-child{ border-right:0; }
+.bands a:nth-child(3n+2){ background:color-mix(in srgb, var(--c) 11%, white); }
+.bands a:hover, .bands a:focus-visible{ background:var(--c); color:#fff; outline:none; }
+@media (max-width:760px){
+    .strand{ grid-template-columns:1fr; gap:6px; }
+    .bands{ border-radius:14px; }
+}
+
+/* ---------- Showcase sections ---------- */
+.show{ padding:84px 0 24px; }
+.show-head{ display:grid; grid-template-columns: 1fr 1fr; gap:40px; align-items:end; margin-bottom:30px; }
+.show-head h2{ font-size:clamp(34px, 4.4vw, 56px); letter-spacing:-0.035em; }
+.show-head h2 .bundle{ display:block; font:500 14px var(--f-mono); letter-spacing:0; color:var(--c); margin-bottom:12px; }
+.show-head p{ color:var(--ink-soft); font-size:17px; max-width:32em; }
+.show-body{ display:grid; grid-template-columns: 300px minmax(0,1fr); gap:28px; align-items:start; }
+.cases{ display:flex; flex-direction:column; gap:4px; position:sticky; top:80px; }
+.case{
+    text-align:left; font:inherit; color:inherit; cursor:pointer;
+    background:transparent; border:0; border-left:3px solid transparent;
+    padding:12px 14px 12px 16px; border-radius:0 10px 10px 0;
+}
+.case:hover{ background:rgba(22,26,46,.04); }
+.case[aria-selected="true"]{ border-left-color:var(--c); background:var(--sheet); box-shadow:0 1px 3px rgba(22,26,46,.08); }
+.case strong{ display:block; font-weight:600; font-size:15.5px; }
+.case span{ display:block; font-size:13.5px; color:var(--ink-faint); margin-top:2px; }
+.case .uses{ display:none; margin-top:8px; font:11.5px/1.6 var(--f-mono); color:var(--c); }
+.case[aria-selected="true"] .uses{ display:block; }
+@media (max-width:960px){
+    .show-head{ grid-template-columns:1fr; gap:14px; }
+    .show-body{ grid-template-columns:1fr; }
+    .cases{ position:static; flex-direction:row; overflow-x:auto; gap:6px; padding-bottom:4px; scrollbar-width:thin; }
+    .case{ flex:0 0 auto; border-left:0; border-bottom:3px solid transparent; border-radius:10px 10px 0 0; }
+    .case[aria-selected="true"]{ border-bottom-color:var(--c); }
+    .case span, .case[aria-selected="true"] .uses{ display:none; }
+}
+
+/* scene helpers (inside the stage) */
+.scene-title{ font-family:var(--f-display); font-weight:700; font-size:22px; letter-spacing:-0.02em; margin-bottom:4px; }
+.scene-sub{ color:var(--ink-faint); font-size:14px; margin-bottom:18px; }
+.cols{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:18px; }
+.cols-3{ display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:14px; }
+.row{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.stack > * + *{ margin-top:14px; }
+.panel{ border:1px solid var(--line); border-radius:12px; padding:16px; }
+.muted{ color:var(--ink-faint); font-size:13.5px; }
+.pane{ padding:12px; height:100%; overflow:auto; font-size:14px; }
+.pane h4{ margin:0 0 8px; font-size:13px; color:var(--ink-soft); font-weight:600; }
+
+/* ---------- Theming playground ---------- */
+.theme{ padding:96px 0 24px; }
+.theme-body{ display:grid; grid-template-columns: 400px minmax(0,1fr); gap:28px; align-items:start; }
+.controls{ background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:20px; }
+.controls > * + *{ margin-top:16px; }
+.css-out{ margin-top:18px; background:var(--code-bg); color:var(--code-ink); border-radius:10px; padding:14px 16px; font:12px/1.6 var(--f-mono); white-space:pre; overflow:auto; position:relative; }
+.css-out .copy{ position:absolute; top:8px; right:8px; background:#2b3050; color:#e6e8f2; border-color:#3a4066; }
+.presets{ display:flex; gap:8px; flex-wrap:wrap; }
+.presets button{ width:30px; height:30px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px var(--line); cursor:pointer; }
+.presets button[aria-pressed="true"]{ box-shadow:0 0 0 2px var(--ink); }
+#theme-preview{ padding:22px; }
+@media (max-width:960px){ .theme-body{ grid-template-columns:1fr; } }
+
+/* ---------- Get started ---------- */
+.start{ padding:96px 0; }
+.steps{ list-style:none; padding:0; margin:34px 0 0; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:22px; counter-reset:s; }
+.steps li{ counter-increment:s; min-width:0; }
+.steps li::before{ content:counter(s); display:inline-grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font:700 14px var(--f-display); margin-bottom:12px; }
+.steps h3{ font-size:20px; margin-bottom:6px; }
+.steps p{ color:var(--ink-soft); font-size:15px; margin-bottom:12px; }
+.code{ background:var(--code-bg); color:var(--code-ink); border-radius:10px; padding:14px 16px; font:12px/1.65 var(--f-mono); white-space:pre; overflow:auto; min-height: 164px; }
+@media (max-width:960px){ .steps{ grid-template-columns:1fr; } }
+
+footer{ border-top:1px solid var(--line); padding:30px 0 50px; color:var(--ink-faint); font-size:14px; }
+footer .wrap{ display:flex; flex-wrap:wrap; gap:14px 28px; align-items:center; }
+footer a{ color:var(--ink-soft); }
+
+@media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ transition:none !important; animation:none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="top" id="top">
+    <div class="wrap">
+        <a class="brand" href="#"><img src="./icons/cdna/lwtlogo.svg" alt=""> Core: DNA</a>
+        <nav aria-label="Sections">
+            <a href="#general">General</a>
+            <a href="#forms">Forms</a>
+            <a href="#dashboard">Dashboard</a>
+            <a href="#theming">Theming</a>
+            <a href="./index.html">Docs</a>
+        </nav>
+        <span class="spacer"></span>
+        <a class="btn btn-ink btn-sm" href="#start">Get started</a>
+    </div>
+</header>
+
+<main>
+<!-- ================================================================
+     HERO
+     ================================================================ -->
+<section class="hero">
+    <svg class="helix" id="helix" aria-hidden="true"></svg>
+    <div class="wrap">
+        <div>
+            <h1>Business-grade components in one script tag.</h1>
+            <p class="lede">Core: DNA is a library of 40+ web components covering forms, charts, layouts and feedback. They work in any page, with any framework or none, and every demo on this page is the real thing.</p>
+            <div class="ctas">
+                <a class="btn btn-ink" href="#start">Get started</a>
+                <a class="btn btn-line" href="#general">Explore components</a>
+            </div>
+            <div class="install">
+                <code>&lt;script src="<b>…/LWT-CORE-DNA/lwt-core.js</b>"&gt;&lt;/script&gt;</code>
+                <button class="copy" data-copy="install">Copy</button>
+            </div>
+            <dl class="facts">
+                <div><dt>43</dt><dd>components</dd></div>
+                <div><dt>0</dt><dd>dependencies</dd></div>
+                <div><dt>0</dt><dd>build steps</dd></div>
+                <div><dt>MIT</dt><dd>licence</dd></div>
+            </dl>
+        </div>
+
+        <!-- Hero workbench: a small, real, working app -->
+        <div class="window" aria-label="Live example: weekly report">
+            <div class="window-bar"><span class="url">yourapp.com/reports/weekly</span></div>
+            <div class="stage" style="min-height:0;">
+                <div class="cols-3" id="hero-stats">
+                    <lwtd-stat-card label="Revenue" value="$48,200" delta="+12.4%">
+                        <lwtd-sparkline slot="chart" label="Revenue trend" trend data="30 34 31 40 38 45 48" style="width:100%;height:28px;"></lwtd-sparkline>
+                    </lwtd-stat-card>
+                    <lwtd-stat-card label="Orders" value="1,284" delta="+4.1%">
+                        <lwtd-sparkline slot="chart" label="Orders trend" trend data="20 22 26 24 27 29 31" style="width:100%;height:28px;"></lwtd-sparkline>
+                    </lwtd-stat-card>
+                    <lwtd-stat-card label="Refunds" value="38" delta="-6.0%">
+                        <lwtd-sparkline slot="chart" label="Refunds trend" trend data="44 41 43 40 39 37 38" style="width:100%;height:28px;"></lwtd-sparkline>
+                    </lwtd-stat-card>
+                </div>
+                <lwtd-line-chart id="hero-line" title="Visitors this week" style="margin-top:14px;"></lwtd-line-chart>
+                <div class="row" style="margin-top:6px; align-items:end;">
+                    <lwtf-choices id="hero-range" label="Range" name="range" direction="horizontal">
+                        <lwtf-choice-option value="7" checked>7 days</lwtf-choice-option>
+                        <lwtf-choice-option value="14">14 days</lwtf-choice-option>
+                        <lwtf-choice-option value="30">30 days</lwtf-choice-option>
+                    </lwtf-choices>
+                    <span style="flex:1"></span>
+                    <lwtg-button id="hero-export" variant="primary" label="Export report"></lwtg-button>
+                </div>
+                <lwtg-toast id="hero-toast" position="bottom-right"></lwtg-toast>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     COMPONENT MAP (filled by script from the CATALOG below)
+     ================================================================ -->
+<section class="map" aria-labelledby="map-h">
+    <div class="wrap">
+        <div class="map-intro">
+            <h2 id="map-h" style="font-size:28px;">The whole genome</h2>
+            <p>Three bundles, each loaded with its own script. Pick a component to see it working in a real screen.</p>
+        </div>
+        <div id="strands"></div>
+    </div>
+</section>
+
+<!-- ================================================================
+     SHOWCASES (built by script; scenes are the <template>s below)
+     ================================================================ -->
+<section class="show" id="general" style="--c:var(--gen)">
+    <div class="wrap">
+        <div class="show-head">
+            <h2><span class="bundle">lwt-general.js</span>Layout, navigation and feedback</h2>
+            <p>Resizable workspaces, tabs, trees, modals and toasts. The building blocks every app screen needs, styled once through CSS variables.</p>
+        </div>
+        <div class="show-body" data-bundle="general"></div>
+    </div>
+</section>
+
+<section class="show" id="forms" style="--c:var(--frm)">
+    <div class="wrap">
+        <div class="show-head">
+            <h2><span class="bundle">lwt-forms.js</span>Forms that do the hard parts</h2>
+            <p>Date ranges, phone numbers, signatures and file uploads, with validation built in. Each field submits with a normal &lt;form&gt; and exposes a typed <code>.value</code>. Use a scene and watch the readout.</p>
+        </div>
+        <div class="show-body" data-bundle="forms"></div>
+    </div>
+</section>
+
+<section class="show" id="dashboard" style="--c:var(--dsh)">
+    <div class="wrap">
+        <div class="show-head">
+            <h2><span class="bundle">lwt-dashboard.js</span>Charts without a charting library</h2>
+            <p>Fourteen chart and KPI elements drawn as inline SVG. Give them Chart.js-shaped data through <code>.data</code> and they redraw whenever it changes. Hover any mark for its values.</p>
+        </div>
+        <div class="show-body" data-bundle="dashboard"></div>
+    </div>
+</section>
+
+<!-- ================================================================
+     THEMING PLAYGROUND
+     ================================================================ -->
+<section class="theme" id="theming">
+    <div class="wrap">
+        <div class="show-head">
+            <h2><span class="bundle" style="color:var(--ink-faint)">lwt-core.css</span>Restyle everything with a few variables</h2>
+            <p>Every component reads the same design tokens, so changing them once restyles all of them. Any component can still be overridden on its own, for example with <code>--lwt-alert-gap</code>.</p>
+        </div>
+        <div class="theme-body">
+            <div class="controls">
+                <lwtf-color-picker style="display:block;max-width:100%;" id="t-color" label="Primary colour" name="primary" value="#3157F6" format="hex" mode="hsl"></lwtf-color-picker>
+                <div>
+                    <div class="muted" style="margin-bottom:8px;">Quick picks</div>
+                    <div class="presets" id="t-presets">
+                        <button style="background:#3157F6" data-hex="#3157F6" aria-label="Blue" aria-pressed="true"></button>
+                        <button style="background:#0A9471" data-hex="#0A9471" aria-label="Green" aria-pressed="false"></button>
+                        <button style="background:#E0561C" data-hex="#E0561C" aria-label="Orange" aria-pressed="false"></button>
+                        <button style="background:#7C3AED" data-hex="#7C3AED" aria-label="Violet" aria-pressed="false"></button>
+                        <button style="background:#BE185D" data-hex="#BE185D" aria-label="Raspberry" aria-pressed="false"></button>
+                        <button style="background:#161A2E" data-hex="#161A2E" aria-label="Ink" aria-pressed="false"></button>
+                    </div>
+                </div>
+                <lwtf-slider id="t-radius" label="Corner radius" name="radius" min="0" max="20" value="8" tooltip="hover" unit-suffix="px"></lwtf-slider>
+                <lwtf-slider id="t-gap" label="Spacing" name="gap" min="2" max="16" value="8" tooltip="hover" unit-suffix="px"></lwtf-slider>
+            </div>
+            <div>
+                <div class="window">
+                    <div class="window-bar"><span class="url">yourapp.com/settings/billing</span></div>
+                    <div id="theme-preview">
+                        <lwtg-alert variant="info" title="Trial ends in 5 days">Add a payment method to keep your workspace active.</lwtg-alert>
+                        <div class="cols" style="margin-top:16px;">
+                            <div class="stack">
+                                <lwtf-input label="Billing email" name="email" type="email" value="accounts@northwind.co"></lwtf-input>
+                                <lwtf-choices label="Billing cycle" name="cycle" direction="horizontal">
+                                    <lwtf-choice-option value="m">Monthly</lwtf-choice-option>
+                                    <lwtf-choice-option value="y" checked>Yearly (2 months free)</lwtf-choice-option>
+                                </lwtf-choices>
+                                <div class="row">
+                                    <lwtg-button variant="primary" label="Save billing details"></lwtg-button>
+                                    <lwtg-button variant="secondary" label="Cancel"></lwtg-button>
+                                </div>
+                            </div>
+                            <lwtd-bar-chart id="t-chart" title="Usage by seat type"></lwtd-bar-chart>
+                        </div>
+                    </div>
+                </div>
+                <div class="css-out" id="t-css"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================
+     GET STARTED
+     ================================================================ -->
+<section class="start" id="start">
+    <div class="wrap">
+        <h2 style="font-size:clamp(34px,4.4vw,56px); letter-spacing:-0.035em; max-width:14em;">Add it to a page in about a minute</h2>
+        <ol class="steps">
+            <li>
+                <h3>Load the core, then the bundles you need</h3>
+                <p>The core goes first. Load only the bundles you use.</p>
+<div class="code" id="code-install">&lt;head&gt;
+  &lt;script src="https://cdn.jsdelivr.net/gh/LWW-LWTECH/LWT-CORE-DNA@refs/heads/main/lwt-core.js"&gt;&lt;/script&gt;
+  &lt;script src="https://cdn.jsdelivr.net/gh/LWW-LWTECH/LWT-CORE-DNA@refs/heads/main/lwt-forms.js"&gt;&lt;/script&gt;
+  &lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/LWW-LWTECH/LWT-CORE-DNA@refs/heads/main/lwt-core.css"&gt;
+&lt;/head&gt;
+</div>
+            </li>
+            <li>
+                <h3>Write the tags</h3>
+                <p>Attributes configure each component. There is nothing to import or initialise.</p>
+<div class="code">&lt;form id="signup"&gt;
+  &lt;lwtf-input label="Email" name="email"
+    type="email" required&gt;&lt;/lwtf-input&gt;
+  &lt;lwtf-phone label="Phone" name="phone"
+    default-country="US"&gt;&lt;/lwtf-phone&gt;
+&lt;/form&gt;</div>
+            </li>
+            <li>
+                <h3>Read typed values</h3>
+                <p>Validate a whole form in one call and get back arrays, numbers and Files.</p>
+<div class="code">const form = document.getElementById('signup');
+const check = LWT.form.validate(form);
+if (check.valid) {
+  const data = LWT.form.getData(form);
+  // { email: "…", phone: { country: "US", … } }
+}</div>
+            </li>
+        </ol>
+        <div class="ctas" style="margin-top:36px; display:flex; gap:12px; flex-wrap:wrap;">
+            <a class="btn btn-ink" href="./index.html">Read the component docs</a>
+            <a class="btn btn-line" href="https://github.com/LWW-LWTECH/LWW-CORE-DNA">View on GitHub</a>
+        </div>
+    </div>
+</section>
+</main>
+
+<footer>
+    <div class="wrap">
+        <a class="brand" href="#top" style="font-size:16px;"><img src="./icons/cdna/lwtlogo.svg" alt="" style="width:20px;height:20px;"> Core: DNA</a>
+        <span>Built by Lee W Winter at <a href="https://lwinter.tech">LW Tech</a>. MIT licence.</span>
+        <span class="spacer" style="flex:1"></span>
+        <a href="./index.html">Docs</a>
+        <a href="https://github.com/LWW-LWTECH/LWW-CORE-DNA">GitHub</a>
+    </div>
+</footer>
+
+
+<!-- =====================================================================
+     SCENES
+     Each <template> is one use case. It's cloned into the window when its
+     tab is picked, so components connect only while visible. The optional
+     SCENE_INIT[id] function wires data and returns a cleanup function.
+     The "Code" view shows this template's markup plus that function.
+     ===================================================================== -->
+
+<!-- ---------- GENERAL ---------- -->
+<template id="g-workspace" data-url="yourapp.com/admin/content" data-title="Admin workspace" data-desc="Drag the panel edges to resize." data-uses="grid · grid-item · tree · tabs · accordion">
+<lwtg-grid resizable columns="4" rows="2" row-height="200px" gap="8px" resize-min="120px" style="min-width:720px;">
+  <lwtg-grid-item row-span="2" resize-right min-width="180px">
+    <div class="pane">
+      <h4>Content</h4>
+      <lwtg-tree label="Site content">
+        <lwtg-tree-item label="Marketing site" expanded>
+          <lwtg-tree-item label="Home"></lwtg-tree-item>
+          <lwtg-tree-item label="Pricing"></lwtg-tree-item>
+          <lwtg-tree-item label="Blog" expanded>
+            <lwtg-tree-item label="Launch notes"></lwtg-tree-item>
+            <lwtg-tree-item label="Case studies"></lwtg-tree-item>
+          </lwtg-tree-item>
+        </lwtg-tree-item>
+        <lwtg-tree-item label="Help centre">
+          <lwtg-tree-item label="Getting started"></lwtg-tree-item>
+          <lwtg-tree-item label="Billing"></lwtg-tree-item>
+        </lwtg-tree-item>
+      </lwtg-tree>
+    </div>
+  </lwtg-grid-item>
+  <lwtg-grid-item col-span="2" row-span="2" resize-left resize-right>
+    <lwtg-tabs position="top" style="height:100%;">
+      <lwtg-tab slot="tab" panel="edit">Edit</lwtg-tab>
+      <lwtg-tab slot="tab" panel="seo">SEO</lwtg-tab>
+      <lwtg-tab slot="tab" panel="history">History</lwtg-tab>
+      <lwtg-tab-panel slot="panel" name="edit">
+        <div class="pane stack">
+          <lwtf-input label="Page title" name="title" value="Pricing"></lwtf-input>
+          <lwtf-input label="Slug" name="slug" value="/pricing"></lwtf-input>
+          <lwtg-button variant="primary" label="Publish changes"></lwtg-button>
+        </div>
+      </lwtg-tab-panel>
+      <lwtg-tab-panel slot="panel" name="seo"><div class="pane">Meta description, social image and canonical URL go here.</div></lwtg-tab-panel>
+      <lwtg-tab-panel slot="panel" name="history"><div class="pane">Edited 3 times this week by Sam and Priya.</div></lwtg-tab-panel>
+    </lwtg-tabs>
+  </lwtg-grid-item>
+  <lwtg-grid-item row-span="2" resize-left>
+    <div class="pane">
+      <h4>Page settings</h4>
+      <lwtg-accordion>
+        <lwtg-accordion-item open>
+          <div slot="label">Visibility</div>
+          <div slot="body">Public, indexed by search engines.</div>
+        </lwtg-accordion-item>
+        <lwtg-accordion-item>
+          <div slot="label">Layout</div>
+          <div slot="body">Full width with sidebar.</div>
+        </lwtg-accordion-item>
+        <lwtg-accordion-item>
+          <div slot="label">Permissions</div>
+          <div slot="body">Editors and admins.</div>
+        </lwtg-accordion-item>
+      </lwtg-accordion>
+    </div>
+  </lwtg-grid-item>
+</lwtg-grid>
+</template>
+
+<template id="g-feedback" data-url="yourapp.com/projects/atlas" data-title="Notifications and dialogs" data-desc="Alerts, confirm dialogs and toasts." data-uses="alert · modal · toast · button">
+<div class="stack">
+  <lwtg-alert variant="success" title="Deploy finished" dismissible="true">Atlas v2.4 is live in production.</lwtg-alert>
+  <lwtg-alert variant="warning" title="Storage at 86%">You'll reach your plan limit in about 9 days.</lwtg-alert>
+  <lwtg-alert variant="error" dismissible="true">Two webhooks failed to deliver in the last hour.</lwtg-alert>
+  <div class="row">
+    <lwtg-button id="fb-delete" variant="danger" label="Delete project"></lwtg-button>
+    <lwtg-button id="fb-save" variant="primary" label="Save settings"></lwtg-button>
+  </div>
+</div>
+<lwtg-modal id="fb-modal" label="Delete project Atlas?">
+  <p>This removes 14 environments and their logs. This can't be undone.</p>
+  <div class="row" style="justify-content:flex-end; margin-top:1rem;">
+    <lwtg-button variant="secondary" data-lwt-dismiss label="Keep project"></lwtg-button>
+    <lwtg-button id="fb-confirm" variant="danger" label="Delete project"></lwtg-button>
+  </div>
+</lwtg-modal>
+<lwtg-toast id="fb-toast" position="top-right"></lwtg-toast>
+</template>
+
+<template id="g-pricing" data-url="yourapp.com/pricing" data-title="Pricing page" data-desc="Tiers, a featured plan and call-to-action buttons." data-uses="pricing-table · pricing-tier · button">
+<lwtg-pricing-table>
+  <lwtg-pricing-tier>
+    <h3>Starter</h3>
+    <p>For a single team</p>
+    <span slot="price">$9</span>
+    <span slot="period">per user / month</span>
+    <lwtg-button slot="cta" variant="secondary" label="Choose Starter"></lwtg-button>
+    <li slot="features">3 projects</li>
+    <li slot="features">Email support</li>
+  </lwtg-pricing-tier>
+  <lwtg-pricing-tier featured badge="Most popular">
+    <h3>Business</h3>
+    <p>For growing companies</p>
+    <span slot="price">$24</span>
+    <span slot="period">per user / month</span>
+    <lwtg-button slot="cta" variant="primary" label="Start free trial"></lwtg-button>
+    <li slot="features">Unlimited projects</li>
+    <li slot="features">Approvals and audit log</li>
+    <li slot="features">Priority support</li>
+  </lwtg-pricing-tier>
+  <lwtg-pricing-tier>
+    <h3>Enterprise</h3>
+    <p>For regulated industries</p>
+    <span slot="price">Custom</span>
+    <span slot="period">billed annually</span>
+    <lwtg-button slot="cta" variant="secondary" label="Contact sales"></lwtg-button>
+    <li slot="features">SSO and SCIM</li>
+    <li slot="features">Dedicated success manager</li>
+  </lwtg-pricing-tier>
+</lwtg-pricing-table>
+</template>
+
+<template id="g-gallery" data-url="yourapp.com/shop/new-arrivals" data-title="Product gallery" data-desc="Mosaic image grid and a swipeable carousel." data-uses="grid · grid-item · carousel · card">
+<lwtg-grid columns="4" rows="2" gap="10px" row-height="120px">
+  <lwtg-grid-item col-span="2" row-span="2" src="https://picsum.photos/seed/cdna-a/800/600" label="Ceramic set"></lwtg-grid-item>
+  <lwtg-grid-item src="https://picsum.photos/seed/cdna-b/400/300" label="Linen throw"></lwtg-grid-item>
+  <lwtg-grid-item src="https://picsum.photos/seed/cdna-c/400/300" label="Oak tray"></lwtg-grid-item>
+  <lwtg-grid-item col-span="2" src="https://picsum.photos/seed/cdna-d/800/300" label="Table lamp"></lwtg-grid-item>
+</lwtg-grid>
+<h4 style="margin:22px 0 10px; font-size:15px;">What customers say</h4>
+<lwtg-carousel label="Customer reviews">
+  <lwtg-card image="https://i.pravatar.cc/300?img=32" image-alt="Portrait of Maya R." label="Maya R.">Arrived in two days and looks even better in person.</lwtg-card>
+  <lwtg-card image="https://i.pravatar.cc/300?img=14" image-alt="Portrait of Tom H." label="Tom H.">Solid build. The oak tray is now the centrepiece of our table.</lwtg-card>
+  <lwtg-card image="https://i.pravatar.cc/300?img=45" image-alt="Portrait of Ines P." label="Ines P.">Customer service swapped my order size without any fuss.</lwtg-card>
+</lwtg-carousel>
+</template>
+
+<template id="g-share" data-url="yourapp.com/events/summit-26" data-title="Event share page" data-desc="Type a link and the QR code redraws as you type." data-uses="nav-menu · qr · input · skill-bar">
+<lwtg-nav-menu orientation="horizontal" breakpoint="600" aria-label="Event">
+  <lwtg-nav-item href="#" active>Overview</lwtg-nav-item>
+  <lwtg-nav-item label="Schedule">
+    <lwtg-nav-item href="#">Day 1</lwtg-nav-item>
+    <lwtg-nav-item href="#">Day 2</lwtg-nav-item>
+  </lwtg-nav-item>
+  <lwtg-nav-item href="#">Speakers</lwtg-nav-item>
+  <lwtg-nav-item href="#" disabled>Recordings</lwtg-nav-item>
+</lwtg-nav-menu>
+<div class="cols" style="margin-top:20px; align-items:start;">
+  <div class="stack">
+    <lwtf-input id="share-url" label="Link to share" name="url" value="https://lwinter.tech/summit"></lwtf-input>
+    <div>
+      <div class="muted" style="margin-bottom:8px;">Seats filled</div>
+      <lwtg-skill-bar label="Workshops" value="92"></lwtg-skill-bar>
+      <lwtg-skill-bar label="Keynote hall" value="64"></lwtg-skill-bar>
+      <lwtg-skill-bar label="Networking dinner" value="38" color="#e0561c"></lwtg-skill-bar>
+    </div>
+  </div>
+  <div style="display:grid; place-items:center;">
+    <lwtg-qr id="share-qr" src="https://lwinter.tech/summit" size="200" level="H" color="#161a2e" background-color="#ffffff" corner-color="#3157f6" radius="0.35"></lwtg-qr>
+  </div>
+</div>
+</template>
+
+<!-- ---------- FORMS ---------- -->
+<template id="f-booking" data-url="staywell.com/book" data-title="Hotel booking" data-desc="Dates, price range, room type and contact number." data-uses="date-range · slider · choices · select · phone" data-form>
+<form class="stack" novalidate>
+  <div class="cols">
+    <lwtf-date-range label="Stay dates" name="stay" months="2" value="2026-11-06,2026-11-12"></lwtf-date-range>
+    <lwtf-select label="Destination" name="city" placeholder="Search cities…">
+      <lwtf-select-option value="lis">Lisbon</lwtf-select-option>
+      <lwtf-select-option value="kyo">Kyoto</lwtf-select-option>
+      <lwtf-select-option value="cpt">Cape Town</lwtf-select-option>
+      <lwtf-select-option value="mex">Mexico City</lwtf-select-option>
+    </lwtf-select>
+  </div>
+  <lwtf-slider label="Nightly budget" name="budget" min="40" max="600" step="10" value="120,320" ticks tooltip="always" unit-prefix="$"></lwtf-slider>
+  <lwtf-choices label="Room" name="room" direction="horizontal" required>
+    <lwtf-choice-option value="double" checked>Double</lwtf-choice-option>
+    <lwtf-choice-option value="twin">Twin</lwtf-choice-option>
+    <lwtf-choice-option value="suite">Suite</lwtf-choice-option>
+  </lwtf-choices>
+  <lwtf-select label="Must have" name="amenities" multiple placeholder="Add amenities…">
+    <lwtf-select-option value="wifi">Fast Wi-Fi</lwtf-select-option>
+    <lwtf-select-option value="pool">Pool</lwtf-select-option>
+    <lwtf-select-option value="gym">Gym</lwtf-select-option>
+    <lwtf-select-option value="pets">Pets allowed</lwtf-select-option>
+  </lwtf-select>
+  <lwtf-phone label="Mobile for check-in" name="phone" default-country="US" preferred="US,CA,GB" flag-path="./icons/flags/"></lwtf-phone>
+</form>
+</template>
+
+<template id="f-security" data-url="yourapp.com/account/security" data-title="Account security" data-desc="Two-factor setup with a one-time code." data-uses="input · choices · otp · button" data-form>
+<form class="stack" novalidate style="max-width:460px;">
+  <lwtf-input label="Recovery email" name="recovery" type="email" placeholder="you@company.com" required></lwtf-input>
+  <lwtf-choices label="Send codes by" name="method" required>
+    <lwtf-choice-option value="app" checked>Authenticator app</lwtf-choice-option>
+    <lwtf-choice-option value="sms">Text message</lwtf-choice-option>
+    <lwtf-choice-option value="key" disabled>Security key (coming soon)</lwtf-choice-option>
+  </lwtf-choices>
+  <lwtf-otp label="Enter the 6-digit code" name="code" length="6" helper="Paste works too. Try 123456."></lwtf-otp>
+  <lwtg-button id="sec-verify" variant="primary" label="Turn on two-factor"></lwtg-button>
+  <lwtg-toast id="sec-toast" position="top-right"></lwtg-toast>
+</form>
+</template>
+
+<template id="f-contract" data-url="sign.yourapp.com/agreements/4821" data-title="Contract signing" data-desc="Type or draw a signature and attach documents." data-uses="input · signature · dropzone" data-form>
+<form class="stack" novalidate>
+  <div class="cols">
+    <lwtf-input label="Full legal name" name="name" value="Jordan Ellis" required></lwtf-input>
+    <lwtf-input label="Date" name="date" type="date" value="2026-10-21"></lwtf-input>
+  </div>
+  <lwtf-signature label="Signature" name="signature" fonts="cursive;fantasy;arial"></lwtf-signature>
+  <lwtf-dropzone label="Supporting documents" name="files" multiple accept="pdf, doc, docx, png, jpg" max-size="10485760"></lwtf-dropzone>
+</form>
+</template>
+
+<template id="f-brand" data-url="yourapp.com/settings/brand" data-title="Brand settings" data-desc="Colour picker and swatch picker with rich previews." data-uses="color-picker · select (rich options)" data-form>
+<form class="cols" novalidate style="align-items:start;">
+  <lwtf-color-picker label="Accent colour" name="accent" value="#0A9471" format="hex" mode="hsl"></lwtf-color-picker>
+  <lwtf-select label="Secondary palette" name="palette" multiple placeholder="Search colours…" helper="Hover an option to preview it.">
+    <lwtf-select-option value="ocean"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#2563eb;margin-right:6px"></span>Ocean blue
+      <template slot="tooltip"><div style="width:160px;height:56px;border-radius:6px;background:#2563eb;color:#fff;display:grid;place-items:center;font-weight:700">Aa</div></template>
+    </lwtf-select-option>
+    <lwtf-select-option value="sunset"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#ea580c;margin-right:6px"></span>Sunset orange
+      <template slot="tooltip"><div style="width:160px;height:56px;border-radius:6px;background:#ea580c;color:#fff;display:grid;place-items:center;font-weight:700">Aa</div></template>
+    </lwtf-select-option>
+    <lwtf-select-option value="berry"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#7c3aed;margin-right:6px"></span>Berry purple
+      <template slot="tooltip"><div style="width:160px;height:56px;border-radius:6px;background:#7c3aed;color:#fff;display:grid;place-items:center;font-weight:700">Aa</div></template>
+    </lwtf-select-option>
+    <lwtf-select-option value="sand"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#fde68a;margin-right:6px"></span>Sand
+      <template slot="tooltip"><div style="width:160px;height:56px;border-radius:6px;background:#fde68a;color:#111;display:grid;place-items:center;font-weight:700">Aa</div></template>
+    </lwtf-select-option>
+  </lwtf-select>
+</form>
+</template>
+
+<template id="f-report" data-url="yourapp.com/reports/new" data-title="Report builder" data-desc="Pick and order columns, then choose an export." data-uses="transfer-list · choices · slider" data-form>
+<form class="stack" novalidate>
+  <lwtf-transfer-list label="Columns" name="columns" sortable available-label="Available columns" selected-label="In report, in order">
+    <lwtf-transfer-option value="customer" selected>Customer</lwtf-transfer-option>
+    <lwtf-transfer-option value="region" selected>Region</lwtf-transfer-option>
+    <lwtf-transfer-option value="revenue" selected>Revenue</lwtf-transfer-option>
+    <lwtf-transfer-option value="orders">Orders</lwtf-transfer-option>
+    <lwtf-transfer-option value="margin">Margin</lwtf-transfer-option>
+    <lwtf-transfer-option value="owner">Account owner</lwtf-transfer-option>
+  </lwtf-transfer-list>
+  <div class="cols">
+    <lwtf-choices type="multiple" label="Export as" name="format" direction="horizontal">
+      <lwtf-choice-option value="csv" checked>CSV</lwtf-choice-option>
+      <lwtf-choice-option value="xlsx">Excel</lwtf-choice-option>
+      <lwtf-choice-option value="pdf">PDF</lwtf-choice-option>
+    </lwtf-choices>
+    <lwtf-slider label="Rows per page" name="rows" min="10" max="200" step="10" value="50" tooltip="hover"></lwtf-slider>
+  </div>
+</form>
+</template>
+
+<!-- ---------- DASHBOARD ---------- -->
+<template id="d-sales" data-url="yourapp.com/dashboards/sales" data-title="Sales overview" data-desc="KPI tiles, grouped bars and channel mix." data-uses="stat-card · sparkline · bar-chart · doughnut-chart">
+<div class="cols-3">
+  <lwtd-stat-card label="Revenue" value="$1.42M" delta="+18.2%"><lwtd-sparkline slot="chart" label="Revenue trend" trend data="40 42 47 45 52 58 61" style="width:100%;height:28px;"></lwtd-sparkline></lwtd-stat-card>
+  <lwtd-stat-card label="New customers" value="312" delta="+9.6%"><lwtd-sparkline slot="chart" label="Customers trend" trend data="22 25 24 27 30 29 33" style="width:100%;height:28px;"></lwtd-sparkline></lwtd-stat-card>
+  <lwtd-stat-card label="Churn" value="2.1%" delta="-0.4%"><lwtd-sparkline slot="chart" label="Churn trend" trend data="30 29 31 27 26 25 24" style="width:100%;height:28px;"></lwtd-sparkline></lwtd-stat-card>
+</div>
+<div class="cols" style="margin-top:16px;">
+  <lwtd-bar-chart id="ds-bar" title="Revenue by quarter ($k)"></lwtd-bar-chart>
+  <lwtd-doughnut-chart id="ds-dough" title="Channel mix" inner-radius="62"></lwtd-doughnut-chart>
+</div>
+</template>
+
+<template id="d-ops" data-url="status.yourapp.com" data-title="Live operations" data-desc="Values stream in every two seconds." data-uses="gauge · line-chart · bullet">
+<div class="cols-3">
+  <lwtd-gauge id="ops-cpu" title="CPU" value="54" min="0" max="100" unit="%" label="cluster average"></lwtd-gauge>
+  <lwtd-gauge id="ops-mem" title="Memory" value="71" min="0" max="100" unit="%" label="cluster average"></lwtd-gauge>
+  <lwtd-gauge id="ops-disk" title="Disk" value="38" min="0" max="100" unit="%" label="primary volume"></lwtd-gauge>
+</div>
+<div class="cols" style="margin-top:12px;">
+  <lwtd-line-chart id="ops-line" title="Requests per second" fill></lwtd-line-chart>
+  <lwtd-bullet id="ops-bullet" title="Targets this week" orientation="horizontal" scale="each" show-values></lwtd-bullet>
+</div>
+</template>
+
+<template id="d-finance" data-url="yourapp.com/dashboards/finance" data-title="Finance" data-desc="Revenue bridge and budget breakdown." data-uses="waterfall · treemap">
+<lwtd-waterfall id="fin-wf" title="Revenue bridge, Q1 to Q2" value-prefix="$" value-suffix="k"></lwtd-waterfall>
+<lwtd-treemap id="fin-tm" title="Annual budget by department" value-prefix="$" value-suffix="k" style="margin-top:16px;"></lwtd-treemap>
+</template>
+
+<template id="d-people" data-url="yourapp.com/dashboards/people" data-title="People analytics" data-desc="Skills profile and pay against experience." data-uses="radar-chart · scatter · pie-chart">
+<div class="cols">
+  <lwtd-radar-chart id="pp-radar" title="Team skills"></lwtd-radar-chart>
+  <lwtd-pie-chart id="pp-pie" title="Headcount by office"></lwtd-pie-chart>
+</div>
+<lwtd-scatter id="pp-scatter" title="Experience vs. salary" x-label="Years of experience" y-label="Salary" y-prefix="$" y-suffix="k" trend median="both" style="margin:16px auto 0; max-width:640px;"></lwtd-scatter>
+</template>
+
+<template id="d-flow" data-url="yourapp.com/docs/order-pipeline" data-title="Process diagram" data-desc="Mermaid diagrams with pan, zoom and fullscreen." data-uses="mermaid">
+<lwtd-mermaid label="Order pipeline" pan-zoom download fullscreen style="height:420px;">
+<script type="text/plain">
+graph LR
+  A[Order placed] --> B{Payment ok?}
+  B -- yes --> C[Reserve stock]
+  B -- no --> X[Notify customer]
+  C --> D[Pick and pack]
+  D --> E[Ship]
+  E --> F[Delivered]
+  F --> G[Request review]
+</script>
+</lwtd-mermaid>
+</template>
+
+
+<script>
+/* =====================================================================
+   Scene data and wiring. Each function receives the stage element and
+   may return a cleanup function (used to stop live-data timers).
+   ===================================================================== */
+var SCENE_INIT = {
+  'g-feedback': function (root) {
+    var modal = root.querySelector('#fb-modal');
+    var toast = root.querySelector('#fb-toast');
+    root.querySelector('#fb-delete').addEventListener('click', function () { modal.show(); });
+    root.querySelector('#fb-confirm').addEventListener('click', function () {
+      modal.close();
+      toast.show({ variant: 'error', title: 'Project deleted', message: 'Atlas and its 14 environments were removed.' });
+    });
+    root.querySelector('#fb-save').addEventListener('click', function () {
+      toast.show({ variant: 'success', title: 'Settings saved', message: 'Your changes are live.' });
+    });
+  },
+
+  'g-share': function (root) {
+    var qr = root.querySelector('#share-qr');
+    root.querySelector('#share-url').addEventListener('input', function (e) {
+      qr.setAttribute('src', e.currentTarget.value || ' ');
+    });
+  },
+
+  'f-security': function (root) {
+    root.querySelector('#sec-verify').addEventListener('click', function () {
+      var form = root.querySelector('form');
+      var check = LWT.form.validate(form);
+      if (check.valid) {
+        root.querySelector('#sec-toast').show({ variant: 'success', title: 'Two-factor is on', message: 'You will be asked for a code at sign-in.' });
+      }
+    });
+  },
+
+  'd-sales': function (root) {
+    root.querySelector('#ds-bar').data = {
+      labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+      datasets: [
+        { label: 'Online', data: [242, 288, 313, 371] },
+        { label: 'Retail', data: [165, 153, 178, 192] },
+        { label: 'Partners', data: [88, 102, 115, 140] }
+      ]
+    };
+    root.querySelector('#ds-dough').data = {
+      labels: ['Online', 'Retail', 'Partners'],
+      datasets: [{ data: [1214, 688, 445] }]
+    };
+  },
+
+  'd-ops': function (root) {
+    var cpu = root.querySelector('#ops-cpu');
+    var mem = root.querySelector('#ops-mem');
+    var line = root.querySelector('#ops-line');
+    var zones = { zones: [
+      { from: 0, to: 60, color: '#16a34a' },
+      { from: 60, to: 85, color: '#f59e0b' },
+      { from: 85, to: 100, color: '#dc2626' }
+    ] };
+    cpu.data = zones;
+    mem.data = zones;
+    root.querySelector('#ops-disk').data = zones;
+    root.querySelector('#ops-bullet').data = {
+      bandLabels: ['Behind', 'On track', 'Ahead'],
+      items: [
+        { label: 'Deploys', value: 18, target: 15, ranges: [8, 14, 25] },
+        { label: 'Tickets closed', value: 64, target: 80, ranges: [50, 75, 100] },
+        { label: 'Error budget %', value: 62, target: 50, ranges: [20, 40, 100] }
+      ]
+    };
+
+    var points = [820, 860, 910, 880, 940, 990, 970, 1010, 1060, 1030];
+    function tick() {
+      var last = points[points.length - 1];
+      points = points.slice(1).concat(Math.max(600, Math.round(last + (Math.random() - 0.45) * 90)));
+      line.data = {
+        labels: points.map(function (_, i) { return (points.length - i) * 2 + 's'; }),
+        datasets: [{ label: 'req/s', data: points }]
+      };
+      cpu.setAttribute('value', Math.round(45 + Math.random() * 45));
+      mem.setAttribute('value', Math.round(62 + Math.random() * 20));
+    }
+    tick();
+    var timer = setInterval(tick, 2000);
+    return function () { clearInterval(timer); };
+  },
+
+  'd-finance': function (root) {
+    root.querySelector('#fin-wf').data = {
+      items: [
+        { label: 'Q1 revenue', value: 1200, type: 'total' },
+        { label: 'New customers', value: 300 },
+        { label: 'Upsells', value: 120 },
+        { label: 'Price change', value: 60 },
+        { label: 'Churn', value: -180 },
+        { label: 'Refunds', value: -45 },
+        { label: 'Q2 revenue', type: 'total' }
+      ]
+    };
+    root.querySelector('#fin-tm').data = {
+      items: [
+        { label: 'Engineering', children: [{ label: 'Salaries', value: 820 }, { label: 'Cloud', value: 240 }, { label: 'Tools', value: 60 }] },
+        { label: 'Sales', children: [{ label: 'Salaries', value: 410 }, { label: 'Travel', value: 95 }, { label: 'Events', value: 70 }] },
+        { label: 'Marketing', children: [{ label: 'Ads', value: 260 }, { label: 'Content', value: 80 }] },
+        { label: 'Operations', children: [{ label: 'Rent', value: 180 }, { label: 'Utilities', value: 30 }] },
+        { label: 'Support', value: 120 }
+      ]
+    };
+  },
+
+  'd-people': function (root) {
+    root.querySelector('#pp-radar').data = {
+      labels: ['Frontend', 'Backend', 'Design', 'Data', 'DevOps', 'Writing'],
+      datasets: [
+        { label: 'Platform team', data: [85, 82, 60, 70, 88, 65] },
+        { label: 'Growth team', data: [78, 55, 85, 80, 50, 82] }
+      ]
+    };
+    root.querySelector('#pp-pie').data = {
+      labels: ['New York', 'London', 'Remote'],
+      datasets: [{ data: [42, 27, 61] }]
+    };
+    root.querySelector('#pp-scatter').data = {
+      datasets: [
+        { label: 'Engineering', data: [{ x: 1, y: 68, label: 'Ana' }, { x: 3, y: 82, label: 'Chen' }, { x: 5, y: 98, label: 'Dev' }, { x: 7, y: 115, label: 'Eli' }, { x: 9, y: 128, label: 'Fay' }, { x: 12, y: 142, label: 'Gus' }] },
+        { label: 'Design', data: [{ x: 1, y: 58, label: 'Hana' }, { x: 3, y: 66, label: 'Ivo' }, { x: 4, y: 74, label: 'Jun' }, { x: 6, y: 85, label: 'Kai' }, { x: 8, y: 96, label: 'Lea' }, { x: 11, y: 104, label: 'Mo' }] }
+      ]
+    };
+  }
+};
+
+/* =====================================================================
+   Component map. `scene` points at the template that shows it off;
+   components without a scene link to the docs page.
+   ===================================================================== */
+var CATALOG = {
+  general: { name: 'General', file: 'lwt-general.js', items: [
+    ['Accordion', 'g-workspace'], ['Alert', 'g-feedback'], ['Button', 'g-feedback'], ['Card', 'g-gallery'],
+    ['Carousel', 'g-gallery'], ['Grid', 'g-workspace'], ['Icon'], ['Modal', 'g-feedback'], ['Nav menu', 'g-share'],
+    ['Pricing table', 'g-pricing'], ['QR code', 'g-share'], ['Rive'], ['Skill bar', 'g-share'], ['Tabs', 'g-workspace'],
+    ['Toast', 'g-feedback'], ['Tree', 'g-workspace'], ['Whitespace']
+  ] },
+  forms: { name: 'Forms', file: 'lwt-forms.js', items: [
+    ['Choices', 'f-security'], ['Color picker', 'f-brand'], ['Date range', 'f-booking'], ['Dropzone', 'f-contract'],
+    ['Input', 'f-security'], ['OTP', 'f-security'], ['Phone', 'f-booking'], ['Select', 'f-booking'],
+    ['Signature', 'f-contract'], ['Slider', 'f-booking'], ['Transfer list', 'f-report']
+  ] },
+  dashboard: { name: 'Dashboard', file: 'lwt-dashboard.js', items: [
+    ['Bar', 'd-sales'], ['Bubble'], ['Bullet', 'd-ops'], ['Doughnut', 'd-sales'], ['Gauge', 'd-ops'], ['Line', 'd-ops'],
+    ['Mermaid', 'd-flow'], ['Pie', 'd-people'], ['Radar', 'd-people'], ['Scatter', 'd-people'], ['Sparkline', 'd-sales'],
+    ['Stat card', 'd-sales'], ['Treemap', 'd-finance'], ['Waterfall', 'd-finance']
+  ] }
+};
+var SCENES = {
+  general: ['g-workspace', 'g-feedback', 'g-pricing', 'g-gallery', 'g-share'],
+  forms: ['f-booking', 'f-security', 'f-contract', 'f-brand', 'f-report'],
+  dashboard: ['d-sales', 'd-ops', 'd-finance', 'd-people', 'd-flow']
+};
+var BUNDLE_COLOR = { general: 'var(--gen)', forms: 'var(--frm)', dashboard: 'var(--dsh)' };
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- small helpers ---------- */
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  // Light syntax colouring for the Code view (HTML tags/attributes, JS strings/comments).
+  function highlightHTML(src) {
+    return esc(src).replace(/(&lt;\/?)([\w-]+)([^&]*?)(\/?&gt;)/g, function (m, open, tag, attrs, close) {
+      attrs = attrs.replace(/([\w-]+)(=)(&quot;|")([^"]*)(")/g, '<span class="a">$1</span>$2<span class="s">"$4"</span>');
+      return open + '<span class="t">' + tag + '</span>' + attrs + close;
+    });
+  }
+  function highlightJS(src) {
+    return esc(src)
+      .replace(/(\/\/[^\n]*)/g, '<span class="c">$1</span>')
+      .replace(/('[^'\n]*')/g, '<span class="s">$1</span>');
+  }
+  function dedent(text) {
+    var lines = text.replace(/^\n+|\s+$/g, '').split('\n');
+    var min = Infinity;
+    lines.forEach(function (l) { if (l.trim()) min = Math.min(min, l.match(/^\s*/)[0].length); });
+    return lines.map(function (l) { return l.slice(min === Infinity ? 0 : min); }).join('\n');
+  }
+
+  /* ---------- sticky bar border ---------- */
+  var top = document.getElementById('top');
+  window.addEventListener('scroll', function () { top.classList.toggle('scrolled', window.scrollY > 8); }, { passive: true });
+
+  /* ---------- helix: drawn once on load ---------- */
+  (function drawHelix() {
+    var svg = document.getElementById('helix');
+    var w = svg.clientWidth, h = svg.clientHeight;
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    var cy = h / 2, amp = h * 0.36, period = 260;
+    var colors = ['#3157f6', '#0a9471', '#e0561c'];
+    var a = '', b = '', rungs = '';
+    for (var x = -20; x <= w + 20; x += 6) {
+      var t = x / period * Math.PI * 2;
+      a += (x === -20 ? 'M' : 'L') + x + ' ' + (cy + Math.sin(t) * amp).toFixed(1);
+      b += (x === -20 ? 'M' : 'L') + x + ' ' + (cy - Math.sin(t) * amp).toFixed(1);
+    }
+    var i = 0;
+    for (var rx = 10; rx < w; rx += period / 10) {
+      var rt = rx / period * Math.PI * 2;
+      var y1 = cy + Math.sin(rt) * amp, y2 = cy - Math.sin(rt) * amp;
+      if (Math.abs(y1 - y2) < 8) continue;
+      rungs += '<line class="rung" x1="' + rx + '" x2="' + rx + '" y1="' + y1.toFixed(1) + '" y2="' + y2.toFixed(1) +
+        '" stroke="' + colors[i % 3] + '" stroke-width="3" stroke-linecap="round" opacity=".55" style="--d:' + (rx / w * 1.2).toFixed(2) + 's"/>';
+      i++;
+    }
+    svg.innerHTML =
+      '<style>' +
+      '.strand{fill:none;stroke:#c3c8d6;stroke-width:1.5;stroke-dasharray:4000;stroke-dashoffset:4000;animation:draw 1.8s ease-out forwards}' +
+      '.rung{opacity:0;animation:pop .4s ease-out forwards;animation-delay:var(--d)}' +
+      '@keyframes draw{to{stroke-dashoffset:0}}@keyframes pop{to{opacity:.55}}' +
+      '@media (prefers-reduced-motion:reduce){.strand{stroke-dashoffset:0;animation:none}.rung{opacity:.55;animation:none}}' +
+      '</style>' + rungs +
+      '<path class="strand" d="' + a + '"/><path class="strand" d="' + b + '"/>';
+  })();
+
+  /* ---------- hero workbench ---------- */
+  (function hero() {
+    var line = document.getElementById('hero-line');
+    var series = {
+      7: [3200, 3900, 3600, 4400, 4100, 4800, 5200],
+      14: [2800, 3000, 2900, 3300, 3100, 3500, 3400, 3700, 3600, 3900, 4100, 4400, 4800, 5200],
+      30: Array.from({ length: 30 }, function (_, i) { return Math.round(2200 + i * 95 + Math.sin(i / 2) * 380); })
+    };
+    function show(days) {
+      line.data = {
+        labels: series[days].map(function (_, i) { return 'D' + (i + 1); }),
+        datasets: [{ label: 'Visitors', data: series[days] }]
+      };
+    }
+    show(7);
+    document.getElementById('hero-range').addEventListener('change', function (e) {
+      var v = e.currentTarget.value;
+      show(Array.isArray(v) ? v[0] : v);
+    });
+    document.getElementById('hero-export').addEventListener('click', function () {
+      document.getElementById('hero-toast').show({ variant: 'success', title: 'Report exported', message: 'weekly-report.csv is downloading.' });
+    });
+  })();
+
+  /* ---------- component map ---------- */
+  var strands = document.getElementById('strands');
+  Object.keys(CATALOG).forEach(function (key) {
+    var b = CATALOG[key];
+    var row = document.createElement('div');
+    row.className = 'strand';
+    row.style.setProperty('--c', BUNDLE_COLOR[key]);
+    row.innerHTML = '<div class="strand-name">' + b.name + '<small>' + b.file + '</small></div><div class="bands"></div>';
+    var bands = row.querySelector('.bands');
+    b.items.forEach(function (it) {
+      var a = document.createElement('a');
+      a.textContent = it[0];
+      if (it[1]) {
+        a.href = '#' + key;
+        a.addEventListener('click', function (e) { e.preventDefault(); openScene(key, it[1], true); });
+      } else {
+        a.href = './index.html';
+        a.title = 'See ' + it[0] + ' in the docs';
+      }
+      bands.appendChild(a);
+    });
+    strands.appendChild(row);
+  });
+
+  /* ---------- showcases ---------- */
+  var showcases = {};
+
+  Object.keys(SCENES).forEach(function (bundle) {
+    var host = document.querySelector('.show-body[data-bundle="' + bundle + '"]');
+    var list = document.createElement('div');
+    list.className = 'cases';
+    list.setAttribute('role', 'tablist');
+    list.setAttribute('aria-label', CATALOG[bundle].name + ' examples');
+
+    var win = document.createElement('div');
+    win.className = 'window';
+    win.innerHTML =
+      '<div class="window-bar"><span class="url"></span>' +
+      '<div class="seg" role="group" aria-label="View"><button type="button" aria-pressed="true" data-view="preview">Preview</button>' +
+      '<button type="button" aria-pressed="false" data-view="code">Code</button></div></div>' +
+      '<div class="stage" role="tabpanel"></div>' +
+      '<details class="readout" hidden><summary>Live form data from LWT.form.getData()</summary><pre></pre></details>';
+
+    host.appendChild(list);
+    host.appendChild(win);
+
+    var state = { bundle: bundle, list: list, win: win, current: null, view: 'preview', cleanup: null };
+    showcases[bundle] = state;
+
+    SCENES[bundle].forEach(function (id) {
+      var tpl = document.getElementById(id);
+      var btn = document.createElement('button');
+      btn.className = 'case';
+      btn.type = 'button';
+      btn.id = 'tab-' + id;
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute('aria-selected', 'false');
+      btn.dataset.scene = id;
+      btn.innerHTML = '<strong>' + tpl.dataset.title + '</strong><span>' + tpl.dataset.desc + '</span><span class="uses">' + tpl.dataset.uses + '</span>';
+      btn.addEventListener('click', function () { openScene(bundle, id); });
+      list.appendChild(btn);
+    });
+
+    // Arrow keys move between use cases
+    list.addEventListener('keydown', function (e) {
+      if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) < 0) return;
+      var tabs = Array.prototype.slice.call(list.children);
+      var i = tabs.indexOf(document.activeElement);
+      if (i < 0) return;
+      e.preventDefault();
+      var next = tabs[(i + (e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      next.focus();
+      next.click();
+    });
+
+    win.querySelectorAll('.seg button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        state.view = b.dataset.view;
+        win.querySelectorAll('.seg button').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+        render(state);
+      });
+    });
+
+    openScene(bundle, SCENES[bundle][0]);
+  });
+
+  function openScene(bundle, id, scroll) {
+    var state = showcases[bundle];
+    state.current = id;
+    state.view = 'preview';
+    state.win.querySelectorAll('.seg button').forEach(function (o) { o.setAttribute('aria-pressed', String(o.dataset.view === 'preview')); });
+    state.list.querySelectorAll('.case').forEach(function (c) {
+      var on = c.dataset.scene === id;
+      c.setAttribute('aria-selected', String(on));
+      c.tabIndex = on ? 0 : -1;
+    });
+    state.win.querySelector('.stage').setAttribute('aria-labelledby', 'tab-' + id);
+    render(state);
+    if (scroll) document.getElementById(bundle).scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function render(state) {
+    var tpl = document.getElementById(state.current);
+    var stage = state.win.querySelector('.stage');
+    var readout = state.win.querySelector('.readout');
+    state.win.querySelector('.url').textContent = tpl.dataset.url;
+
+    if (state.cleanup) { state.cleanup(); state.cleanup = null; }
+    stage.innerHTML = '';
+
+    if (state.view === 'code') {
+      stage.classList.add('is-code');
+      readout.hidden = true;
+      var html = '<span class="h">&lt;!-- ' + esc(tpl.dataset.title) + ' --&gt;</span>' + highlightHTML(dedent(tpl.innerHTML));
+      var init = SCENE_INIT[state.current];
+      if (init) {
+        html += '\n\n<span class="h">&lt;script&gt;</span>' + highlightJS(dedent(init.toString())) + '\n<span class="h">&lt;/script&gt;</span>';
+      }
+      var pre = document.createElement('pre');
+      pre.tabIndex = 0;
+      pre.innerHTML = html;
+      stage.appendChild(pre);
+      return;
+    }
+
+    stage.classList.remove('is-code');
+    stage.appendChild(tpl.content.cloneNode(true));
+    if (SCENE_INIT[state.current]) {
+      var c = SCENE_INIT[state.current](stage);
+      if (typeof c === 'function') state.cleanup = c;
+    }
+
+    // Form scenes get a live readout of LWT.form.getData()
+    var form = stage.querySelector('form');
+    if (tpl.hasAttribute('data-form') && form) {
+      readout.hidden = false;
+      readout.open = window.innerWidth > 960;
+      var out = readout.querySelector('pre');
+      var update = function () {
+        try { out.textContent = LWT.form.stringify(LWT.form.getData(form)); }
+        catch (err) { out.textContent = '(waiting for fields…)'; }
+      };
+      ['change', 'input', 'lwt-change', 'lwt-input', 'lwt-remove', 'lwt-clear', 'lwt-complete'].forEach(function (n) {
+        form.addEventListener(n, update);
+      });
+      setTimeout(update, 50);
+    } else {
+      readout.hidden = true;
+    }
+  }
+
+  /* ---------- theming playground ---------- */
+  (function theming() {
+    var preview = document.getElementById('theming'); // tokens apply to the whole section, controls included
+    var picker = document.getElementById('t-color');
+    var radius = document.getElementById('t-radius');
+    var gap = document.getElementById('t-gap');
+    var chart = document.getElementById('t-chart');
+    var cssOut = document.getElementById('t-css');
+    var presets = document.getElementById('t-presets');
+    var current = { color: '#3157F6', radius: 8, gap: 8 };
+
+    function shade(hex, amt) {
+      var h = hex.replace('#', '').slice(0, 6);
+      var n = parseInt(h, 16);
+      var r = Math.max(0, Math.min(255, (n >> 16) + amt));
+      var g = Math.max(0, Math.min(255, ((n >> 8) & 255) + amt));
+      var b = Math.max(0, Math.min(255, (n & 255) + amt));
+      return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+    function num(v) { return parseFloat(Array.isArray(v) ? v[0] : v); }
+
+    function chartData() {
+      chart.data = {
+        labels: ['Admins', 'Editors', 'Viewers'],
+        datasets: [{ label: 'This month', data: [12, 38, 74] }, { label: 'Last month', data: [10, 31, 66] }]
+      };
+    }
+
+    function apply() {
+      var c = current.color.slice(0, 7);
+      var hover = shade(c, -28);
+      var vars = {
+        '--lwt-primary': c, '--lwt-color-primary': c, '--lwt-info': c, '--lwt-color-info': c,
+        '--lwt-primary-hover': hover, '--lwt-color-primary-hover': hover, '--lwt-info-hover': hover, '--lwt-color-info-hover': hover,
+        '--lwt-focus-color': c, '--lwt-focus-ring': '1px solid ' + hover,
+        '--lwt-border-radius': current.radius + 'px',
+        '--lwt-gap': current.gap + 'px', '--lwt-padding': current.gap + 'px',
+        '--lwt-chart-palette': c + ', ' + shade(c, 90)
+      };
+      Object.keys(vars).forEach(function (k) { preview.style.setProperty(k, vars[k]); });
+      chartData(); // charts read the palette when they draw
+
+      cssOut.innerHTML = '<button class="copy" type="button">Copy</button>' + esc(
+        ':root {\n' +
+        '  --lwt-primary: ' + c + ';\n' +
+        '  --lwt-primary-hover: ' + hover + ';\n' +
+        '  --lwt-focus-color: ' + c + ';\n' +
+        '  --lwt-border-radius: ' + current.radius + 'px;\n' +
+        '  --lwt-gap: ' + current.gap + 'px;\n' +
+        '  --lwt-padding: ' + current.gap + 'px;\n' +
+        '  --lwt-chart-palette: ' + c + ', ' + shade(c, 90) + ';\n' +
+        '}');
+      cssOut.querySelector('.copy').addEventListener('click', function (e) {
+        var text = cssOut.textContent.replace(/^Copy/, '');
+        navigator.clipboard && navigator.clipboard.writeText(text);
+        e.currentTarget.textContent = 'Copied';
+      });
+    }
+
+    function fromPicker() {
+      var v = picker.value;
+      if (typeof v === 'string' && v.charAt(0) === '#') { current.color = v; apply(); }
+      presets.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.hex.toLowerCase() === String(v).slice(0, 7).toLowerCase())); });
+    }
+    picker.addEventListener('input', fromPicker);
+    picker.addEventListener('change', fromPicker);
+    presets.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (!b) return;
+      picker.value = b.dataset.hex; // fires change → fromPicker
+      current.color = b.dataset.hex;
+      apply();
+      fromPicker();
+    });
+    function fromSliders() {
+      var r = num(radius.value), g = num(gap.value);
+      if (!isNaN(r)) current.radius = r;
+      if (!isNaN(g)) current.gap = g;
+      apply();
+    }
+    ['input', 'change'].forEach(function (n) { radius.addEventListener(n, fromSliders); gap.addEventListener(n, fromSliders); });
+    apply();
+  })();
+
+  /* ---------- copy buttons ---------- */
+  document.querySelectorAll('[data-copy="install"]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var text = document.getElementById('code-install').textContent;
+      if (navigator.clipboard) navigator.clipboard.writeText(text);
+      b.textContent = 'Copied';
+      setTimeout(function () { b.textContent = 'Copy'; }, 1600);
+    });
+  });
+})();
+</script>
+</body>
+</html>

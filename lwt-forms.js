@@ -1,7 +1,7 @@
 /*!
  * LWT Form Elements
  * Developer: Lee W Winter
- * Last Generated: 2026-10-19T00:24:07.228Z
+ * Last Generated: 2026-10-22T10:13:24.639Z
  * Requires lwt-core.js to be loaded first.
  */
 
@@ -122,8 +122,8 @@
       transition: opacity 120ms ease, transform 120ms ease;
     }
     :host([checked]) .box {
-      background: var(--lwt-choices-checked-bg, var(--lwt-color-success, #15803d));
-      border-color: var(--lwt-choices-checked-border, var(--lwt-color-success, #15803d));
+      background: var(--lwt-choices-color, var(--lwt-color-primary, #15803d));
+      border-color: var(--lwt-choices-color, var(--lwt-color-primary, #15803d));
     }
     :host([checked]) .check { opacity: 1; transform: scale(1); }
     :host([disabled]) .box {
