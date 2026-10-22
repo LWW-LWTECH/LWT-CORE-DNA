@@ -657,6 +657,25 @@ if (check.valid) {
      ===================================================================== -->
 
 <!-- ---------- GENERAL ---------- -->
+<template id="g-hero" data-url="northwind.travel" data-title="Parallax hero" data-desc="Layered background that moves with the mouse." data-uses="background · bglayer · button">
+<div style="position:relative; height:416px; border-radius:12px; overflow:hidden; display:grid; place-items:center; text-align:center; color:#fff;">
+  <lwtg-background src="./assets/parallax/sky.svg" trigger="mouse" track="self" depth="34"
+      overlay="linear-gradient(180deg, rgba(10,12,30,.05), rgba(10,12,30,.35))">
+    <lwtg-bglayer src="./assets/parallax/mountains-far.svg" rate="0.2"></lwtg-bglayer>
+    <lwtg-bglayer src="./assets/parallax/hills-mid.svg" rate="0.5"></lwtg-bglayer>
+    <lwtg-bglayer src="./assets/parallax/trees-near.svg" rate="1"></lwtg-bglayer>
+  </lwtg-background>
+  <div style="padding:0 16px;">
+    <p style="margin:0 0 8px; font-size:14px; opacity:.85;">Autumn trips are open</p>
+    <h3 style="font-family:var(--f-display); font-weight:800; font-size:clamp(28px,4vw,42px); line-height:1.05; letter-spacing:-0.03em; margin:0 0 18px;">Find the quiet places.</h3>
+    <div class="row" style="justify-content:center;">
+      <lwtg-button variant="primary" label="Plan a trip"></lwtg-button>
+      <lwtg-button variant="secondary" label="See destinations"></lwtg-button>
+    </div>
+  </div>
+</div>
+</template>
+
 <template id="g-workspace" data-url="yourapp.com/admin/content" data-title="Admin workspace" data-desc="Drag the panel edges to resize." data-uses="grid · grid-item · tree · tabs · accordion">
 <lwtg-grid resizable columns="4" rows="2" row-height="200px" gap="8px" resize-min="120px" style="min-width:720px;">
   <lwtg-grid-item row-span="2" resize-right min-width="180px">
@@ -1096,7 +1115,7 @@ var SCENE_INIT = {
    ===================================================================== */
 var CATALOG = {
   general: { name: 'General', file: 'lwt-general.js', items: [
-    ['Accordion', 'g-workspace'], ['Alert', 'g-feedback'], ['Button', 'g-feedback'], ['Card', 'g-gallery'],
+    ['Accordion', 'g-workspace'], ['Alert', 'g-feedback'], ['Background', 'g-hero'], ['Button', 'g-feedback'], ['Card', 'g-gallery'],
     ['Carousel', 'g-gallery'], ['Grid', 'g-workspace'], ['Icon'], ['Modal', 'g-feedback'], ['Nav menu', 'g-share'],
     ['Pricing table', 'g-pricing'], ['QR code', 'g-share'], ['Rive'], ['Skill bar', 'g-share'], ['Tabs', 'g-workspace'],
     ['Toast', 'g-feedback'], ['Tree', 'g-workspace'], ['Whitespace']
@@ -1113,7 +1132,7 @@ var CATALOG = {
   ] }
 };
 var SCENES = {
-  general: ['g-workspace', 'g-feedback', 'g-pricing', 'g-gallery', 'g-share'],
+  general: ['g-hero', 'g-workspace', 'g-feedback', 'g-pricing', 'g-gallery', 'g-share'],
   forms: ['f-booking', 'f-security', 'f-contract', 'f-brand', 'f-report'],
   dashboard: ['d-sales', 'd-ops', 'd-finance', 'd-people', 'd-flow']
 };

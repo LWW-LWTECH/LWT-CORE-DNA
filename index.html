@@ -273,6 +273,107 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
             </details>
 
             <details>
+                <summary><lwtg-icon icon="app_background" width="15px" height="15px"></lwtg-icon> Background (parallax layers)</summary>
+                <p>A full-bleed background that fills its parent container (or the whole window when placed directly in <code>&lt;body&gt;</code>) and stays behind the parent's other content, so buttons, headings and forms sit on top. <code>&lt;lwtg-background&gt;</code> takes the lowest image; each <code>&lt;lwtg-bglayer&gt;</code> inside it adds another image (usually a transparent PNG or SVG) that moves with the mouse, with scrolling, or both. Give each layer a different <code>rate</code> and the layers move at different speeds, creating a parallax depth effect. Higher rate = closer to the viewer = moves more.</p>
+
+                <h3>Example: <small>Mouse</small></h3>
+                <p>Move the mouse over the scene. The far mountains move a little, the trees move the most.</p>
+                <div style="height:300px; border-radius:8px; overflow:hidden; display:grid; place-items:center; text-align:center; color:#fff;">
+                    <lwtg-background src="./assets/parallax/sky.svg" trigger="mouse" track="self" overlay="rgba(10,12,30,.15)">
+                        <lwtg-bglayer src="./assets/parallax/mountains-far.svg" rate="0.2"></lwtg-bglayer>
+                        <lwtg-bglayer src="./assets/parallax/hills-mid.svg" rate="0.5"></lwtg-bglayer>
+                        <lwtg-bglayer src="./assets/parallax/trees-near.svg" rate="1"></lwtg-bglayer>
+                    </lwtg-background>
+                    <div>
+                        <h2 style="margin:0 0 10px; font-size:26px;">Content sits on top</h2>
+                        <lwtg-button variant="primary" label="Buttons still work"></lwtg-button>
+                    </div>
+                </div>
+
+                <h3>Example: <small>Mouse and scroll</small></h3>
+                <p>Scroll the page with this scene on screen: nearer layers rise faster than far ones. Only the x axis follows the mouse here.</p>
+                <div style="height:300px; border-radius:8px; overflow:hidden;">
+                    <lwtg-background src="./assets/parallax/sky.svg" trigger="mouse scroll" axis="x" depth="30" scroll-speed="0.12">
+                        <lwtg-bglayer src="./assets/parallax/mountains-far.svg" rate="0.2"></lwtg-bglayer>
+                        <lwtg-bglayer src="./assets/parallax/hills-mid.svg" rate="0.5"></lwtg-bglayer>
+                        <lwtg-bglayer src="./assets/parallax/trees-near.svg" rate="1"></lwtg-bglayer>
+                    </lwtg-background>
+                </div>
+
+                <h4>Implementation</h4>
+<pre><code>&lt;section class="hero"&gt;
+    &lt;lwtg-background src="sky.jpg" trigger="mouse scroll" overlay="rgba(0,0,0,.25)"&gt;
+        &lt;lwtg-bglayer src="mountains.png" rate="0.2"&gt;&lt;/lwtg-bglayer&gt;
+        &lt;lwtg-bglayer src="hills.png" rate="0.5"&gt;&lt;/lwtg-bglayer&gt;
+        &lt;lwtg-bglayer src="trees.png" rate="1"&gt;&lt;/lwtg-bglayer&gt;
+    &lt;/lwtg-background&gt;
+
+    &lt;h1&gt;Your headline&lt;/h1&gt;
+    &lt;lwtg-button variant="primary" label="Get started"&gt;&lt;/lwtg-button&gt;
+&lt;/section&gt;
+
+&lt;!-- Whole page: put it directly in body and it covers the window --&gt;
+&lt;body&gt;
+    &lt;lwtg-background src="sky.jpg" trigger="scroll" scroll-speed="0.15"&gt;
+        &lt;lwtg-bglayer src="clouds.png" rate="0.4"&gt;&lt;/lwtg-bglayer&gt;
+    &lt;/lwtg-background&gt;
+    ...
+&lt;/body&gt;</code></pre>
+
+                <h4>Placement</h4>
+                <ul>
+                    <li>Put it inside the container it should fill. It is <code>position:absolute; inset:0</code> with <code>z-index:-1</code>, and ignores the mouse so clicks reach the content above it.</li>
+                    <li>If the parent is <code>position:static</code> it is switched to <code>position:relative</code>, and the parent gets <code>isolation:isolate</code> so the background stays above the parent's own background colour.</li>
+                    <li>Directly inside <code>&lt;body&gt;</code> it adds the <code>fixed</code> attribute and covers the window while the page scrolls.</li>
+                    <li>Layers stack in source order: the first <code>&lt;lwtg-bglayer&gt;</code> is furthest back.</li>
+                </ul>
+
+                <h4>Properties</h4>
+                <p><strong>Attributes on &lt;lwtg-background&gt;:</strong></p>
+                <ul>
+                    <li><code>src</code> &mdash; the base (lowest) image. Optional.</li>
+                    <li><code>color</code> &mdash; colour under everything.</li>
+                    <li><code>size</code> / <code>position</code> &mdash; background-size (default "cover") and background-position (default "center") for the base image.</li>
+                    <li><code>overlay</code> &mdash; colour or gradient laid over every layer and under the content, e.g. "rgba(0,0,0,.35)" to keep text readable.</li>
+                    <li><code>trigger</code> &mdash; "mouse" (default) | "scroll" | "mouse scroll" | "none".</li>
+                    <li><code>axis</code> &mdash; mouse movement axis: "both" (default) | "x" | "y".</li>
+                    <li><code>depth</code> &mdash; how far, in px, a rate-1 layer travels with the mouse. Default 40.</li>
+                    <li><code>scroll-speed</code> &mdash; px moved = px scrolled &times; rate &times; scroll-speed. Default 0.3.</li>
+                    <li><code>smoothing</code> &mdash; 0&ndash;1, how quickly layers catch up with the mouse. Default 0.08; 1 is instant.</li>
+                    <li><code>track</code> &mdash; "window" (default) follows the mouse anywhere on the page; "self" only while over this element, drifting back to centre when the mouse leaves.</li>
+                    <li><code>invert</code> &mdash; boolean; layers move toward the mouse instead of away from it.</li>
+                    <li><code>rate</code> &mdash; rate for the base image. Default 0 (still).</li>
+                    <li><code>fixed</code> &mdash; boolean; cover the window. Added automatically inside &lt;body&gt;.</li>
+                    <li><code>label</code> &mdash; accessible description. Without it the background is treated as decorative and hidden from screen readers.</li>
+                </ul>
+                <p><strong>Attributes on &lt;lwtg-bglayer&gt;:</strong></p>
+                <ul>
+                    <li><code>src</code> &mdash; image URL. Optional: a layer can hold any HTML in its default slot instead.</li>
+                    <li><code>size</code> / <code>position</code> / <code>repeat</code> &mdash; background-size (default "cover"), background-position (default "center"), background-repeat (default "no-repeat").</li>
+                    <li><code>rate</code> &mdash; how much the layer moves. Default 1. 0 stays still; negative moves the other way.</li>
+                    <li><code>mouse-rate</code> / <code>scroll-rate</code> &mdash; override <code>rate</code> for mouse or scroll movement only.</li>
+                    <li><code>axis</code> &mdash; "both" | "x" | "y"; overrides the background's axis for this layer.</li>
+                    <li><code>opacity</code> &mdash; 0&ndash;1.</li>
+                    <li><code>blend</code> &mdash; mix-blend-mode, e.g. "screen" or "multiply".</li>
+                    <li><code>bleed</code> &mdash; px the layer extends past each edge. Automatic for size="cover": just enough that moving never shows an empty edge. Other sizes default to 0 so bottom-aligned art stays where you put it.</li>
+                </ul>
+                <p><strong>Methods:</strong></p>
+                <ul>
+                    <li><code>refresh()</code> &mdash; (on &lt;lwtg-background&gt;) re-measures after a layout change. Window resizes and added/removed layers are handled automatically.</li>
+                </ul>
+                <p><strong>Accessibility and performance:</strong> people who turn on reduced motion in their system settings see a still background. One animation frame loop drives all layers, it pauses while the background is off screen, and touch drags are ignored so scrolling on a phone doesn't swing the scene.</p>
+                <p><strong>Tip:</strong> for whole-page scroll backgrounds keep <code>scroll-speed</code> and rates low (e.g. 0.15 and under 1). Cover-sized layers grow to hide their edges over the full scroll length, so large values zoom them in.</p>
+
+                <h4>CSS Variables</h4>
+                <ul>
+                    <li><code>--lwt-background-color</code></li>
+                    <li><code>--lwt-background-overlay</code></li>
+                    <li><code>--lwt-background-z</code> &mdash; stacking order, default -1.</li>
+                </ul>
+                <p><strong>Parts:</strong> <code>base</code>, <code>base-image</code>, <code>overlay</code> on the background; <code>layer</code>, <code>image</code> on each layer.</p>
+            </details>
+
+            <details>
                 <summary><lwtg-icon icon="app_button" width="15px" height="15px"></lwtg-icon> Buttons</summary>
                 <p>Buttons are used to trigger actions. They can have different variants such as primary, secondary, and danger.</p>
                 <h4>Implementation</h4>
