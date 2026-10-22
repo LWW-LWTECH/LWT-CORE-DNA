@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Core: DNA — Web components for business apps</title>
-<meta name="description" content="Core: DNA is a library of 40+ framework-free web components: forms, charts, layouts and feedback. One script tag, no build step, MIT licensed.">
+<meta name="description" content="Core: DNA is a library of 40+ framework-free web components: forms, charts, layouts and feedback. Load the core, then a whole bundle or only the elements you use. No build step, MIT licensed.">
 <link rel="shortcut icon" href="./icons/cdna/favicon.ico">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -114,7 +114,11 @@ p{ margin:0; }
     padding:10px 10px 10px 16px; max-width:520px;
     font:13px/1.4 var(--f-mono); color:var(--ink-soft);
 }
-.install code{ flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.install code{ flex:1; white-space:pre; overflow:hidden; text-overflow:ellipsis; line-height:1.7; }
+.install code .cm{ color:var(--ink-faint); }
+.install-pick{ margin-top:26px; max-width:560px; }
+.install-pick .seg{ display:inline-flex; margin-bottom:8px; }
+.install-pick .install{ margin-top:0; max-width:none; }
 .install code b{ color:var(--gen); font-weight:500; }
 .copy{ font:500 12.5px var(--f-body); border:1px solid var(--line); background:var(--paper); border-radius:7px; padding:6px 10px; cursor:pointer; color:var(--ink); }
 .copy:hover{ border-color:var(--ink-faint); }
@@ -250,10 +254,64 @@ p{ margin:0; }
 @media (max-width:960px){ .theme-body{ grid-template-columns:1fr; } }
 
 /* ---------- Get started ---------- */
+/* ---------- Motion (lwt-core.js animations) ---------- */
+.motion{ padding:96px 0 24px; }
+.motion-body{ display:grid; grid-template-columns: 400px minmax(0,1fr); gap:28px; align-items:start; }
+.motion-body > *{ min-width:0; }
+.anim-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(84px, 1fr)); gap:6px; }
+.anim-grid button{
+    font:500 12px var(--f-mono); padding:9px 4px; cursor:pointer; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:8px;
+}
+.anim-grid button:hover{ border-color:var(--ink-faint); }
+.anim-grid button[aria-pressed="true"]{ background:var(--ink); border-color:var(--ink); color:#fff; }
+.motion-stage{
+    position:relative; min-height:330px; display:grid; place-items:center; overflow:hidden;
+    background-color:#fbfbfd;
+    background-image:radial-gradient(#d9dce6 1px, transparent 1px);
+    background-size:18px 18px;
+}
+.anim-target{
+    width:min(280px, 80%); background:var(--sheet); border:1px solid var(--line); border-radius:14px;
+    box-shadow:0 18px 40px -20px rgba(22,26,46,.35); padding:18px; display:flex; gap:14px; align-items:center;
+}
+.anim-target .mark{ flex:0 0 42px; height:42px; border-radius:12px; background:var(--frm); color:#fff; display:grid; place-items:center; font:700 20px var(--f-display); }
+.anim-target strong{ display:block; font-size:15.5px; }
+.anim-target span{ display:block; font-size:13.5px; color:var(--ink-faint); }
+.motion-bar{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:12px 16px; border-top:1px solid var(--line); background:#fafbfc; }
+.motion-log{ font:12px var(--f-mono); color:var(--ink-faint); }
+.motion-log b{ color:var(--ink); font-weight:500; }
+.triggers{ margin-top:28px; display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; }
+.trigger{ background:var(--sheet); border:1px solid var(--line); border-radius:14px; padding:18px; display:flex; flex-direction:column; gap:8px; min-width:0; }
+.trigger .box{
+    width:64px; height:64px; border-radius:16px; margin:6px 0 10px;
+    display:grid; place-items:center; color:#fff; font:700 13px var(--f-body); user-select:none;
+}
+.trigger h3{ font-size:17px; }
+.trigger p{ font-size:14px; color:var(--ink-soft); }
+.trigger code{ margin-top:auto; font:11.5px/1.5 var(--f-mono); color:var(--ink-faint); word-break:break-all; }
+.trigger .linkish{ align-self:flex-start; font:500 13px var(--f-body); background:none; border:0; padding:0; color:var(--gen); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+@media (max-width:960px){
+    .motion-body{ grid-template-columns:1fr; }
+    .triggers{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+}
+@media (max-width:520px){ .triggers{ grid-template-columns:1fr; } }
+
 .start{ padding:96px 0; }
 .steps{ list-style:none; padding:0; margin:34px 0 0; display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:22px; counter-reset:s; }
-.steps li{ counter-increment:s; min-width:0; }
-.steps li::before{ content:counter(s); display:inline-grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font:700 14px var(--f-display); margin-bottom:12px; }
+.steps li{ counter-increment:s; min-width:0; display:flex; flex-direction:column; }
+.steps li .code{ flex:1; }
+/* Each step shares the list's rows (number, heading, text, code), so all
+   three code boxes line up and match the tallest one. */
+@supports (grid-template-rows: subgrid){
+    .steps{ grid-template-rows:repeat(4, auto); row-gap:0; }
+    .steps li{ display:grid; grid-row:span 4; grid-template-rows:subgrid; }
+}
+@media (max-width:960px){
+    .steps{ grid-template-rows:none; row-gap:34px; }
+    .steps li{ display:flex; grid-row:auto; }
+}
+.steps li::before{ content:counter(s); display:inline-grid; place-items:center; justify-self:start; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font:700 14px var(--f-display); margin-bottom:12px; }
 .steps h3{ font-size:20px; margin-bottom:6px; }
 .steps p{ color:var(--ink-soft); font-size:15px; margin-bottom:12px; }
 .code{ background:var(--code-bg); color:var(--code-ink); border-radius:10px; padding:14px 16px; font:12px/1.65 var(--f-mono); white-space:pre; overflow:auto; min-height: 164px; }
@@ -279,6 +337,7 @@ footer a{ color:var(--ink-soft); }
             <a href="#forms">Forms</a>
             <a href="#dashboard">Dashboard</a>
             <a href="#theming">Theming</a>
+            <a href="#motion">Motion</a>
             <a href="./index.html">Docs</a>
         </nav>
         <span class="spacer"></span>
@@ -294,15 +353,21 @@ footer a{ color:var(--ink-soft); }
     <svg class="helix" id="helix" aria-hidden="true"></svg>
     <div class="wrap">
         <div>
-            <h1>Business-grade components in one script tag.</h1>
-            <p class="lede">Core: DNA is a library of 40+ web components covering forms, charts, layouts and feedback. They work in any page, with any framework or none, and every demo on this page is the real thing.</p>
+            <h1>Business-grade components. Load only what you use.</h1>
+            <p class="lede">Core: DNA is a library of 40+ web components covering forms, charts, layouts and feedback. Add the core, then a whole bundle or just the elements you need. They work in any page, with any framework or none, and every demo on this page is the real thing.</p>
             <div class="ctas">
                 <a class="btn btn-ink" href="#start">Get started</a>
                 <a class="btn btn-line" href="#general">Explore components</a>
             </div>
-            <div class="install">
-                <code>&lt;script src="<b>…/LWT-CORE-DNA/lwt-core.js</b>"&gt;&lt;/script&gt;</code>
-                <button class="copy" data-copy="install">Copy</button>
+            <div class="install-pick">
+                <div class="seg" role="group" aria-label="What to load after the core">
+                    <button type="button" aria-pressed="true" data-load="bundle">Whole bundle</button>
+                    <button type="button" aria-pressed="false" data-load="single">Single element</button>
+                </div>
+                <div class="install">
+                    <code id="install-code"></code>
+                    <button class="copy" data-copy="install">Copy</button>
+                </div>
             </div>
             <dl class="facts">
                 <div><dt>43</dt><dd>components</dd></div>
@@ -350,7 +415,7 @@ footer a{ color:var(--ink-soft); }
     <div class="wrap">
         <div class="map-intro">
             <h2 id="map-h" style="font-size:28px;">The whole genome</h2>
-            <p>Three bundles, each loaded with its own script. Pick a component to see it working in a real screen.</p>
+            <p>Load a whole bundle, or pick single elements from <code>/elements</code>. Either way the core goes first. Pick a component to see it working in a real screen.</p>
         </div>
         <div id="strands"></div>
     </div>
@@ -443,6 +508,86 @@ footer a{ color:var(--ink-soft); }
 </section>
 
 <!-- ================================================================
+     MOTION: the animation engine built into lwt-core.js
+     ================================================================ -->
+<section class="motion" id="motion">
+    <div class="wrap">
+        <div class="show-head">
+            <h2><span class="bundle" style="color:var(--ink-faint)">lwt-core.js</span>Motion with one data attribute</h2>
+            <p>The core includes 14 animations that work on any HTML element, not just Core: DNA components. Add <code>data-lwt-animate</code>, choose when it plays, and the core handles the rest, including elements added to the page later.</p>
+        </div>
+        <div class="motion-body">
+            <div class="controls">
+                <div>
+                    <div class="muted" style="margin-bottom:8px;">Animation</div>
+                    <div class="anim-grid" id="m-types" role="group" aria-label="Animation type"></div>
+                </div>
+                <lwtf-slider id="m-duration" label="Duration" name="duration" min="100" max="2000" step="50" value="600" tooltip="hover" unit-suffix="ms"></lwtf-slider>
+                <lwtf-slider id="m-delay" label="Delay" name="delay" min="0" max="1000" step="50" value="0" tooltip="hover" unit-suffix="ms"></lwtf-slider>
+                <lwtf-slider id="m-rate" label="Speed" name="rate" min="0.25" max="3" step="0.25" value="1" tooltip="hover" unit-suffix="x"></lwtf-slider>
+                <lwtf-choices id="m-easing" label="Easing" name="easing" direction="horizontal">
+                    <lwtf-choice-option value="ease" checked>Ease</lwtf-choice-option>
+                    <lwtf-choice-option value="linear">Linear</lwtf-choice-option>
+                    <lwtf-choice-option value="ease-in-out">Ease in-out</lwtf-choice-option>
+                    <lwtf-choice-option value="cubic-bezier(.34,1.56,.64,1)">Spring</lwtf-choice-option>
+                </lwtf-choices>
+                <lwtf-choices id="m-trigger" label="Plays on" name="trigger" direction="horizontal">
+                    <lwtf-choice-option value="load" checked>Load</lwtf-choice-option>
+                    <lwtf-choice-option value="click">Click</lwtf-choice-option>
+                    <lwtf-choice-option value="hover">Hover</lwtf-choice-option>
+                    <lwtf-choice-option value="lazy">Scroll into view</lwtf-choice-option>
+                </lwtf-choices>
+            </div>
+            <div>
+                <div class="window">
+                    <div class="window-bar"><span class="url">yourapp.com/billing</span></div>
+                    <div class="motion-stage">
+                        <div class="anim-target" id="m-target">
+                            <div class="mark" aria-hidden="true">$</div>
+                            <div><strong>Payment received</strong><span>$1,240.00 from Northwind Co.</span></div>
+                        </div>
+                    </div>
+                    <div class="motion-bar">
+                        <button type="button" class="btn btn-ink btn-sm" id="m-play">Play animation</button>
+                        <span class="motion-log" id="m-log" aria-live="polite">Pick an animation to play it.</span>
+                    </div>
+                </div>
+                <div class="css-out" id="m-code"></div>
+            </div>
+        </div>
+
+        <div class="triggers">
+            <div class="trigger">
+                <div id="m-load-host"><div class="box" style="background:var(--gen)" data-lwt-animate="bounce-in">New</div></div>
+                <h3>On load</h3>
+                <p>Plays when the element appears, including elements added later.</p>
+                <button type="button" class="linkish" id="m-load-again">Add it again</button>
+                <code>data-lwt-animate="bounce-in"</code>
+            </div>
+            <div class="trigger">
+                <div class="box" style="background:var(--frm); cursor:pointer;" data-lwt-animate="flip" data-lwt-trigger="click" tabindex="0" role="button" aria-label="Click to flip">Click</div>
+                <h3>On click</h3>
+                <p>Good for confirming an action, like a saved or copied state.</p>
+                <code>data-lwt-trigger="click"</code>
+            </div>
+            <div class="trigger">
+                <div class="box" style="background:var(--dsh)" data-lwt-animate="bounce" data-lwt-trigger="hover">Hover</div>
+                <h3>On hover</h3>
+                <p>Draws attention to a call to action without a line of JavaScript.</p>
+                <code>data-lwt-trigger="hover"</code>
+            </div>
+            <div class="trigger">
+                <div class="box" style="background:var(--ink)" data-lwt-animate="zoom-in" data-lwt-trigger="lazy" data-lwt-repeat>Scroll</div>
+                <h3>On scroll into view</h3>
+                <p>Plays each time it enters the screen. Drop <code>data-lwt-repeat</code> to play once.</p>
+                <code>data-lwt-trigger="lazy" data-lwt-repeat</code>
+            </div>
+        </div>
+        <p class="muted" style="margin-top:16px;">Visitors who turn on reduced motion in their system settings see each animation's end state straight away.</p>
+    </div>
+</section>
+
+<!-- ================================================================
      GET STARTED
      ================================================================ -->
 <section class="start" id="start">
@@ -450,14 +595,18 @@ footer a{ color:var(--ink-soft); }
         <h2 style="font-size:clamp(34px,4.4vw,56px); letter-spacing:-0.035em; max-width:14em;">Add it to a page in about a minute</h2>
         <ol class="steps">
             <li>
-                <h3>Load the core, then the bundles you need</h3>
-                <p>The core goes first. Load only the bundles you use.</p>
-<div class="code" id="code-install">&lt;head&gt;
-  &lt;script src="https://cdn.jsdelivr.net/gh/LWW-LWTECH/LWT-CORE-DNA@refs/heads/main/lwt-core.js"&gt;&lt;/script&gt;
-  &lt;script src="https://cdn.jsdelivr.net/gh/LWW-LWTECH/LWT-CORE-DNA@refs/heads/main/lwt-forms.js"&gt;&lt;/script&gt;
-  &lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/LWW-LWTECH/LWT-CORE-DNA@refs/heads/main/lwt-core.css"&gt;
-&lt;/head&gt;
-</div>
+                <h3>Load the core, then what you need</h3>
+                <p>The core always goes first. Then add a whole bundle, or only the element files you use from <code>/elements</code>.</p>
+<div class="code" id="code-install">&lt;!-- 1. Always: the core (and optional theme tokens) --&gt;
+&lt;script src="https://cdn.jsdelivr.net/gh/LWW-LWTECH/LWT-CORE-DNA@refs/heads/main/lwt-core.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/LWW-LWTECH/LWT-CORE-DNA@refs/heads/main/lwt-core.css"&gt;
+
+&lt;!-- 2a. A whole bundle: every form element --&gt;
+&lt;script src="https://cdn.jsdelivr.net/gh/LWW-LWTECH/LWT-CORE-DNA@refs/heads/main/lwt-forms.js"&gt;&lt;/script&gt;
+
+&lt;!-- 2b. Or single elements only --&gt;
+&lt;script src="https://cdn.jsdelivr.net/gh/LWW-LWTECH/LWT-CORE-DNA@refs/heads/main/elements/lwt-frm-input.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/gh/LWW-LWTECH/LWT-CORE-DNA@refs/heads/main/elements/lwt-frm-phone.js"&gt;&lt;/script&gt;</div>
             </li>
             <li>
                 <h3>Write the tags</h3>
@@ -1292,10 +1441,129 @@ var BUNDLE_COLOR = { general: 'var(--gen)', forms: 'var(--frm)', dashboard: 'var
     apply();
   })();
 
+  /* ---------- motion playground (LWT.animate from lwt-core.js) ---------- */
+  (function motion() {
+    var target = document.getElementById('m-target');
+    var grid = document.getElementById('m-types');
+    var log = document.getElementById('m-log');
+    var codeOut = document.getElementById('m-code');
+    var ctl = {
+      duration: document.getElementById('m-duration'),
+      delay: document.getElementById('m-delay'),
+      rate: document.getElementById('m-rate'),
+      easing: document.getElementById('m-easing'),
+      trigger: document.getElementById('m-trigger')
+    };
+    var opts = { type: 'bounce-in', duration: 600, delay: 0, rate: 1, easing: 'ease', trigger: 'load' };
+    var restoreTimer = null;
+
+    function first(v) { return Array.isArray(v) ? v[0] : v; }
+
+    (LWT.animate.types || []).forEach(function (t) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = t;
+      b.dataset.type = t;
+      b.setAttribute('aria-pressed', String(t === opts.type));
+      b.addEventListener('click', function () {
+        opts.type = t;
+        grid.querySelectorAll('button').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+        writeCode();
+        play();
+      });
+      grid.appendChild(b);
+    });
+
+    function play() {
+      clearTimeout(restoreTimer);
+      target.getAnimations().forEach(function (a) { a.cancel(); });
+      LWT.animate(target, {
+        type: opts.type, duration: opts.duration, delay: opts.delay, rate: opts.rate, easing: opts.easing
+      });
+    }
+
+    // "-out" animations end hidden; bring the card back after a moment.
+    target.addEventListener('lwt-animate-start', function (e) {
+      log.innerHTML = 'Fired <b>lwt-animate-start</b> (' + e.detail.type + ')';
+    });
+    target.addEventListener('lwt-animate-end', function (e) {
+      log.innerHTML = 'Fired <b>lwt-animate-end</b> (' + e.detail.type + ')';
+      if (/-out$/.test(e.detail.type)) {
+        restoreTimer = setTimeout(function () { target.getAnimations().forEach(function (a) { a.cancel(); }); }, 700);
+      }
+    });
+
+    function writeCode() {
+      var attrs = ['data-lwt-animate="' + opts.type + '"'];
+      if (opts.trigger !== 'load') attrs.push('data-lwt-trigger="' + opts.trigger + '"');
+      attrs.push('data-lwt-duration="' + opts.duration + '"');
+      if (opts.delay) attrs.push('data-lwt-delay="' + opts.delay + '"');
+      if (opts.rate !== 1) attrs.push('data-lwt-rate="' + opts.rate + '"');
+      if (opts.easing !== 'ease') attrs.push('data-lwt-easing="' + opts.easing + '"');
+      var html = '<div class="card"\n     ' + attrs.join('\n     ') + '>\n  Payment received\n</div>';
+      var js = '// or from JavaScript\nLWT.animate(el, { type: \'' + opts.type + '\', duration: ' + opts.duration +
+        (opts.delay ? ', delay: ' + opts.delay : '') + (opts.rate !== 1 ? ', rate: ' + opts.rate : '') +
+        (opts.easing !== 'ease' ? ', easing: \'' + opts.easing + '\'' : '') + ' });';
+      codeOut.innerHTML = '<button class="copy" type="button">Copy</button>' + esc(html + '\n\n' + js);
+      codeOut.querySelector('.copy').addEventListener('click', function (e) {
+        if (navigator.clipboard) navigator.clipboard.writeText(html);
+        e.currentTarget.textContent = 'Copied';
+      });
+    }
+
+    function readControls() {
+      var d = parseFloat(first(ctl.duration.value)), dl = parseFloat(first(ctl.delay.value)), r = parseFloat(first(ctl.rate.value));
+      if (!isNaN(d)) opts.duration = d;
+      if (!isNaN(dl)) opts.delay = dl;
+      if (!isNaN(r)) opts.rate = r;
+      opts.easing = first(ctl.easing.value) || 'ease';
+      opts.trigger = first(ctl.trigger.value) || 'load';
+      writeCode();
+    }
+    Object.keys(ctl).forEach(function (k) { ctl[k].addEventListener('change', readControls); });
+
+    document.getElementById('m-play').addEventListener('click', play);
+
+    // "On load" tile: re-adding the element makes the core play it again.
+    var host = document.getElementById('m-load-host');
+    document.getElementById('m-load-again').addEventListener('click', function () {
+      var fresh = host.firstElementChild.cloneNode(true);
+      host.replaceChild(fresh, host.firstElementChild);
+    });
+
+    // Keyboard support for the click tile (role="button").
+    document.querySelectorAll('.trigger [data-lwt-trigger="click"]').forEach(function (el) {
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+      });
+    });
+
+    writeCode();
+  })();
+
   /* ---------- copy buttons ---------- */
+  (function installPicker() {
+    var base = '…/LWT-CORE-DNA/';
+    var code = document.getElementById('install-code');
+    var snippets = {
+      bundle: [['lwt-core.js', 'always first'], ['lwt-forms.js', 'every form element']],
+      single: [['lwt-core.js', 'always first'], ['elements/lwt-frm-input.js', 'just the input']]
+    };
+    function show(kind) {
+      code.innerHTML = snippets[kind].map(function (r) {
+        return '&lt;script src="<b>' + base + r[0] + '</b>"&gt;&lt;/script&gt;';
+      }).join('\n');
+      document.querySelectorAll('[data-load]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.load === kind)); });
+    }
+    document.querySelectorAll('[data-load]').forEach(function (b) {
+      b.addEventListener('click', function () { show(b.dataset.load); });
+    });
+    show('bundle');
+  })();
+
   document.querySelectorAll('[data-copy="install"]').forEach(function (b) {
     b.addEventListener('click', function () {
-      var text = document.getElementById('code-install').textContent;
+      var text = document.getElementById('install-code').textContent.replace(/\s*<!--[^>]*-->/g, '').split('…/LWT-CORE-DNA/').join('https://cdn.jsdelivr.net/gh/LWW-LWTECH/LWT-CORE-DNA@refs/heads/main/');
       if (navigator.clipboard) navigator.clipboard.writeText(text);
       b.textContent = 'Copied';
       setTimeout(function () { b.textContent = 'Copy'; }, 1600);
