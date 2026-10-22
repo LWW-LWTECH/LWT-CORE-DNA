@@ -163,6 +163,360 @@ padding: var(--lwt-alert-gap, var(--lwt-gap, 0.65rem));</code></pre>
 </p>
         </details>
 
+        <details class="accordion-section">
+            <summary><span></span>Core Features</summary>
+            <p>These features are part of <code>lwt-core.js</code> itself, so they work as soon as the core is loaded, with no other bundle, and on any HTML element.</p>
+            <br/>
+
+            <details>
+                <summary><lwtg-icon icon="app_animate" width="15px" height="15px"></lwtg-icon> Animations</summary>
+                <p>Built into <code>lwt-core.js</code>: 14 ready-made animations you can put on any HTML element, not only Core: DNA components. Add <code>data-lwt-animate</code> with the animation's name, choose when it plays with <code>data-lwt-trigger</code>, and the core does the rest, including for elements added to the page later. No CSS or JavaScript to write.</p>
+                <style>
+                    .anim-gallery{ display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:10px; }
+                    .anim-tile{ height:70px; border-radius:8px; background:#2563eb; color:#fff; display:grid; place-items:center;
+                                font:12px Consolas, Menlo, monospace; cursor:pointer; user-select:none; }
+                    .anim-tile:focus-visible{ outline:2px solid #111827; outline-offset:2px; }
+                    .anim-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; }
+                    .anim-trig{ border:1px solid #e5e7eb; border-radius:8px; padding:12px; text-align:center; }
+                    .anim-trig .box{ width:56px; height:56px; margin:4px auto 10px; border-radius:12px; background:#10b981; }
+                    .anim-trig small{ display:block; color:#6b7280; margin-top:4px; }
+                    .anim-log{ font:12px Consolas, Menlo, monospace; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:6px; padding:6px 10px; margin-top:8px; min-height:1.4em; white-space:pre-wrap; }
+                </style>
+
+                <h3>Example: <small>Every animation</small></h3>
+                <p>Click a tile to play it (they use <code>data-lwt-trigger="click"</code>). The "-out" animations end hidden, so this demo brings them back after a moment.</p>
+                <div class="anim-gallery" id="anim-gallery">
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="fade-in" data-lwt-trigger="click">fade-in</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="fade-out" data-lwt-trigger="click">fade-out</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="flash" data-lwt-trigger="click">flash</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="bounce" data-lwt-trigger="click">bounce</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="bounce-in" data-lwt-trigger="click">bounce-in</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="bounce-out" data-lwt-trigger="click">bounce-out</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="flip" data-lwt-trigger="click">flip</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="flip-in" data-lwt-trigger="click">flip-in</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="flip-out" data-lwt-trigger="click">flip-out</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="rotate" data-lwt-trigger="click">rotate</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="rotate-in" data-lwt-trigger="click">rotate-in</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="rotate-out" data-lwt-trigger="click">rotate-out</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="zoom-in" data-lwt-trigger="click">zoom-in</div>
+                    <div class="anim-tile" tabindex="0" data-lwt-animate="zoom-out" data-lwt-trigger="click">zoom-out</div>
+                </div>
+
+                <h3>Example: <small>Triggers</small></h3>
+                <p>Choose when an animation plays.</p>
+                <div class="anim-row">
+                    <div class="anim-trig">
+                        <div id="anim-load-host"><div class="box" data-lwt-animate="bounce-in"></div></div>
+                        <code>load</code><small>When it appears. Elements added later play too.</small>
+                        <lwtg-button id="anim-load-again" size="sm" variant="secondary" label="Add it again" style="margin-top:8px;"></lwtg-button>
+                    </div>
+                    <div class="anim-trig">
+                        <div class="box" style="background:#2563eb; cursor:pointer;" data-lwt-animate="flip" data-lwt-trigger="click"></div>
+                        <code>click</code><small>Each click. Add <code>data-lwt-once</code> for the first click only.</small>
+                    </div>
+                    <div class="anim-trig">
+                        <div class="box" style="background:#f59e0b;" data-lwt-animate="bounce" data-lwt-trigger="hover"></div>
+                        <code>hover</code><small>When the mouse moves onto it.</small>
+                    </div>
+                    <div class="anim-trig">
+                        <div class="box" style="background:#7c3aed;" data-lwt-animate="zoom-in" data-lwt-trigger="lazy" data-lwt-repeat></div>
+                        <code>lazy</code><small>When scrolled into view; <code>data-lwt-repeat</code> plays it every time.</small>
+                    </div>
+                </div>
+<pre><code>&lt;div data-lwt-animate="bounce-in"&gt;Plays on load&lt;/div&gt;
+&lt;div data-lwt-animate="flip" data-lwt-trigger="click"&gt;Click me&lt;/div&gt;
+&lt;div data-lwt-animate="bounce" data-lwt-trigger="hover" data-lwt-once&gt;Hover me once&lt;/div&gt;
+&lt;div data-lwt-animate="zoom-in" data-lwt-trigger="lazy" data-lwt-repeat&gt;Scroll to me&lt;/div&gt;</code></pre>
+
+                <h3>Example: <small>Timing</small></h3>
+                <p>Same animation, different settings, played together from JavaScript so they start at the same moment. As attributes, the same settings look like the code below.</p>
+                <div class="anim-row" id="anim-timing">
+                    <div class="anim-trig"><div class="box" data-anim="rotate-in"></div><code>default</code><small>600ms, ease</small></div>
+                    <div class="anim-trig"><div class="box" style="background:#2563eb" data-anim="rotate-in" data-duration="1500" data-easing="linear"></div><code>slow &amp; linear</code><small>duration 1500, easing linear</small></div>
+                    <div class="anim-trig"><div class="box" style="background:#f59e0b" data-anim="rotate-in" data-delay="400" data-rate="2"></div><code>delayed, 2&times; speed</code><small>delay 400, rate 2</small></div>
+                </div>
+                <lwtg-button id="anim-timing-play" variant="primary" label="Play all three" style="margin-top:10px;"></lwtg-button>
+<pre><code>&lt;div data-lwt-animate="rotate-in" data-lwt-duration="1500" data-lwt-easing="linear"&gt;&lt;/div&gt;
+&lt;div data-lwt-animate="rotate-in" data-lwt-delay="400" data-lwt-rate="2"&gt;&lt;/div&gt;</code></pre>
+
+                <h3>Example: <small>JavaScript API and events</small></h3>
+                <p>Play any animation from code. It returns the browser's <code>Animation</code> object, and the element fires <code>lwt-animate-start</code> and <code>lwt-animate-end</code>.</p>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <div id="anim-js-target" style="padding:10px 16px; border-radius:8px; background:#111827; color:#fff;">Saved!</div>
+                    <lwtg-button id="anim-js-play" variant="secondary" label="LWT.animate(el, { type: 'bounce' })"></lwtg-button>
+                </div>
+                <div class="anim-log" id="anim-js-log">Events appear here.</div>
+<pre><code>var el = document.getElementById('status');
+
+el.addEventListener('lwt-animate-start', function (e) { console.log('start', e.detail); }); // { type, trigger }
+el.addEventListener('lwt-animate-end', function (e) { console.log('end', e.detail); });
+
+var animation = LWT.animate(el, { type: 'bounce', duration: 800, delay: 0, rate: 1, easing: 'ease' });
+animation.finished.then(function () { /* done */ });
+
+LWT.animate.types;   // ["fade-in", "fade-out", "flash", "bounce", ...]
+LWT.animate.refresh(); // re-scan the page (new elements are picked up automatically anyway)</code></pre>
+
+                <h4>Properties</h4>
+                <p><strong>Attributes:</strong></p>
+                <ul>
+                    <li><code>data-lwt-animate</code> &mdash; the animation: "fade-in", "fade-out", "flash", "bounce", "bounce-in", "bounce-out", "flip", "flip-in", "flip-out", "rotate", "rotate-in", "rotate-out", "zoom-in", "zoom-out".</li>
+                    <li><code>data-lwt-trigger</code> &mdash; "load" (default) | "click" | "hover" | "lazy" (when scrolled into view). To play only from code, leave <code>data-lwt-animate</code> off and call <code>LWT.animate()</code>.</li>
+                    <li><code>data-lwt-duration</code> &mdash; ms. Defaults per animation: fade and zoom 500, bounce-in/out, flip-in/out and rotate-in/out 600, flip and rotate 800, flash and bounce 1000.</li>
+                    <li><code>data-lwt-delay</code> &mdash; ms before it starts. Default 0.</li>
+                    <li><code>data-lwt-rate</code> &mdash; playback speed; 2 is twice as fast. Default 1.</li>
+                    <li><code>data-lwt-easing</code> &mdash; any CSS easing, e.g. "linear", "ease-in-out", "cubic-bezier(.34,1.56,.64,1)". Default "ease".</li>
+                    <li><code>data-lwt-once</code> &mdash; boolean; with click or hover, play only the first time.</li>
+                    <li><code>data-lwt-repeat</code> &mdash; boolean; with lazy, play every time it scrolls into view.</li>
+                </ul>
+                <p><strong>Methods:</strong></p>
+                <ul>
+                    <li><code>LWT.animate(el, options)</code> &mdash; plays one animation now. Options: type (required), duration, delay, rate, easing. Returns the Animation.</li>
+                    <li><code>LWT.animate.types</code> &mdash; the list of animation names.</li>
+                    <li><code>LWT.animate.wire(el)</code> &mdash; wires one element's data attributes (only needed for elements the page scan can't see).</li>
+                    <li><code>LWT.animate.refresh()</code> &mdash; re-scans the page.</li>
+                </ul>
+                <p><strong>Events:</strong></p>
+                <ul>
+                    <li><code>lwt-animate-start</code> / <code>lwt-animate-end</code> &mdash; on the element; detail { type, trigger }. Both bubble.</li>
+                </ul>
+                <p><strong>Good to know:</strong> "-in" and "-out" animations keep their end state, so an element stays hidden after a "-out" animation. To show it again, cancel its animations: <code>el.getAnimations().forEach(function (a) { a.cancel(); });</code>. The other animations return the element to exactly how it looked before. Animations use the Web Animations API on <code>opacity</code> and <code>transform</code>, so they don't change layout. People who turn on reduced motion in their system settings see the end state immediately.</p>
+
+                <script>
+                    (function () {
+                        // Gallery: bring "-out" tiles back after they finish.
+                        document.getElementById('anim-gallery').addEventListener('lwt-animate-end', function (e) {
+                            if (/-out$/.test(e.detail.type)) {
+                                setTimeout(function () { e.target.getAnimations().forEach(function (a) { a.cancel(); }); }, 600);
+                            }
+                        });
+                        // Gallery tiles are focusable, so Enter/Space plays them too.
+                        document.getElementById('anim-gallery').addEventListener('keydown', function (e) {
+                            if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('anim-tile')) { e.preventDefault(); e.target.click(); }
+                        });
+                        // Load trigger: re-adding the element plays it again.
+                        document.getElementById('anim-load-again').addEventListener('click', function () {
+                            var host = document.getElementById('anim-load-host');
+                            host.replaceChild(host.firstElementChild.cloneNode(true), host.firstElementChild);
+                        });
+                        // Timing: play all three with each element's own settings.
+                        document.getElementById('anim-timing-play').addEventListener('click', function () {
+                            document.querySelectorAll('#anim-timing [data-anim]').forEach(function (el) {
+                                var d = el.dataset;
+                                LWT.animate(el, { type: d.anim, duration: d.duration ? +d.duration : undefined,
+                                    delay: d.delay ? +d.delay : 0, rate: d.rate ? +d.rate : 1, easing: d.easing || 'ease' });
+                            });
+                        });
+                        // JS API + events
+                        var target = document.getElementById('anim-js-target');
+                        var log = document.getElementById('anim-js-log');
+                        var lines = [];
+                        function note(name, e) {
+                            lines.push(name + ' ' + JSON.stringify(e.detail));
+                            log.textContent = lines.slice(-2).join('\n');
+                        }
+                        target.addEventListener('lwt-animate-start', function (e) { lines = []; note('lwt-animate-start', e); });
+                        target.addEventListener('lwt-animate-end', function (e) { note('lwt-animate-end', e); });
+                        document.getElementById('anim-js-play').addEventListener('click', function () {
+                            LWT.animate(target, { type: 'bounce' });
+                        });
+                    })();
+                </script>
+            </details>
+
+            <details>
+                <summary><lwtg-icon icon="app_drag" width="15px" height="15px"></lwtg-icon> Drag and Drop</summary>
+                <p>Built into <code>lwt-core.js</code>, so it needs no other bundle and works on any HTML element, not only Core: DNA components. Make an element draggable, mark drop zones, or turn any parent into a sortable list whose children can be re-ordered. It uses pointer events, so mouse, touch and pen behave the same, and it supports the keyboard: <kbd>Space</kbd>/<kbd>Enter</kbd> picks up, arrow keys move, <kbd>Space</kbd>/<kbd>Enter</kbd> drops and <kbd>Escape</kbd> cancels, with screen-reader announcements.</p>
+                <style>
+                    .dnd-board{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; }
+                    .dnd-col{ background:#f1f5f9; border-radius:8px; padding:8px; }
+                    .dnd-col h5{ margin:2px 4px 8px; font-size:12px; color:#475569; }
+                    .dnd-col ul{ list-style:none; margin:0; padding:0; min-height:60px; display:flex; flex-direction:column; gap:6px; }
+                    .dnd-col li{ background:#fff; border:1px solid #e2e8f0; border-radius:6px; padding:8px 10px; margin:0; }
+                    .dnd-col li:focus-visible{ outline:2px solid #2563eb; outline-offset:1px; }
+                    .dnd-area{ position:relative; height:160px; border:1px dashed #cbd5e1; border-radius:8px;
+                               background-image:radial-gradient(#cbd5e1 1px, transparent 1px); background-size:20px 20px; }
+                    .dnd-chip{ display:inline-block; padding:8px 12px; border-radius:6px; background:#2563eb; color:#fff; margin:6px; }
+                    .dnd-zone{ display:inline-block; vertical-align:top; width:46%; min-height:90px; margin:6px 1%; padding:8px;
+                               border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box; }
+                    .dnd-zone .dnd-chip{ margin:3px; }
+                    .dnd-log{ font:12px Consolas, Menlo, monospace; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:6px; padding:6px 10px; margin-top:8px; min-height:1.4em; white-space:pre-wrap; }
+                </style>
+
+                <h3>Example: <small>Sortable lists (task board)</small></h3>
+                <p>Drag cards within a column or between columns. All three lists share <code>data-lwt-sortable-group="board"</code>. Try the keyboard too: Tab to a card, press Space, use the arrows.</p>
+                <div class="dnd-board" id="dnd-board">
+                    <div class="dnd-col"><h5>To do</h5>
+                        <ul data-lwt-sortable data-lwt-sortable-group="board" data-list="todo">
+                            <li data-value="copy">Write launch copy</li>
+                            <li data-value="pricing">Review pricing page</li>
+                            <li data-value="qa">QA the checkout</li>
+                        </ul></div>
+                    <div class="dnd-col"><h5>Doing</h5>
+                        <ul data-lwt-sortable data-lwt-sortable-group="board" data-list="doing">
+                            <li data-value="hero">New hero image</li>
+                        </ul></div>
+                    <div class="dnd-col"><h5>Done</h5>
+                        <ul data-lwt-sortable data-lwt-sortable-group="board" data-list="done"></ul></div>
+                </div>
+                <div class="dnd-log" id="dnd-board-log">Move a card to see the lwt-sort event.</div>
+<pre><code>&lt;ul data-lwt-sortable data-lwt-sortable-group="board"&gt;
+    &lt;li data-value="copy"&gt;Write launch copy&lt;/li&gt;
+    &lt;li data-value="pricing"&gt;Review pricing page&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul data-lwt-sortable data-lwt-sortable-group="board"&gt;&lt;/ul&gt;
+
+&lt;script&gt;
+document.addEventListener('lwt-sort', function (e) {
+    // e.detail: { item, from, to, oldIndex, newIndex, order, fromOrder }
+    console.log(e.detail.order);  // ["copy", "pricing"] — data-value (or id) of each item
+});
+&lt;/script&gt;</code></pre>
+
+                <h3>Example: <small>Free drag with bounds and a grid</small></h3>
+                <p>Stays inside its box and snaps to 20px steps. Its position is kept between drags.</p>
+                <div class="dnd-area"><span class="dnd-chip" id="dnd-free" data-lwt-drag data-lwt-drag-bounds="parent" data-lwt-drag-grid="20">Drag me</span></div>
+                <div class="dnd-log" id="dnd-free-log">position: { x: 0, y: 0 }</div>
+<pre><code>&lt;div class="area"&gt;
+    &lt;span data-lwt-drag data-lwt-drag-bounds="parent" data-lwt-drag-grid="20"&gt;Drag me&lt;/span&gt;
+&lt;/div&gt;</code></pre>
+
+                <h3>Example: <small>Drop zones that accept or reject</small></h3>
+                <p>The blue chips copy themselves (<code>data-lwt-drag="clone"</code>) and belong to the "fruit" group. The left zone only accepts fruit; the right zone accepts anything but rejects the drop in its event handler, so the chip slides back.</p>
+                <div>
+                    <span class="dnd-chip" data-lwt-drag="clone" data-lwt-drag-group="fruit" data-lwt-drag-data='{"name":"Apple"}'>Apple</span>
+                    <span class="dnd-chip" data-lwt-drag="clone" data-lwt-drag-group="fruit" data-lwt-drag-data='{"name":"Pear"}'>Pear</span>
+                    <span class="dnd-chip" style="background:#64748b" data-lwt-drag data-lwt-drag-group="veg" data-lwt-drag-revert>Carrot</span>
+                </div>
+                <div class="dnd-zone" data-lwt-drop data-lwt-drop-accept="fruit">Fruit basket</div>
+                <div class="dnd-zone" id="dnd-reject" data-lwt-drop data-lwt-drop-action="none">Rejects everything</div>
+                <div class="dnd-log" id="dnd-zone-log">Drop something.</div>
+<pre><code>&lt;span data-lwt-drag="clone" data-lwt-drag-group="fruit" data-lwt-drag-data='{"name":"Apple"}'&gt;Apple&lt;/span&gt;
+&lt;span data-lwt-drag data-lwt-drag-group="veg" data-lwt-drag-revert&gt;Carrot&lt;/span&gt;
+
+&lt;div data-lwt-drop data-lwt-drop-accept="fruit"&gt;Fruit basket&lt;/div&gt;
+&lt;div id="reject" data-lwt-drop data-lwt-drop-action="none"&gt;Rejects everything&lt;/div&gt;
+
+&lt;script&gt;
+document.getElementById('reject').addEventListener('lwt-drop', function (e) {
+    e.preventDefault();               // refuse it: the item slides back
+});
+&lt;/script&gt;</code></pre>
+
+                <h4>JavaScript API</h4>
+                <p>Each attribute has a camelCase option. JS options can also take callbacks for every state.</p>
+<pre><code>var handle = LWT.drag(el, {
+    mode: 'move',            // or 'clone'
+    axis: 'x', bounds: 'parent', grid: 20, revert: true,
+    group: 'cards', data: { id: 7 },
+    onStart:  function (d) { /* return false to cancel */ },
+    onMove:   function (d) { /* d.x, d.y, d.dx, d.dy, d.zone, d.position */ },
+    onEnter:  function (d) { }, onLeave: function (d) { },
+    onDrop:   function (d) { /* return false to reject */ },
+    onCancel: function (d) { },
+    onEnd:    function (d) { /* d.dropped, d.cancelled, d.zone, d.copy, d.position */ }
+});
+handle.position; handle.reset(); handle.disable(); handle.enable(); handle.destroy();
+
+LWT.drop(zone, {
+    accept: function (el, data) { return data &amp;&amp; data.type === 'card'; },
+    action: 'append',        // or 'none'
+    onEnter: fn, onOver: fn, onLeave: fn, onDrop: fn
+});
+
+var list = LWT.sortable(ul, {
+    group: 'tasks', handle: '.grip', items: 'li', animation: 150,
+    onStart: fn, onChange: fn, onSort: fn, onCancel: fn, onEnd: fn
+});
+list.order();   // ["a", "c", "b"]
+
+LWT.dnd.active;  LWT.dnd.current;  LWT.dnd.cancel();  LWT.dnd.refresh();</code></pre>
+
+                <h4>Properties</h4>
+                <p><strong>Drag attributes</strong> (<code>data-lwt-drag</code> plus <code>data-lwt-drag-&lt;name&gt;</code>):</p>
+                <ul>
+                    <li><code>data-lwt-drag</code> &mdash; "" or "move" (default): the element itself moves. "clone": a copy follows the pointer and the original stays put.</li>
+                    <li><code>handle</code> &mdash; selector; only these parts start a drag.</li>
+                    <li><code>axis</code> &mdash; "x" | "y" to lock movement.</li>
+                    <li><code>bounds</code> &mdash; "parent" | "window" | a selector to keep it inside.</li>
+                    <li><code>grid</code> &mdash; "20" or "20,10": snap to steps of this many px.</li>
+                    <li><code>threshold</code> &mdash; px the pointer must move before a drag starts. Default 3.</li>
+                    <li><code>delay</code> &mdash; ms to press before a touch drag starts, so swiping over it still scrolls the page. Default 0.</li>
+                    <li><code>revert</code> &mdash; boolean; slide back unless dropped on a zone that accepts it.</li>
+                    <li><code>group</code> &mdash; space-separated names that drop zones can accept.</li>
+                    <li><code>data</code> &mdash; payload passed to drop handlers; JSON is parsed.</li>
+                    <li><code>step</code> &mdash; keyboard move size in px (Shift moves 5&times;). Defaults to the grid size or 10.</li>
+                    <li><code>disabled</code> &mdash; boolean.</li>
+                </ul>
+                <p><strong>Drop zone attributes</strong> (<code>data-lwt-drop</code> plus <code>data-lwt-drop-&lt;name&gt;</code>):</p>
+                <ul>
+                    <li><code>accept</code> &mdash; group names that may drop here. Empty accepts everything.</li>
+                    <li><code>action</code> &mdash; "append" (default): the element, or in clone mode a copy, is moved into the zone. "none": events only, you decide what happens.</li>
+                    <li><code>disabled</code> &mdash; boolean.</li>
+                </ul>
+                <p><strong>Sortable attributes</strong> (<code>data-lwt-sortable</code> plus <code>data-lwt-sortable-&lt;name&gt;</code>):</p>
+                <ul>
+                    <li><code>items</code> &mdash; selector for the sortable children. Default: all children.</li>
+                    <li><code>handle</code> &mdash; selector; only these parts start a drag.</li>
+                    <li><code>group</code> &mdash; lists that share a group name can pass items between them.</li>
+                    <li><code>axis</code> &mdash; "auto" (default, worked out from the layout, so rows, columns and wrapping grids all work) | "x" | "y".</li>
+                    <li><code>animation</code> &mdash; ms for the other items to slide aside. Default 150; 0 turns it off.</li>
+                    <li><code>threshold</code>, <code>delay</code>, <code>disabled</code> &mdash; as for drag.</li>
+                </ul>
+                <p><strong>Events</strong> (all bubble; "cancelable" ones can be stopped with <code>preventDefault()</code>):</p>
+                <ul>
+                    <li><code>lwt-drag-start</code> &mdash; on the element; cancelable.</li>
+                    <li><code>lwt-drag-move</code> &mdash; on the element; detail { x, y, dx, dy, zone, position }.</li>
+                    <li><code>lwt-drop-enter</code> / <code>lwt-drop-over</code> / <code>lwt-drop-leave</code> &mdash; on the zone.</li>
+                    <li><code>lwt-drop</code> &mdash; on the zone; cancelable (rejects the drop). detail { element, data, zone, x, y, mode }.</li>
+                    <li><code>lwt-drag-cancel</code> &mdash; on the element, when Escape is pressed or the browser cancels the pointer.</li>
+                    <li><code>lwt-drag-end</code> &mdash; on the element, always last. detail { dropped, cancelled, zone, copy, position }.</li>
+                    <li><code>lwt-sort-start</code> &mdash; on the list; cancelable.</li>
+                    <li><code>lwt-sort-change</code> &mdash; on the list, every time the item moves to a new spot while dragging.</li>
+                    <li><code>lwt-sort</code> &mdash; on the destination list (and the origin list, if different) when the order really changed; cancelable (puts the item back). detail { item, from, to, oldIndex, newIndex, order, fromOrder }.</li>
+                    <li><code>lwt-sort-cancel</code> / <code>lwt-sort-end</code> &mdash; on the list.</li>
+                </ul>
+                <p><strong>Classes for each state</strong> (defaults are added once at the top of &lt;head&gt;, so your own CSS overrides them):</p>
+                <ul>
+                    <li><code>.lwt-dragging</code> &mdash; the element being dragged.</li>
+                    <li><code>.lwt-drag-ghost</code> &mdash; the copy following the pointer (clone mode and sortable lists).</li>
+                    <li><code>.lwt-sort-placeholder</code> &mdash; the dragged item's empty slot in a sortable list.</li>
+                    <li><code>.lwt-drag-lifted</code> &mdash; an item picked up with the keyboard.</li>
+                    <li><code>.lwt-drop-active</code> &mdash; every zone that accepts the current drag.</li>
+                    <li><code>.lwt-drop-over</code> &mdash; the zone under the pointer.</li>
+                    <li><code>html.lwt-drag-active</code> &mdash; while any drag is in progress.</li>
+                </ul>
+                <p><strong>Good to know:</strong> the page scrolls automatically when you drag near the edge of the window or a scrolling box. The click that ends a drag doesn't trigger links or buttons underneath. Drags don't start from inputs, buttons or links inside a draggable unless they are its handle. Copies made by clone mode have their <code>id</code> and <code>data-lwt-*</code> attributes removed; add them back in your <code>lwt-drop</code> handler if the copy should be draggable too (<code>e.detail</code> of <code>lwt-drag-end</code> has it as <code>copy</code>).</p>
+                <p><strong>Theming:</strong> --lwt-drop-color (zone highlight, falls back to --lwt-primary), --lwt-focus-color (keyboard pick-up outline).</p>
+
+                <script>
+                    (function () {
+                        var boardLog = document.getElementById('dnd-board-log');
+                        document.getElementById('dnd-board').addEventListener('lwt-sort', function (e) {
+                            if (e.target !== e.detail.to) return; // log once for cross-list moves
+                            boardLog.textContent = 'lwt-sort: "' + e.detail.item.textContent + '" ' +
+                                e.detail.from.dataset.list + ' #' + (e.detail.oldIndex + 1) + ' → ' +
+                                e.detail.to.dataset.list + ' #' + (e.detail.newIndex + 1) +
+                                '\norder: ' + JSON.stringify(e.detail.order);
+                        });
+                        var free = document.getElementById('dnd-free');
+                        free.addEventListener('lwt-drag-move', function (e) {
+                            document.getElementById('dnd-free-log').textContent = 'position: ' + JSON.stringify(e.detail.position);
+                        });
+                        var zoneLog = document.getElementById('dnd-zone-log');
+                        document.getElementById('dnd-reject').addEventListener('lwt-drop', function (e) {
+                            e.preventDefault();
+                        });
+                        document.addEventListener('lwt-drag-end', function (e) {
+                            if (!e.target.closest || !e.target.closest('.accordion-section') || e.target.id === 'dnd-free') return;
+                            var name = e.detail.data && e.detail.data.name ? e.detail.data.name : e.target.textContent;
+                            zoneLog.textContent = 'lwt-drag-end: ' + name + (e.detail.dropped ? ' dropped in "' + e.detail.zone.firstChild.textContent.trim() + '"' : ' not dropped' + (e.detail.cancelled ? ' (cancelled)' : ''));
+                        });
+                    })();
+                </script>
+            </details>
+        </details>
+
         <details  class="accordion-section">
             <summary><span></span>General Elements</summary>
             <p>These elements are part of the CDNA general library. A growing collection of custom Web UI components for building modern web applications.</p>
