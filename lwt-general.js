@@ -1,7 +1,7 @@
 /*!
  * LWT General Elements
  * Developer: Lee W Winter
- * Last Generated: 2026-10-22T11:22:01.918Z
+ * Last Generated: 2026-11-08T20:06:16.750Z
  * Requires lwt-core.js to be loaded first.
  */
 
@@ -917,6 +917,10 @@
       font-size: 0.95em;
       line-height: 1.2;
       transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 7px;
     }
 
     button:disabled { cursor: not-allowed; opacity: 0.55; }

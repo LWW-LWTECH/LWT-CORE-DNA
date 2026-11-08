@@ -20,6 +20,10 @@
       font-size: 0.95em;
       line-height: 1.2;
       transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 7px;
     }
 
     button:disabled { cursor: not-allowed; opacity: 0.55; }
